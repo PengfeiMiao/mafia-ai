@@ -1,5 +1,6 @@
 import logging
 
+from requests import Request
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, status, Depends
 from fastapi.encoders import jsonable_encoder
@@ -26,15 +27,16 @@ unauthorized_res = JSONResponse(
     content={"detail": "Unauthorized"},
     headers={"WWW-Authenticate": "Bearer"})
 
-# @app.middleware("http")
-# async def check_authorization(request: Request, call_next):
-#     if request.url.path != "/login":
-#         auth_header = request.headers.get("Authorization")
-#         if not auth_header or not auth_header.startswith('Bearer ') or auth_header.split(' ')[1] != API_KEY:
-#             return unauthorized_res
-#
-#     response = await call_next(request)
-#     return response
+
+@app.middleware("http")
+async def check_authorization(request: Request, call_next):
+    if request.url.path != "/login":
+        auth_header = request.headers.get("api-key")
+        if not auth_header or auth_header != API_KEY:
+            return unauthorized_res
+
+    response = await call_next(request)
+    return response
 
 
 @app.post("/login")
@@ -49,4 +51,4 @@ async def login(data: UserModel):
 async def completions(data: MessageModel, session: Session = Depends(get_session)):
     # save_message(session, data)
     result = llm_helper.completions(message=data.text, session_id="123")
-    return {'context': result}
+    return {'content': result}

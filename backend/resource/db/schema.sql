@@ -1,5 +1,5 @@
 -- table schema
-CREATE TABLE IF NOT EXISTS questions (
+CREATE TABLE IF NOT EXISTS message (
     id SERIAL PRIMARY KEY,
-    question TEXT NOT NULL
+    text TEXT NOT NULL
 );
