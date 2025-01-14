@@ -5,3 +5,4 @@ sqlalchemy
 pyyaml
 langchain
 langchain-openai
+langchain_community

@@ -15,13 +15,18 @@ tool_model: "gpt-3.5-turbo"
 chat_model: "gpt-3.5-turbo"
 embedding_model: "gpt-3.5-turbo"
 admin_pwd: "123456"
-api:
-  enabled: false
-  key: "123456"
-  port: 8081
 tavily:
   enabled: true
   key: ""
+database:
+  host: "localhost"
+  port: "5432"
+  username: "mafiadev"
+  password: "mafia123"
+  schema: "mafia-ai"
+api:
+  port: 8000
+  key: "mafia123"
 ip_pool:
   enabled: false
   urls:
