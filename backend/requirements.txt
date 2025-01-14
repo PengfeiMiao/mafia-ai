@@ -1,0 +1,7 @@
+uvicorn
+fastapi
+psycopg2-binary
+sqlalchemy
+pyyaml
+langchain
+langchain-openai
