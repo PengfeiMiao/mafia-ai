@@ -8,18 +8,16 @@ from langchain_core.chat_history import (
     InMemoryChatMessageHistory,
 )
 from langchain_core.runnables.history import RunnableWithMessageHistory
-
 from backend.config.config import chat_model_meta
-
-CHAT_MODEL_META = chat_model_meta()
 
 
 class LLMHelper:
     def __init__(self):
+        chat_model= chat_model_meta()
         self.model = ChatOpenAI(
-            model=CHAT_MODEL_META["name"],
-            base_url=CHAT_MODEL_META["base_url"],
-            api_key=CHAT_MODEL_META["api_key"],
+            model=chat_model["name"],
+            base_url=chat_model["base_url"],
+            api_key=chat_model["api_key"],
         )
         self.prompt = ChatPromptTemplate.from_messages(
             [
