@@ -11,73 +11,73 @@ const HomePage = () => {
       {
         'id': '1',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '2',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       },
       {
         'id': '3',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '4',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       },
       {
         'id': '5',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '6',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       },
       {
         'id': '7',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '8',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       },
       {
         'id': '9',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '10',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       },
       {
         'id': '11',
         'content': 'Hi, welcome to mafia ai!',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'system'
       },
       {
         'id': '12',
         'content': 'I\'m MPF.',
-        'time': '2024-01-01 00:00:00',
+        'created_at': '2024-01-01 00:00:00',
         'type': 'user'
       }
     ]);

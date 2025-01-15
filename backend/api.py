@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from requests import Request
 from sqlalchemy.orm import Session
@@ -9,7 +10,9 @@ from fastapi.responses import JSONResponse
 from backend.config.config import api_key
 from backend.entity.connection import get_session
 from backend.model.message_model import MessageModel
+from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
+from backend.repo.message_repo import get_messages
 from backend.service.llm_helper import LLMHelper
 
 # from backend.repo.message_repo import save_message
@@ -47,8 +50,13 @@ async def login(data: UserModel):
     return {'status': True}
 
 
+@app.post("/messages")
+async def messages(sessions: List[SessionModel], db: Session = Depends(get_session)):
+    return get_messages(db, session_ids=[item.id for item in sessions])
+
+
 @app.post("/completions")
-async def completions(data: MessageModel, session: Session = Depends(get_session)):
-    # save_message(session, data)
+async def completions(data: MessageModel, session: SessionModel, db: Session = Depends(get_session)):
+    # save_message(db, data)
     result = llm_helper.completions(message=data.text, session_id="123")
     return {'content': result}
