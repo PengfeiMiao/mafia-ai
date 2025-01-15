@@ -4,6 +4,7 @@
 - fastapi
 - langchain
 - postgres
+- react
 
 ## Quick Start
 1. install requirement
