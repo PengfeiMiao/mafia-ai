@@ -12,7 +12,7 @@ from backend.entity.connection import get_session
 from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
-from backend.repo.message_repo import get_messages
+from backend.repo.message_repo import get_messages, save_message
 from backend.service.llm_helper import LLMHelper
 
 # from backend.repo.message_repo import save_message
@@ -52,11 +52,12 @@ async def login(data: UserModel):
 
 @app.post("/messages")
 async def messages(sessions: List[SessionModel], db: Session = Depends(get_session)):
-    return get_messages(db, session_ids=[item.id for item in sessions])
+    return get_messages(db, session_ids=[item.session_id for item in sessions])
 
 
 @app.post("/completions")
-async def completions(data: MessageModel, session: SessionModel, db: Session = Depends(get_session)):
-    # save_message(db, data)
-    result = llm_helper.completions(message=data.text, session_id="123")
+async def completions(data: MessageModel, db: Session = Depends(get_session)):
+    save_message(db, data)
+    result = llm_helper.completions(message=data.content, session_id=data.session_id)
+    save_message(db, MessageModel(content=result, session_id=data.session_id, type="system"))
     return {'content': result}
