@@ -8,6 +8,7 @@ from backend.model.message_model import MessageModel
 
 def save_message(db: Session, message: MessageModel):
     entity = Message(
+        id=message.id,
         content=message.content,
         type=message.type,
         session_id=message.session_id,

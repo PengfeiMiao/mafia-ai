@@ -1,18 +1,14 @@
-import {getCookie} from "../store/CacheStore";
+import {getCookie} from "@/store/CacheStore";
 
 // const BASE_URL = 'http://localhost:8000';
 const BASE_URL = '/api';
 
-export const completions = () => {
-  let token = preAuth();
-  if (!token) {
-    return;
-  }
-  return fetch(`${BASE_URL}/completions`, {
-    headers: {
-      'api-key': token
-    }
-  });
+export const get_messages = async (sessions) => {
+   return await rawApi(`${BASE_URL}/messages`, sessions, 'POST');
+}
+
+export const completions = async (message) => {
+  return await rawApi(`${BASE_URL}/completions`, message, 'POST');
 };
 
 export const loginApi = async (payload) => {
@@ -48,15 +44,15 @@ function fetchApi(url, options) {
     });
 }
 
-// async function updateApi(url, payload, method) {
-//   return await fetchApi(url, {
-//     method: method,
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(payload)
-//   });
-// }
+async function rawApi(url, payload, method) {
+  return await fetchApi(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+}
 
 function preAuth() {
   let token = getCookie('token');

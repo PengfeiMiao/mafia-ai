@@ -5,14 +5,13 @@ module.exports = {
   mode: 'development',
   output: {
     publicPath: '/',
-    path: path.join(__dirname, "/dist"),
+    path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, 'src'),
     },
-    modules: [path.resolve(__dirname, './'), 'node_modules'],
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
   },
   plugins: [
@@ -34,14 +33,13 @@ module.exports = {
     },
     hot: true,
     port: 3001,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        pathRewrite: { '^/api': '' },
-        secure: false,
-        changeOrigin: true,
-      },
-    },
+    proxy: [{
+      context: ['/api'],
+      target: 'http://localhost:8000',
+      pathRewrite: { '^/api': '' },
+      secure: false,
+      changeOrigin: true,
+    }],
   },
   module: {
     rules: [

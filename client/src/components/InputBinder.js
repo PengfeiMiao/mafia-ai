@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
 import {Box, Button, Input} from "@chakra-ui/react";
 
-const InputBinder = ({onSearch, defaultValue, children}) => {
+const InputBinder = ({onSend, defaultValue, children}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
 
   const handleSend = () => {
-    onSearch(message);
+    onSend(message);
+    setMessage('');
   };
 
   const handleKeyDown = (event) => {

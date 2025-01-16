@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 
 class MessageModel(BaseModel):
-    message_id: Union[str, None] = None
+    id: Union[str, None] = None
     session_id: Union[str, None] = None
     content: Union[str, None] = None
     type: Union[str, None] = None

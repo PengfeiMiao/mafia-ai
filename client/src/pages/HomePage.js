@@ -2,85 +2,33 @@ import React, {useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import MessageList from "@/components/MessageList";
+import {completions, get_messages} from "@/api/api";
+import { v4 as uuidv4 } from "uuid";
+import moment from "moment";
 
 const HomePage = () => {
   const [messages, setMessages] = useState([]);
 
   const getChatHistory = async () => {
-    setMessages([
-      {
-        'id': '1',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '2',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      },
-      {
-        'id': '3',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '4',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      },
-      {
-        'id': '5',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '6',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      },
-      {
-        'id': '7',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '8',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      },
-      {
-        'id': '9',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '10',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      },
-      {
-        'id': '11',
-        'content': 'Hi, welcome to mafia ai!',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'system'
-      },
-      {
-        'id': '12',
-        'content': 'I\'m MPF.',
-        'created_at': '2024-01-01 00:00:00',
-        'type': 'user'
-      }
-    ]);
+    let result = await get_messages([{session_id: '123'}]);
+    if (result) {
+      setMessages(result);
+    }
+  };
+
+  const handleSend = async (newMessage) => {
+    let messageObj = {
+      id: uuidv4(),
+      session_id: '123',
+      content: newMessage,
+      type: 'user',
+      created_at: moment().format('YYYY-MM-DD HH:mm:ss')
+    };
+    setMessages([...messages, messageObj]);
+    let result = await completions(messageObj);
+    if (result) {
+      setMessages([...messages, messageObj, result]);
+    }
   };
 
   useEffect(() => {
@@ -90,7 +38,7 @@ const HomePage = () => {
   return (
     <Flex h="100vh" w="100wh" justify="center" align="center" direction="column">
       <MessageList data={messages}></MessageList>
-      <InputBinder onSearch={()=>{}}></InputBinder>
+      <InputBinder onSend={handleSend}></InputBinder>
     </Flex>
   );
 }

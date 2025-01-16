@@ -57,7 +57,9 @@ async def messages(sessions: List[SessionModel], db: Session = Depends(get_sessi
 
 @app.post("/completions")
 async def completions(data: MessageModel, db: Session = Depends(get_session)):
+    if not data.type:
+        data.type = "user"
     save_message(db, data)
-    result = llm_helper.completions(message=data.content, session_id=data.session_id)
-    save_message(db, MessageModel(content=result, session_id=data.session_id, type="system"))
-    return {'content': result}
+    response = llm_helper.completions(message=data.content, session_id=data.session_id)
+    message = MessageModel(content=response, session_id=data.session_id, type="system")
+    return save_message(db, message)
