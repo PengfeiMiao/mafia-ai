@@ -1,24 +1,34 @@
 from operator import itemgetter
-from langchain_core.messages import HumanMessage, trim_messages
-from langchain_core.runnables import RunnablePassthrough
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from typing import AsyncIterable
+
+from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
 )
+from langchain_core.messages import HumanMessage, trim_messages
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_openai import ChatOpenAI
+
 from backend.config.config import chat_model_meta
+
+
+def get_trimmer(model):
+    return trim_messages(
+        max_tokens=100,
+        strategy="last",
+        token_counter=model,
+        include_system=True,
+        allow_partial=False,
+        start_on="human",
+    )
 
 
 class LLMHelper:
     def __init__(self):
-        chat_model= chat_model_meta()
-        self.model = ChatOpenAI(
-            model=chat_model["name"],
-            base_url=chat_model["base_url"],
-            api_key=chat_model["api_key"],
-        )
+        self.chat_model= chat_model_meta()
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (
@@ -27,41 +37,54 @@ class LLMHelper:
                 ),
                 MessagesPlaceholder(variable_name="messages"), ]
         )
-
-        self.trimmer = trim_messages(
-            max_tokens=100,
-            strategy="last",
-            token_counter=self.model,
-            include_system=True,
-            allow_partial=False,
-            start_on="human",
-        )
-
-        # parser = StrOutputParser()
-
-        self.chain = (
-                RunnablePassthrough.assign(messages=itemgetter("messages") | self.trimmer)
-                | self.prompt
-                | self.model
-        )
-
         self.store = {}
-
-        self.with_message_history = RunnableWithMessageHistory(
-            self.chain,
-            self.get_session_history,
-            input_messages_key="messages",
-        )
 
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
 
+    def build_llm(self, streaming=False, callbacks=None):
+        if callbacks is None:
+            callbacks = []
+        model = ChatOpenAI(
+            streaming=streaming,
+            callbacks=callbacks,
+            model=self.chat_model["name"],
+            base_url=self.chat_model["base_url"],
+            api_key=self.chat_model["api_key"],
+        )
+
+        trimmer = get_trimmer(model)
+
+        chain = (
+                RunnablePassthrough.assign(messages=itemgetter("messages") | trimmer)
+                | self.prompt
+                | model
+        )
+
+        return RunnableWithMessageHistory(
+            chain,
+            self.get_session_history,
+            input_messages_key="messages",
+        )
+
     def completions(self, message:str, session_id:str):
         config = {"configurable": {"session_id": session_id}}
-        response = self.with_message_history.invoke(
+        llm = self.build_llm()
+        response = llm.invoke(
             {"messages": [HumanMessage(content=message)], "language": "Chinese"},
             config=config,
         )
         return response.content
+
+    async def streaming(self, message:str, session_id:str) -> AsyncIterable[str]:
+
+        config = {"configurable": {"session_id": session_id}}
+        callback = AsyncIteratorCallbackHandler()
+        llm = self.build_llm(streaming=True, callbacks=[callback])
+        async for chunk in llm.astream(
+            {"messages": [HumanMessage(content=message)], "language": "Chinese"},
+            config=config,
+        ):
+            yield chunk.content

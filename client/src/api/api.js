@@ -11,6 +11,22 @@ export const completions = async (message) => {
   return await rawApi(`${BASE_URL}/completions`, message, 'POST');
 };
 
+export const streaming = (message) => {
+  let token = preAuth();
+  if (!token) {
+    return;
+  }
+  return fetch(`${BASE_URL}/streaming`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': token,
+      'stream': true
+    },
+    body: JSON.stringify(message)
+  });
+};
+
 export const loginApi = async (payload) => {
   return await fetch(`${BASE_URL}/login`, {
     method: 'POST',

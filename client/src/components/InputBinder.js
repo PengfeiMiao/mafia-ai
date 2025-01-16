@@ -5,6 +5,9 @@ const InputBinder = ({onSend, defaultValue, children}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
 
   const handleSend = () => {
+    if(message === null || message.length === 0) {
+      return;
+    }
     onSend(message);
     setMessage('');
   };

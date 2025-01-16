@@ -1,11 +1,12 @@
 import logging
 from typing import List
 
-from requests import Request
-from sqlalchemy.orm import Session
 from fastapi import FastAPI, status, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from requests import Request
+from sqlalchemy.orm import Session
+from starlette.responses import StreamingResponse
 
 from backend.config.config import api_key
 from backend.entity.connection import get_session
@@ -63,3 +64,14 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
     response = llm_helper.completions(message=data.content, session_id=data.session_id)
     message = MessageModel(content=response, session_id=data.session_id, type="system")
     return save_message(db, message)
+
+
+@app.post("/streaming")
+async def streaming(data: MessageModel, db: Session = Depends(get_session)) -> StreamingResponse:
+    if not data.type:
+        data.type = "user"
+    # save_message(db, data)
+    return StreamingResponse(
+        llm_helper.streaming('讲一个笑话', session_id='test'),
+        media_type="text/event-stream"
+    )

@@ -15,7 +15,7 @@ const MessageList = ({data, children}) => {
           bgColor={'gray.100'}
           boxShadow="sm"
           w="60vw"
-          h="60vh"
+          h="80vh"
           direction="column"
           overflowY="auto"
           ref={listRef}>
