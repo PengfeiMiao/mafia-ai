@@ -18,10 +18,10 @@ export const streaming = (message) => {
   }
   return fetch(`${BASE_URL}/streaming`, {
     method: 'POST',
+    dataType: 'text/event-stream',
     headers: {
       'Content-Type': 'application/json',
-      'api-key': token,
-      'stream': true
+      'api-key': token
     },
     body: JSON.stringify(message)
   });

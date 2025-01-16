@@ -1,11 +1,12 @@
+import asyncio
 import logging
 from typing import List
 
 from fastapi import FastAPI, status, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from requests import Request
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from backend.config.config import api_key
@@ -71,7 +72,11 @@ async def streaming(data: MessageModel, db: Session = Depends(get_session)) -> S
     if not data.type:
         data.type = "user"
     # save_message(db, data)
+    async def generator():
+        async for chunk in llm_helper.streaming('java是什么', session_id='test'):
+            yield chunk
+            await asyncio.sleep(0.1)
     return StreamingResponse(
-        llm_helper.streaming('讲一个笑话', session_id='test'),
+        generator(),
         media_type="text/event-stream"
     )
