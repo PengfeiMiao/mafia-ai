@@ -2,12 +2,10 @@ import asyncio
 import logging
 from typing import List
 
-from fastapi import FastAPI, status, Depends
+from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
-from starlette.requests import Request
-from starlette.responses import StreamingResponse
 
 from backend.config.config import api_key
 from backend.entity.connection import get_session
@@ -33,15 +31,15 @@ unauthorized_res = JSONResponse(
     headers={"WWW-Authenticate": "Bearer"})
 
 
-@app.middleware("http")
-async def check_authorization(request: Request, call_next):
-    if request.url.path != "/login":
-        auth_header = request.headers.get("api-key")
-        if not auth_header or auth_header != API_KEY:
-            return unauthorized_res
-
-    response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def check_authorization(request: Request, call_next):
+#     if request.url.path != "/login":
+#         auth_header = request.headers.get("api-key")
+#         if not auth_header or auth_header != API_KEY:
+#             return unauthorized_res
+#
+#     response = await call_next(request)
+#     return response
 
 
 @app.post("/login")
@@ -73,10 +71,21 @@ async def streaming(data: MessageModel, db: Session = Depends(get_session)) -> S
         data.type = "user"
     # save_message(db, data)
     async def generator():
-        async for chunk in llm_helper.streaming('java是什么', session_id='test'):
+        async for chunk in llm_helper.streaming(data.content, session_id=data.session_id):
             yield chunk
             await asyncio.sleep(0.1)
     return StreamingResponse(
         generator(),
         media_type="text/event-stream"
     )
+
+
+@app.websocket("/ws/stream")
+async def websocket_stream(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        data = await websocket.receive_json()
+        async for chunk in llm_helper.streaming(data.content, session_id=data.session_id):
+            await websocket.send_text(chunk)
+    except WebSocketDisconnect:
+        print("Client disconnected")

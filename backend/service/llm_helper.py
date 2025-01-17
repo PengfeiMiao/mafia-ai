@@ -1,3 +1,4 @@
+import asyncio
 from operator import itemgetter
 from typing import AsyncIterable
 
@@ -79,12 +80,27 @@ class LLMHelper:
         return response.content
 
     async def streaming(self, message:str, session_id:str) -> AsyncIterable[str]:
-
         config = {"configurable": {"session_id": session_id}}
+        print(config)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_llm(streaming=True, callbacks=[callback])
-        async for chunk in llm.astream(
-            {"messages": [HumanMessage(content=message)], "language": "Chinese"},
-            config=config,
-        ):
-            yield chunk.content
+        model = ChatOpenAI(
+            streaming=True,
+            callbacks=[callback],
+            model=self.chat_model["name"],
+            base_url=self.chat_model["base_url"],
+            api_key=self.chat_model["api_key"],
+            cache=False
+        )
+        task = asyncio.create_task(
+            model.agenerate(messages=[[HumanMessage(content=message)]])
+        )
+
+        try:
+            async for token in callback.aiter():
+                yield token
+        except Exception as e:
+            print(f"Caught exception: {e}")
+        finally:
+            callback.done.set()
+
+        await task

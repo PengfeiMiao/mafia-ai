@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import MessageList from "@/components/MessageList";
-import {get_messages, streaming} from "@/api/api";
+import {get_messages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 
@@ -29,29 +29,6 @@ const HomePage = () => {
     // if (result) {
     //   setMessages([...messages, messageObj, result]);
     // }
-    streaming(messageObj).then(response => {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      const dataChunks = [];
-
-      function readStream() {
-        reader.read().then(({done, value}) => {
-          if (done) {
-            return;
-          }
-          const chunk = decoder.decode(value, {stream: true});
-          dataChunks.push(chunk);
-          console.log(dataChunks.length);
-          readStream();
-        });
-      }
-
-      // 开始读取数据流
-      readStream();
-    })
-      .catch(error => {
-        console.error('Error:', error);
-      });
   };
 
   useEffect(() => {
