@@ -1,6 +1,8 @@
 import asyncio
 import logging
+from datetime import datetime
 from typing import List
+from uuid import uuid4
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
@@ -84,8 +86,23 @@ async def streaming(data: MessageModel, db: Session = Depends(get_session)) -> S
 async def websocket_stream(websocket: WebSocket):
     await websocket.accept()
     try:
-        data = await websocket.receive_json()
-        async for chunk in llm_helper.streaming(data.content, session_id=data.session_id):
-            await websocket.send_text(chunk)
+        while True:
+            data = await websocket.receive_json()
+            message_id = data.get('next_id')
+            session_id = data.get('session_id')
+            message = data.get('content')
+            response = {
+                'id': message_id,
+                'session_id': session_id,
+                'content': '',
+                'type': 'system',
+                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'status': 'pending'
+            }
+            async for chunk in llm_helper.streaming(message, session_id):
+                response['content'] += chunk
+                await websocket.send_json(response)
+            response['status'] = 'completed'
+            await websocket.send_json(response)
     except WebSocketDisconnect:
         print("Client disconnected")

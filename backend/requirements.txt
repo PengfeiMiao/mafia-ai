@@ -6,3 +6,4 @@ pyyaml
 langchain
 langchain-openai
 langchain_community
+websockets
