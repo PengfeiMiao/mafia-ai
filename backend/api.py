@@ -2,8 +2,6 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import List
-from uuid import uuid4
-
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
