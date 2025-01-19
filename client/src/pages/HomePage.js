@@ -41,10 +41,10 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    console.log(pendingQueue);
     for (let index = 0; index < pendingQueue.length; index++) {
       let latestMsg = messageMap.get(pendingQueue[index]);
       if (!latestMsg) continue;
+      console.log(latestMsg);
       if (latestMsg?.status === 'completed') {
         setPendingQueue([...pendingQueue].slice(index, 1));
       } else {
