@@ -21,7 +21,6 @@ const InputBinder = ({onSend, defaultValue, children}) => {
   };
 
   const getRowHeight = (text, element) => {
-    console.log(text);
     if (!element) {
       return "2lh";
     }
@@ -44,9 +43,11 @@ const InputBinder = ({onSend, defaultValue, children}) => {
           placeholder='Input message here.'
           mr="10px"
           h={getRowHeight(message, textRef?.current)}
+          resize="none"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
+          onDragStart={(e) => e.preventDefault()}
         />
         <Button onClick={() => handleSend()}>Send</Button>
       </Flex>
