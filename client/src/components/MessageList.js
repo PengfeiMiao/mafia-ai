@@ -1,5 +1,9 @@
 import React, {useEffect, useRef} from 'react';
-import {Flex, Card, Text} from "@chakra-ui/react";
+import {Flex, Card} from "@chakra-ui/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeReact from "rehype-react";
+import {MarkdownView} from "@/components/MarkdownView";
 
 const MessageList = ({data, children}) => {
   const listRef = useRef(null);
@@ -27,7 +31,7 @@ const MessageList = ({data, children}) => {
           w={item.type === "user" ? "auto" : "100%"}
           ml={item.type === "user" ? "auto" : "0"}>
           <Card.Body padding="8px 12px">
-            <Text>{item.content}</Text>
+            <MarkdownView markdown={item.content} />
           </Card.Body>
         </Card.Root>)
       )}

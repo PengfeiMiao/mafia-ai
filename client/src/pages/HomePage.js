@@ -20,7 +20,6 @@ const HomePage = () => {
   };
 
   const handleSend = async (newMessage) => {
-    console.log('handleSend');
     let nextId = uuidv4();
     let createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
     let messageObj = {
@@ -44,7 +43,6 @@ const HomePage = () => {
     for (let index = 0; index < pendingQueue.length; index++) {
       let latestMsg = messageMap.get(pendingQueue[index]);
       if (!latestMsg) continue;
-      console.log(latestMsg);
       if (latestMsg?.status === 'completed') {
         setPendingQueue([...pendingQueue].slice(index, 1));
       } else {
