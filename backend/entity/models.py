@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, UUID
+from datetime import datetime
+from sqlalchemy import Column, String, UUID, DateTime
 from backend.entity.connection import Base, engine
 
 
@@ -10,7 +11,7 @@ class Message(Base):
     session_id = Column(String)
     content = Column(String)
     type = Column(String)
-    created_at = Column(String)
+    created_at = Column(DateTime, default=datetime.now())
 
 
 Base.metadata.create_all(engine)
