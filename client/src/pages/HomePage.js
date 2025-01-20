@@ -26,7 +26,7 @@ const HomePage = () => {
       id: uuidv4(),
       next_id: nextId,
       session_id: '123',
-      content: newMessage,
+      content: newMessage.replaceAll('\n', '\n\n'),
       type: 'user',
       created_at: createdAt
     };

@@ -1,8 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {Flex, Card} from "@chakra-ui/react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeReact from "rehype-react";
+import {Card, Flex} from "@chakra-ui/react";
 import {MarkdownView} from "@/components/MarkdownView";
 
 const MessageList = ({data, children}) => {
@@ -12,6 +9,7 @@ const MessageList = ({data, children}) => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
+    console.log('MessageList', data);
   }, [data]);
 
   return (

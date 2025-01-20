@@ -30,7 +30,8 @@ const InputBinder = ({onSend, defaultValue, children}) => {
     const maxCharsPerLine = Math.floor((element.clientWidth - textareaPadding) / 8);
 
     const lines = text.split('\n').map(line => Math.ceil(Math.max(line.length, 1) / maxCharsPerLine));
-    const totalLines = Math.min(lines.reduce((acc, curr) => acc + curr, 0) + 1, 6);
+    const maxLines = 6;
+    const totalLines = Math.min(lines.reduce((acc, curr) => acc + curr, 0) + 1, maxLines);
 
     return `${lineHeight * totalLines}px`;
   };
@@ -47,7 +48,6 @@ const InputBinder = ({onSend, defaultValue, children}) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          onDragStart={(e) => e.preventDefault()}
         />
         <Button onClick={() => handleSend()}>Send</Button>
       </Flex>
