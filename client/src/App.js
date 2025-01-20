@@ -14,7 +14,7 @@ function App() {
       <MessagesProvider>
         <Provider>
           <Router>
-            <Box background={'#F9F9F9'}>
+            <Box bgColor={'gray.100'}>
               <Routes>
                 <Route exact path='/' element={<Navigate to="/homePage"/>}/>
                 <Route exact path="/homePage" element={<HomePage/>}/>

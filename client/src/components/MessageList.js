@@ -13,11 +13,11 @@ const MessageList = ({data, children}) => {
 
   return (
     <Flex
-      h="80vh"
-      w="60vw"
+      h="80%"
+      w="60%"
       padding={'12px 32px'}
       bgColor={'gray.100'}
-      boxShadow="sm"
+      // boxShadow="sm"
       direction="column"
       overflowY="auto"
       ref={listRef}>

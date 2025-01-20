@@ -37,7 +37,7 @@ const InputBinder = ({onSend, defaultValue, children}) => {
   };
 
   return (
-    <Box padding={'12px 32px 2px 32px'} bgColor="white" boxShadow="sm" w="60vw">
+    <Box w="60%" padding={'12px 32px 2px 32px'} bgColor="white" boxShadow="sm">
       <Flex marginBottom="10px">
         <Textarea
           ref={textRef}
