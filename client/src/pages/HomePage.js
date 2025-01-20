@@ -13,7 +13,7 @@ const HomePage = () => {
   const {messageMap, sendMessage} = useMessages();
 
   const getChatHistory = async () => {
-    let result = await get_messages([{session_id: '123'}]);
+    let result = await get_messages([{id: '123'}]);
     if (result) {
       setMessages(result);
     }

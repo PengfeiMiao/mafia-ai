@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from datetime import datetime
 from typing import List
@@ -6,7 +5,7 @@ from urllib.request import Request
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.config.config import api_key
@@ -52,7 +51,7 @@ async def login(data: UserModel):
 
 @app.post("/messages")
 async def messages(sessions: List[SessionModel], db: Session = Depends(get_session)):
-    return get_messages(db, session_ids=[item.session_id for item in sessions])
+    return get_messages(db, session_ids=[item.id for item in sessions])
 
 
 @app.post("/completions")
@@ -65,27 +64,14 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
     return save_message(db, message)
 
 
-@app.post("/streaming")
-async def streaming(data: MessageModel, db: Session = Depends(get_session)) -> StreamingResponse:
-    if not data.type:
-        data.type = "user"
-    save_message(db, data)
-    async def generator():
-        async for chunk in llm_helper.streaming(data.content, session_id=data.session_id):
-            yield chunk
-            await asyncio.sleep(0.1)
-    return StreamingResponse(
-        generator(),
-        media_type="text/event-stream"
-    )
-
-
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_json()
+            if not data.get('type'):
+                data['type'] = 'user'
             message_id = data.get('next_id')
             session_id = data.get('session_id')
             message = data.get('content')

@@ -14,4 +14,13 @@ class Message(Base):
     created_at = Column(DateTime, default=datetime.now())
 
 
+class Session(Base):
+    __tablename__ = "session"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(String)
+    status = Column(String, default="active")
+    created_at = Column(DateTime, default=datetime.now())
+
+
 Base.metadata.create_all(engine)

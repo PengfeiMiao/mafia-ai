@@ -9,18 +9,18 @@ const MessageList = ({data, children}) => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-    console.log('MessageList', data);
   }, [data]);
 
   return (
-    <Flex padding={'12px 32px'}
-          bgColor={'gray.100'}
-          boxShadow="sm"
-          w="60vw"
-          h="80vh"
-          direction="column"
-          overflowY="auto"
-          ref={listRef}>
+    <Flex
+      h="80vh"
+      w="60vw"
+      padding={'12px 32px'}
+      bgColor={'gray.100'}
+      boxShadow="sm"
+      direction="column"
+      overflowY="auto"
+      ref={listRef}>
       {data.map((item) =>
         (<Card.Root
           key={item.id}
@@ -29,7 +29,7 @@ const MessageList = ({data, children}) => {
           w={item.type === "user" ? "auto" : "100%"}
           ml={item.type === "user" ? "auto" : "0"}>
           <Card.Body padding="8px 12px">
-            <MarkdownView markdown={item.content} />
+            <MarkdownView markdown={item.content}/>
           </Card.Body>
         </Card.Root>)
       )}
