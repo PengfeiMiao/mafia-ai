@@ -11,7 +11,7 @@ const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
   };
 
   const handleSend = () => {
-    if (message === null || message.length === 0) {
+    if (message === null || message.trim().length === 0) {
       return;
     }
     onSend(message);
