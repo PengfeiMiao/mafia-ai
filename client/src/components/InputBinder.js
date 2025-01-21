@@ -1,9 +1,14 @@
 import React, {useRef, useState} from 'react';
 import {Box, Button, Flex, Textarea} from "@chakra-ui/react";
 
-const InputBinder = ({onSend, defaultValue, children}) => {
+const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const textRef = useRef(null);
+
+  const rootStyle = {
+    width: '60%',
+    ...outerStyle
+  };
 
   const handleSend = () => {
     if (message === null || message.length === 0) {
@@ -37,7 +42,11 @@ const InputBinder = ({onSend, defaultValue, children}) => {
   };
 
   return (
-    <Box w="60%" padding={'12px 32px 2px 32px'} bgColor="white" boxShadow="sm">
+    <Box
+      style={rootStyle}
+      padding={'12px 32px 2px 32px'}
+      bgColor="white"
+      boxShadow="sm">
       <Flex marginBottom="10px">
         <Textarea
           ref={textRef}

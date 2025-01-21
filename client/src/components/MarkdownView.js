@@ -5,9 +5,9 @@ import React from "react";
 
 export const MarkdownView = ({markdown}) => {
 
-  const renderList = ({ children }) => {
+  const renderList = ({children}) => {
     return (
-      <ul style={{ paddingLeft: '16px', listStyleType: 'disc' }}>
+      <ul style={{paddingLeft: '16px', listStyleType: 'disc'}}>
         {children}
       </ul>
     );

@@ -7,7 +7,7 @@ import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 import {useMessages} from "@/store/MessageProvider";
 
-const DialoguePage = () => {
+const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingQueue, setPendingQueue] = useState([]);
   const {messageMap, sendMessage} = useMessages();
@@ -44,7 +44,9 @@ const DialoguePage = () => {
       let latestMsg = messageMap.get(pendingQueue[index]);
       if (!latestMsg) continue;
       if (latestMsg?.status === 'completed') {
-        setPendingQueue([...pendingQueue].slice(index, 1));
+        setTimeout(() => {
+          setPendingQueue([...pendingQueue].slice(index, 1));
+        }, 300);
       } else {
         let msgIndex = messages.findIndex(it => it.id === pendingQueue[index]);
         if (msgIndex > -1) {
@@ -60,8 +62,8 @@ const DialoguePage = () => {
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
-      <MessageList data={messages}></MessageList>
-      <InputBinder onSend={handleSend}></InputBinder>
+      <MessageList data={messages} outerStyle={outerStyle}></MessageList>
+      <InputBinder onSend={handleSend} outerStyle={outerStyle}></InputBinder>
     </Flex>
   );
 }

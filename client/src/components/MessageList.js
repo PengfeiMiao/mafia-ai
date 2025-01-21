@@ -2,8 +2,14 @@ import React, {useEffect, useRef} from 'react';
 import {Card, Flex} from "@chakra-ui/react";
 import {MarkdownView} from "@/components/MarkdownView";
 
-const MessageList = ({data, children}) => {
+const MessageList = ({data, outerStyle, children}) => {
   const listRef = useRef(null);
+
+  const rootStyle = {
+    height: '100%',
+    width: '60%',
+    ...outerStyle
+  };
 
   useEffect(() => {
     if (listRef.current) {
@@ -13,11 +19,9 @@ const MessageList = ({data, children}) => {
 
   return (
     <Flex
-      h="80%"
-      w="60%"
+      style={rootStyle}
       padding={'12px 32px'}
       bgColor={'gray.100'}
-      // boxShadow="sm"
       direction="column"
       overflowY="auto"
       ref={listRef}>
