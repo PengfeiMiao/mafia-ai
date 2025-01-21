@@ -6,7 +6,8 @@ const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
   const textRef = useRef(null);
 
   const rootStyle = {
-    width: '60%',
+    width: '60vw',
+    padding: '12px 12px 2px 12px',
     ...outerStyle
   };
 
@@ -44,10 +45,8 @@ const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
   return (
     <Box
       style={rootStyle}
-      padding={'12px 32px 2px 32px'}
-      bgColor="white"
-      boxShadow="sm">
-      <Flex marginBottom="10px">
+      bgColor={'gray.100'}>
+      <Flex padding="12px" bgColor="white" boxShadow="sm">
         <Textarea
           ref={textRef}
           placeholder='Input message here.'

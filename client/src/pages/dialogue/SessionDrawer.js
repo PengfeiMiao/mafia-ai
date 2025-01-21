@@ -14,8 +14,14 @@ import {
 import React, {useEffect, useState} from "react";
 import {SlArrowLeft, SlArrowRight, SlMenu} from "react-icons/sl";
 
-export const SessionDrawer = ({open, onToggle}) => {
+export const SessionDrawer = ({open, onToggle, outerStyle}) => {
   const [sessions, setSessions] = useState([]);
+
+  const rootStyle = {
+    height: '100%',
+    width: '20vw',
+    ...outerStyle
+  };
 
   useEffect(() => {
     setSessions([
@@ -27,8 +33,7 @@ export const SessionDrawer = ({open, onToggle}) => {
   return (
     <Flex h="100%" justify="center" direction="row">
       <Presence
-        h="100%"
-        w="20vw"
+        style={rootStyle}
         bgColor={'bg.panel'}
         present={open}
         animationName={{

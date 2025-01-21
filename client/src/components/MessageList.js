@@ -7,7 +7,8 @@ const MessageList = ({data, outerStyle, children}) => {
 
   const rootStyle = {
     height: '100%',
-    width: '60%',
+    width: '60vw',
+    padding: '12px 32px',
     ...outerStyle
   };
 
@@ -20,7 +21,6 @@ const MessageList = ({data, outerStyle, children}) => {
   return (
     <Flex
       style={rootStyle}
-      padding={'12px 32px'}
       bgColor={'gray.100'}
       direction="column"
       overflowY="auto"

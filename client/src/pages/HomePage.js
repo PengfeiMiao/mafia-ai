@@ -6,9 +6,9 @@ import {SessionDrawer} from "@/pages/dialogue/SessionDrawer";
 const HomePage = () => {
   const { open, onToggle } = useDisclosure();
   return (
-    <Flex h="100vh" w="100wh" justify="center" align="center" direction="row">
-      <SessionDrawer open={open} onToggle={onToggle}/>
-      <DialoguePage outerStyle={{width: '80%'}}/>
+    <Flex h="100vh" w="100vw" justify="center" align="center" direction="row">
+      <SessionDrawer open={open} onToggle={onToggle} outerStyle={{width: '16vw'}}/>
+      <DialoguePage outerStyle={{width: '80vw', paddingLeft: '10%', paddingRight: '10%'}}/>
     </Flex>
   );
 }
