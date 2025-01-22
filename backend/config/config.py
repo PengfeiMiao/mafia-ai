@@ -50,3 +50,6 @@ def db_url():
 def chat_model_meta():
     model_name = get_config("chat_model")
     return get_config_map("models","name", model_name)
+
+def max_tokens():
+    return get_config("max_tokens")

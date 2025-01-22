@@ -14,6 +14,7 @@ models:
 tool_model: "gpt-3.5-turbo"
 chat_model: "gpt-3.5-turbo"
 embedding_model: "gpt-3.5-turbo"
+max_tokens: 255
 admin_pwd: "123456"
 tavily:
   enabled: true

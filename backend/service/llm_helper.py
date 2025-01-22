@@ -12,12 +12,12 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 
-from backend.config.config import chat_model_meta
+from backend.config.config import chat_model_meta, max_tokens
 
 
 def get_trimmer(model):
     return trim_messages(
-        max_tokens=100,
+        max_tokens=max_tokens(),
         strategy="last",
         token_counter=model,
         include_system=True,
@@ -82,7 +82,6 @@ class LLMHelper:
         config = {"configurable": {"session_id": session_id}}
         callback = AsyncIteratorCallbackHandler()
         llm = self.build_llm(streaming=True, callbacks=[callback])
-
         try:
             async for chunk in llm.astream(
                     {"messages": [HumanMessage(content=message)], "language": "Chinese"},

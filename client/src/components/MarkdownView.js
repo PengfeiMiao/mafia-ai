@@ -16,7 +16,7 @@ export const MarkdownView = ({markdown}) => {
 
   const renderCodeBlock = (children) => {
     try {
-      const match = children.props.className.match(/language-(\w+)/);
+      const match = children.props?.className?.match(/language-(\w+)/);
       const language = match ? match[1] : "raw";
 
       return (

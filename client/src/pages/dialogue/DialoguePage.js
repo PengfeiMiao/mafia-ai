@@ -43,19 +43,18 @@ const DialoguePage = ({outerStyle}) => {
     for (let index = 0; index < pendingQueue.length; index++) {
       let latestMsg = messageMap.get(pendingQueue[index]);
       if (!latestMsg) continue;
+      let msgIndex = messages.findIndex(it => it.id === pendingQueue[index]);
+      if (msgIndex > -1) {
+        let newMsgList = [...messages];
+        newMsgList[msgIndex] = latestMsg;
+        setMessages(newMsgList);
+      } else {
+        setMessages([...messages, latestMsg]);
+      }
       if (latestMsg?.status === 'completed') {
         setTimeout(() => {
           setPendingQueue([...pendingQueue].slice(index, 1));
         }, 300);
-      } else {
-        let msgIndex = messages.findIndex(it => it.id === pendingQueue[index]);
-        if (msgIndex > -1) {
-          let newMsgList = [...messages];
-          newMsgList[msgIndex] = latestMsg;
-          setMessages(newMsgList);
-        } else {
-          setMessages([...messages, latestMsg]);
-        }
       }
     }
   }, [messageMap]);
