@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 export const GlobalContext = React.createContext({});
 
 const GlobalProvider = ({ children }) => {
-	const [currentPosition, setCurrentPosition] = useState({});
+	const [currentSession, setCurrentSession] = useState(null);
 
 	useEffect(() => {
 	}, []);
@@ -11,8 +11,8 @@ const GlobalProvider = ({ children }) => {
 	return (
 		<GlobalContext.Provider
 			value={{
-				currentPosition,
-				setCurrentPosition
+				currentSession,
+				setCurrentSession
 			}}
 		>
 			{children}

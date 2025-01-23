@@ -19,8 +19,8 @@ def save_session(db: DBSession, session: SessionModel):
 def update_session(db: DBSession, session: SessionModel, fields: List[str]):
     entity = db.query(Session).filter_by(id=session.id)
     mapping = session.__dict__
-    for field in entity.__dict__.keys():
-        if not field in fields:
+    for field in Session.__dict__.keys():
+        if field not in fields or not mapping.get(field):
             mapping.pop(field, 'None')
     entity.update(mapping)
     db.commit()
@@ -30,8 +30,8 @@ def get_sessions(db: DBSession, user_id: str):
     if not user_id:
         return []
     return (db.query(Session)
-              .filter(Session.user_id == user_id)
-              .order_by(Session.created_at.asc())
+              .filter_by(user_id=user_id, status='active')
+              .order_by(Session.created_at.desc())
               .all())
 
 def get_session_by(db: DBSession, session: SessionModel) -> Type[Session]:

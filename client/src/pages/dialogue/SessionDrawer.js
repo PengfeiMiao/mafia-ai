@@ -11,11 +11,17 @@ import {
   MenuContent,
   MenuItem, Box
 } from "@chakra-ui/react";
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {SlArrowLeft, SlArrowRight, SlMenu} from "react-icons/sl";
+import {get_sessions, update_session} from "@/api/api";
+import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
+import {GlobalContext} from "@/store/GlobalProvider";
+import {EditableLabel} from "@/components/EditableLabel";
 
 export const SessionDrawer = ({open, onToggle, outerStyle}) => {
   const [sessions, setSessions] = useState([]);
+  const [editedId, setEditedId] = useState('');
+  const {setCurrentSession} = useContext(GlobalContext);
 
   const rootStyle = {
     height: '100%',
@@ -23,12 +29,46 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     ...outerStyle
   };
 
+  const getSessions = async () => {
+    let result = await get_sessions('123');
+    if (result) {
+      setSessions(result);
+      setCurrentSession(result[0]);
+    }
+  };
+
+  const handleEdit = (key) => {
+    setEditedId(key);
+  }
+
+  const handleSubmit = async (id, title) => {
+    await update_session({id, title});
+    setEditedId('');
+  }
+
   useEffect(() => {
-    setSessions([
-      {id: '123', title: 'Test'},
-      {id: '124', title: 'MPF'},
-    ]);
+    getSessions().then();
   }, []);
+
+  const renderMenu = (key) => {
+    return <Box position="relative">
+      <MenuRoot>
+        <MenuTrigger asChild>
+          <SlMenu/>
+        </MenuTrigger>
+        <MenuContent position="absolute" left="100%" top={0} ml={2} zIndex={1}>
+          <MenuItem value="delete">
+            <RiDeleteBin5Line/>
+            <Text>Delete</Text>
+          </MenuItem>
+          <MenuItem value="rename" onClick={() => handleEdit(key)}>
+            <RiEdit2Line/>
+            <Text>Rename</Text>
+          </MenuItem>
+        </MenuContent>
+      </MenuRoot>
+    </Box>;
+  }
 
   return (
     <Flex h="100%" justify="center" direction="row">
@@ -53,18 +93,13 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
             margin="12px">
             <Card.Body padding="8px 12px">
               <Flex w="100%" align="center" justify="space-between" direction="row">
-                <Text>{item.title}</Text>
-                <Box position="relative">
-                  <MenuRoot>
-                    <MenuTrigger asChild>
-                      <SlMenu />
-                    </MenuTrigger>
-                    <MenuContent position="absolute" left="100%" top={0} ml={2} zIndex={1}>
-                      <MenuItem value="delete">Delete</MenuItem>
-                      <MenuItem value="rename">Rename</MenuItem>
-                    </MenuContent>
-                  </MenuRoot>
-                </Box>
+                <EditableLabel
+                  onSubmit={(e) => handleSubmit(item.id, e.target.value)}
+                  isEditable={item.id === editedId}
+                >
+                  {item.title}
+                </EditableLabel>
+                {renderMenu(item.id)}
               </Flex>
             </Card.Body>
           </Card.Root>

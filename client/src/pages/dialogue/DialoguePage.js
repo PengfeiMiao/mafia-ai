@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import MessageList from "@/components/MessageList";
@@ -6,14 +6,16 @@ import {get_messages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 import {useMessages} from "@/store/MessageProvider";
+import {GlobalContext} from "@/store/GlobalProvider";
 
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingId, setPendingId] = useState('');
   const {messageMap, sendMessage, interruptMessage} = useMessages();
+  const {currentSession} = useContext(GlobalContext);
 
   const getChatHistory = async () => {
-    let result = await get_messages([{id: '123'}]);
+    let result = await get_messages([{id: currentSession?.id}]);
     if (result) {
       setMessages(result);
     }
@@ -25,7 +27,7 @@ const DialoguePage = ({outerStyle}) => {
     let messageObj = {
       id: uuidv4(),
       answer_id: answerId,
-      session_id: '123',
+      session_id: currentSession?.id,
       content: newMessage.replaceAll('\n', '\n\n'),
       type: 'user',
       created_at: createdAt
@@ -42,7 +44,7 @@ const DialoguePage = ({outerStyle}) => {
 
   useEffect(() => {
     getChatHistory().then();
-  }, []);
+  }, [currentSession]);
 
   useEffect(() => {
     let latestMsg = messageMap.get(pendingId);

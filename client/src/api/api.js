@@ -5,12 +5,24 @@ export const WS_URL = 'localhost:8000';
 const BASE_URL = '/api';
 
 export const get_messages = async (sessions) => {
-   return await rawApi(`${BASE_URL}/messages`, sessions, 'POST');
+   return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');
 }
 
-export const completions = async (message) => {
-  return await rawApi(`${BASE_URL}/completions`, message, 'POST');
-};
+export const get_sessions = async (user_id) => {
+   return await commonApi(`${BASE_URL}/sessions?user_id=${user_id}`, {}, 'GET');
+}
+
+export const create_session = async (session) => {
+  return await commonApi(`${BASE_URL}/session`, session, 'POST');
+}
+
+export const update_session = async (session) => {
+  return await commonApi(`${BASE_URL}/session`, session, 'PUT');
+}
+
+// export const completions = async (message) => {
+//   return await commonApi(`${BASE_URL}/completions`, message, 'POST');
+// };
 
 export const loginApi = async (payload) => {
   return await fetch(`${BASE_URL}/login`, {
@@ -45,14 +57,20 @@ function fetchApi(url, options) {
     });
 }
 
-async function rawApi(url, payload, method) {
-  return await fetchApi(url, {
+async function commonApi(url, payload, method) {
+  let options = {
     method: method,
     headers: {
       'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+    }
+  };
+  if (method !== 'GET') {
+    options = {
+      ...options,
+      body: JSON.stringify(payload)
+    }
+  }
+  return await fetchApi(url, options);
 }
 
 function preAuth() {
