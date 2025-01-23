@@ -37,8 +37,19 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     }
   };
 
-  const handleEdit = (key) => {
-    setEditedId(key);
+  const handleEdit = (id) => {
+    setEditedId(id);
+  }
+
+  const handleDelete = async (id) => {
+    if(id === currentSession?.id) {
+      let index = sessions.findIndex(it => it.id !== currentSession?.id);
+      if (index > -1) {
+        setCurrentSession(sessions[index]);
+      }
+    }
+    await update_session({id, status: 'inactive'});
+    setSessions((prev) => prev.filter(it => it.id !== id));
   }
 
   const handleSubmit = async (id, title) => {
@@ -57,13 +68,13 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
           <SlMenu/>
         </MenuTrigger>
         <MenuContent position="absolute" left="100%" top={0} ml={2} zIndex={1}>
-          <MenuItem value="delete">
-            <RiDeleteBin5Line/>
-            <Text>Delete</Text>
-          </MenuItem>
           <MenuItem value="rename" onClick={() => handleEdit(key)}>
             <RiEdit2Line/>
             <Text>Rename</Text>
+          </MenuItem>
+          <MenuItem value="delete" onClick={() => handleDelete(key)}>
+            <RiDeleteBin5Line/>
+            <Text>Delete</Text>
           </MenuItem>
         </MenuContent>
       </MenuRoot>
