@@ -14,9 +14,13 @@ from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
 from backend.repo.message_repo import get_messages, save_message
+from backend.repo.session_repo import get_sessions, save_session, get_session_by, update_session
 from backend.service.llm_helper import LLMHelper
 
 logging.basicConfig(level=logging.WARNING)
+
+DEFAULT_TITLE = 'untitled'
+DEFAULT_USER = 'unknown'
 
 API_KEY = api_key()
 
@@ -50,8 +54,34 @@ async def login(data: UserModel):
 
 
 @app.post("/messages")
-async def messages(sessions: List[SessionModel], db: Session = Depends(get_session)):
-    return get_messages(db, session_ids=[item.id for item in sessions])
+async def messages(data: List[SessionModel], db: Session = Depends(get_session)):
+    return get_messages(db, session_ids=[item.id for item in data])
+
+
+@app.get("/sessions")
+async def sessions(db: Session = Depends(get_session)):
+    user_id = DEFAULT_USER
+    session_list = get_sessions(db, user_id=user_id)
+    if len(session_list) == 0:
+        session = save_session(db, SessionModel(title=DEFAULT_TITLE, user_id=user_id))
+        session_list = [session]
+    return session_list
+
+
+@app.post("/session")
+async def sessions(data: SessionModel, db: Session = Depends(get_session)):
+    if not data.user_id:
+        data.user_id = DEFAULT_USER
+    if not data.title:
+        data.title = DEFAULT_TITLE
+    return save_session(db, data)
+
+
+@app.put("/session")
+async def sessions(data: SessionModel, db: Session = Depends(get_session)):
+    if not data.id:
+        return {}
+    return update_session(db, data, ['title', 'status'])
 
 
 @app.post("/completions")
@@ -95,7 +125,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
             print('[/ws/stream] - send msg disconnected')
             _response['created_at'] = now()
             if _response.get('content') == '':
-                _response['content'] = 'Network Error.'
+                _response['content'] = 'No Response.'
             return _response
 
     while True:
