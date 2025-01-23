@@ -21,7 +21,7 @@ import {EditableLabel} from "@/components/EditableLabel";
 export const SessionDrawer = ({open, onToggle, outerStyle}) => {
   const [sessions, setSessions] = useState([]);
   const [editedId, setEditedId] = useState('');
-  const {setCurrentSession} = useContext(GlobalContext);
+  const {currentSession, setCurrentSession} = useContext(GlobalContext);
 
   const rootStyle = {
     height: '100%',
@@ -90,12 +90,15 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
         {sessions.map((item) => (
           <Card.Root
             key={item.id}
-            margin="12px">
+            margin="12px"
+            bgColor={item.id === currentSession?.id ? 'purple.muted' : 'white'}
+          >
             <Card.Body padding="8px 12px">
               <Flex w="100%" align="center" justify="space-between" direction="row">
                 <EditableLabel
                   onSubmit={(e) => handleSubmit(item.id, e.target.value)}
                   isEditable={item.id === editedId}
+                  onSelect={() => setCurrentSession(item)}
                 >
                   {item.title}
                 </EditableLabel>
