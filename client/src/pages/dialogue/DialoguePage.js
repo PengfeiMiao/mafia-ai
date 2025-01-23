@@ -9,8 +9,8 @@ import {useMessages} from "@/store/MessageProvider";
 
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
-  const [pendingQueue, setPendingQueue] = useState([]);
-  const {messageMap, sendMessage} = useMessages();
+  const [pendingId, setPendingId] = useState('');
+  const {messageMap, sendMessage, interruptMessage} = useMessages();
 
   const getChatHistory = async () => {
     let result = await get_messages([{id: '123'}]);
@@ -19,7 +19,7 @@ const DialoguePage = ({outerStyle}) => {
     }
   };
 
-  const handleSend = async (newMessage) => {
+  const handleSend = (newMessage) => {
     let answerId = uuidv4();
     let createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
     let messageObj = {
@@ -31,8 +31,13 @@ const DialoguePage = ({outerStyle}) => {
       created_at: createdAt
     };
     setMessages([...messages, messageObj]);
-    setPendingQueue([...pendingQueue, answerId]);
+    setPendingId(answerId);
     sendMessage(messageObj);
+  };
+
+  const handleInterrupt = () => {
+    interruptMessage();
+    setPendingId('');
   };
 
   useEffect(() => {
@@ -40,29 +45,29 @@ const DialoguePage = ({outerStyle}) => {
   }, []);
 
   useEffect(() => {
-    for (let index = 0; index < pendingQueue.length; index++) {
-      let latestMsg = messageMap.get(pendingQueue[index]);
-      if (!latestMsg) continue;
-      let msgIndex = messages.findIndex(it => it.id === pendingQueue[index]);
-      if (msgIndex > -1) {
-        let newMsgList = [...messages];
-        newMsgList[msgIndex] = latestMsg;
-        setMessages(newMsgList);
-      } else {
-        setMessages([...messages, latestMsg]);
-      }
-      if (latestMsg?.status === 'completed') {
-        setTimeout(() => {
-          setPendingQueue([...pendingQueue].slice(index, 1));
-        }, 300);
-      }
+    let latestMsg = messageMap.get(pendingId);
+    if (!latestMsg) return;
+    let msgIndex = messages.findIndex(it => it.id === pendingId);
+    if (msgIndex > -1) {
+      let newMsgList = [...messages];
+      newMsgList[msgIndex] = latestMsg;
+      setMessages(newMsgList);
+    } else {
+      setMessages([...messages, latestMsg]);
+    }
+    if (latestMsg?.status === 'completed') {
+      setPendingId('');
     }
   }, [messageMap]);
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
-      <MessageList data={messages} outerStyle={outerStyle}></MessageList>
-      <InputBinder onSend={handleSend} outerStyle={outerStyle}></InputBinder>
+      <MessageList data={messages} outerStyle={outerStyle} />
+      <InputBinder
+        onSend={handleSend}
+        onInterrupt={handleInterrupt}
+        isPending={!!pendingId}
+        outerStyle={outerStyle} />
     </Flex>
   );
 }

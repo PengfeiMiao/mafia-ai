@@ -1,5 +1,6 @@
 import {getCookie} from "@/store/CacheStore";
 
+export const WS_URL = 'localhost:8000';
 // const BASE_URL = 'http://localhost:8000';
 const BASE_URL = '/api';
 

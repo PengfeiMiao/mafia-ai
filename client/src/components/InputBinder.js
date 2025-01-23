@@ -1,7 +1,8 @@
 import React, {useRef, useState} from 'react';
-import {Box, Button, Flex, Textarea} from "@chakra-ui/react";
+import {Box, Button, Flex, Textarea, Icon} from "@chakra-ui/react";
+import {RiSendPlaneFill, RiSendPlaneLine, RiPauseCircleFill} from "react-icons/ri";
 
-const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
+const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle, children}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const textRef = useRef(null);
 
@@ -11,12 +12,22 @@ const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
     ...outerStyle
   };
 
+  const isEmpty = () => {
+    return message === null || message.trim().length === 0;
+  }
+
   const handleSend = () => {
-    if (message === null || message.trim().length === 0) {
+    if (isEmpty()) {
       return;
     }
     onSend(message);
     setMessage('');
+  };
+
+  const handleInterrupt = () => {
+    if (isPending) {
+      onInterrupt();
+    }
   };
 
   const handleKeyDown = (event) => {
@@ -57,7 +68,16 @@ const InputBinder = ({onSend, defaultValue, outerStyle, children}) => {
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button onClick={() => handleSend()}>Send</Button>
+        <Button
+          w="40px"
+          borderRadius="4xl"
+          bgColor={(!isEmpty() || isPending) ? 'purple.muted' : 'gray.muted'}
+          onClick={isPending ? handleInterrupt : handleSend}
+        >
+          <Icon h="auto">
+            {isPending ? <RiPauseCircleFill/> : (isEmpty() ? <RiSendPlaneLine/> : <RiSendPlaneFill/>)}
+          </Icon>
+        </Button>
       </Flex>
       {children}
     </Box>
