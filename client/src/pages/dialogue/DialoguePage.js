@@ -20,18 +20,18 @@ const DialoguePage = ({outerStyle}) => {
   };
 
   const handleSend = async (newMessage) => {
-    let nextId = uuidv4();
+    let answerId = uuidv4();
     let createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
     let messageObj = {
       id: uuidv4(),
-      next_id: nextId,
+      answer_id: answerId,
       session_id: '123',
       content: newMessage.replaceAll('\n', '\n\n'),
       type: 'user',
       created_at: createdAt
     };
     setMessages([...messages, messageObj]);
-    setPendingQueue([...pendingQueue, nextId]);
+    setPendingQueue([...pendingQueue, answerId]);
     sendMessage(messageObj);
   };
 

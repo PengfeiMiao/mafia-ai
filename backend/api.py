@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from typing import List
-from urllib.request import Request
+from requests import Request
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
@@ -67,28 +67,48 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()
-    try:
-        while True:
+
+    def now():
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    def build_response(_data: MessageModel):
+        return {
+            'id': _data.id,
+            'session_id': _data.session_id,
+            'content': '',
+            'type': 'system',
+            'created_at': now(),
+            'status': 'pending'
+        }
+
+    async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
+        _response = build_response(_data)
+        try:
+            async for chunk in llm_helper.streaming(_data.content, _data.session_id):
+                _response['content'] += chunk
+                await _websocket.send_json(_response)
+            _response['status'] = 'completed'
+            _response['created_at'] = now()
+            await _websocket.send_json(_response)
+            return _response
+        except WebSocketDisconnect:
+            print('[/ws/stream] - send msg disconnected')
+            _response['created_at'] = now()
+            if _response.get('content') == '':
+                _response['content'] = 'Network Error.'
+            return _response
+
+    while True:
+        try:
             data = await websocket.receive_json()
             if not data.get('type'):
-                data['type'] = 'user'
-            message_id = data.get('next_id')
-            session_id = data.get('session_id')
-            message = data.get('content')
+                 data['type'] = 'user'
             save_message(db, MessageModel(**data))
-            response = {
-                'id': message_id,
-                'session_id': session_id,
-                'content': '',
-                'type': 'system',
-                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'status': 'pending'
-            }
-            async for chunk in llm_helper.streaming(message, session_id):
-                response['content'] += chunk
-                await websocket.send_json(response)
-            response['status'] = 'completed'
-            await websocket.send_json(response)
+            data['id'] = data.get('answer_id')
+            response = await ws_send_message(websocket, MessageModel(**data))
             save_message(db, MessageModel(**response))
-    except WebSocketDisconnect:
-        print("Client disconnected")
+        except WebSocketDisconnect:
+            print('[/ws/stream] - receive msg disconnected')
+        except RuntimeError as e:
+            print(f"[/ws/stream] - receive msg disconnected, {e}")
+            break
