@@ -21,7 +21,7 @@ const DialoguePage = ({outerStyle}) => {
     }
   };
 
-  const handleSend = (newMessage) => {
+  const handleSend = (newMessage, attachments) => {
     let answerId = uuidv4();
     let createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
     let messageObj = {
@@ -30,7 +30,8 @@ const DialoguePage = ({outerStyle}) => {
       session_id: currentSession?.id,
       content: newMessage.replaceAll('\n', '\n\n'),
       type: 'user',
-      created_at: createdAt
+      created_at: createdAt,
+      attachments: attachments
     };
     setMessages([...messages, messageObj]);
     setPendingId(answerId);

@@ -5,11 +5,11 @@ export const WS_URL = 'localhost:8000';
 const BASE_URL = '/api';
 
 export const getMessages = async (sessions) => {
-   return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');
+  return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');
 }
 
 export const getSessions = async (user_id) => {
-   return await commonApi(`${BASE_URL}/sessions?user_id=${user_id}`, {}, 'GET');
+  return await commonApi(`${BASE_URL}/sessions?user_id=${user_id}`, {}, 'GET');
 }
 
 export const createSession = async (session) => {
@@ -19,6 +19,11 @@ export const createSession = async (session) => {
 export const updateSession = async (session) => {
   return await commonApi(`${BASE_URL}/session`, session, 'PUT');
 }
+
+export const uploadAttachment = async (attachments) => {
+  return await uploadApi(`${BASE_URL}/upload`, attachments, 'POST');
+}
+
 
 // export const completions = async (message) => {
 //   return await commonApi(`${BASE_URL}/completions`, message, 'POST');
@@ -39,7 +44,7 @@ function fetchApi(url, options) {
   if (!token) {
     return;
   }
-  if(!options) {
+  if (!options) {
     options = {};
   }
   let {headers = {}} = options;
@@ -70,6 +75,19 @@ async function commonApi(url, payload, method) {
       body: JSON.stringify(payload)
     }
   }
+  return await fetchApi(url, options);
+}
+
+async function uploadApi(url, files, method) {
+  let form = new FormData();
+  for (let file of files) {
+    form.append('files', file);
+  }
+  let options = {
+    method: method,
+    body: form
+  };
+
   return await fetchApi(url, options);
 }
 

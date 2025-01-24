@@ -1,14 +1,18 @@
 import React, {useRef, useState} from 'react';
-import {Box, Button, Flex, Textarea, Icon, Center} from "@chakra-ui/react";
+import {Box, Button, Flex, Textarea, Icon} from "@chakra-ui/react";
 import {RiSendPlaneFill, RiSendPlaneLine, RiPauseCircleFill, RiAttachmentLine} from "react-icons/ri";
 import {
   FileUploadList,
   FileUploadRoot,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
+import _ from "lodash";
+import {uploadAttachment} from "@/api/api";
 
 const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
+  const [attachments, setAttachments] = useState([]);
+  const [attachmentFiles, setAttachmentFiles] = useState([]);
   const textRef = useRef(null);
 
   const rootStyle = {
@@ -25,8 +29,10 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
     if (isEmpty()) {
       return;
     }
-    onSend(message);
+    onSend(message, attachments);
     setMessage('');
+    setAttachments([]);
+    setAttachmentFiles([]);
   };
 
   const handleInterrupt = () => {
@@ -42,8 +48,18 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
     }
   };
 
-  const handleUpload = () => {
-
+  const handleUpload = async (params) => {
+    let files = params.acceptedFiles;
+    let newFiles = _.difference(files, attachmentFiles);
+    let deprecatedFiles = _.difference(attachmentFiles, files);
+    console.log(newFiles, deprecatedFiles);
+    if (newFiles.length > 0) {
+      let result = await uploadAttachment(newFiles);
+      if (result) {
+        setAttachments(result);
+      }
+    }
+    setAttachmentFiles(files);
   };
 
   const getRowHeight = (text, element) => {
@@ -67,7 +83,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
       style={rootStyle}
       bgColor={'gray.100'}>
       <Flex padding="12px" bgColor="white" boxShadow="sm" direction="row">
-        <FileUploadRoot maxFiles={3}>
+        <FileUploadRoot maxFiles={3} onFileChange={handleUpload}>
           <Flex w="100%">
             <Textarea
               ref={textRef}
@@ -85,7 +101,6 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
               mr="12px"
               borderRadius="sm"
               bgColor={'purple.muted'}
-              onClick={handleUpload}
               asChild>
               <Icon h="100%" w="16px" color={'white'}>
                 <RiAttachmentLine/>
@@ -103,7 +118,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
               </Icon>
             </Button>
           </Flex>
-          <FileUploadList lineHeight="24px" showSize clearable/>
+          <FileUploadList lineHeight="24px" showSize clearable files={attachmentFiles}/>
         </FileUploadRoot>
       </Flex>
     </Box>

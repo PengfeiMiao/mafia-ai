@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+from collections import defaultdict
 from datetime import datetime
 from typing import List
 
@@ -12,11 +13,12 @@ from sqlalchemy.orm import Session
 
 from backend.config.config import api_key
 from backend.entity.connection import get_session
+from backend.entity.models import serialize_model
 from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
-from backend.repo.attachment_repo import save_attachment
+from backend.repo.attachment_repo import save_attachment, get_attachments
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
@@ -63,7 +65,14 @@ async def login(data: UserModel):
 
 @app.post("/messages")
 async def messages(data: List[SessionModel], db: Session = Depends(get_session)):
-    return get_messages(db, session_ids=[item.id for item in data])
+    _messages = get_messages(db, session_ids=[item.id for item in data])
+    attachments = get_attachments(db, [str(item.id) for item in _messages])
+    attachments_by_message = defaultdict(list)
+    for attachment in attachments:
+        attachments_by_message[str(attachment.message_id)].append(AttachmentModel(**serialize_model(attachment)))
+    for _message in _messages:
+        _message.attachments = attachments_by_message.get(str(_message.id))
+    return _messages
 
 
 @app.get("/sessions")
@@ -103,14 +112,20 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_session)):
-    file_location = os.path.join(UPLOAD_DIR, file.filename)
+async def upload_files(files: List[UploadFile] = File(...), db: Session = Depends(get_session)):
+    results = []
 
-    with open(file_location, "wb") as buffer:
-        # noinspection PyTypeChecker
-        shutil.copyfileobj(file.file, buffer)
+    for file in files:
+        file_location = os.path.join(UPLOAD_DIR, file.filename)
 
-    return save_attachment(db, AttachmentModel(file_name=file.filename, file_size=file.size))
+        with open(file_location, "wb") as buffer:
+            # noinspection PyTypeChecker
+            shutil.copyfileobj(file.file, buffer)
+
+        result = save_attachment(db, AttachmentModel(file_name=file.filename, file_size=file.size))
+        results.append(result)
+
+    return results
 
 
 @app.websocket("/ws/stream")

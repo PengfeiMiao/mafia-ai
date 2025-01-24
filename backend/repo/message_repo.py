@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import List
 
@@ -5,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.entity.models import Message
 from backend.model.message_model import MessageModel
-from backend.repo.attachment_repo import update_attachments
+from backend.repo.attachment_repo import update_attachments, get_attachments
 
 
 def save_message(db: Session, message: MessageModel):
@@ -28,8 +29,7 @@ def save_message(db: Session, message: MessageModel):
 def get_messages(db: Session, session_ids: List[str]):
     if not session_ids:
         return []
-    result = (db.query(Message)
+    return (db.query(Message)
               .filter(Message.session_id.in_(session_ids))
               .order_by(Message.created_at.asc())
               .all())
-    return result
