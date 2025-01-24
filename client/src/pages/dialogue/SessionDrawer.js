@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import React, {useContext, useEffect, useState} from "react";
 import {SlArrowLeft, SlArrowRight, SlMenu} from "react-icons/sl";
-import {get_sessions, update_session} from "@/api/api";
+import {getSessions, updateSession} from "@/api/api";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {EditableLabel} from "@/components/EditableLabel";
@@ -29,8 +29,8 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     ...outerStyle
   };
 
-  const getSessions = async () => {
-    let result = await get_sessions('123');
+  const getAllSessions = async () => {
+    let result = await getSessions('123');
     if (result) {
       setSessions(result);
       setCurrentSession(result[0]);
@@ -48,17 +48,17 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
         setCurrentSession(sessions[index]);
       }
     }
-    await update_session({id, status: 'inactive'});
+    await updateSession({id, status: 'inactive'});
     setSessions((prev) => prev.filter(it => it.id !== id));
   }
 
   const handleSubmit = async (id, title) => {
-    await update_session({id, title});
+    await updateSession({id, title});
     setEditedId('');
   }
 
   useEffect(() => {
-    getSessions().then();
+    getAllSessions().then();
   }, []);
 
   const renderMenu = (key) => {

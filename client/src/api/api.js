@@ -4,19 +4,19 @@ export const WS_URL = 'localhost:8000';
 // const BASE_URL = 'http://localhost:8000';
 const BASE_URL = '/api';
 
-export const get_messages = async (sessions) => {
+export const getMessages = async (sessions) => {
    return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');
 }
 
-export const get_sessions = async (user_id) => {
+export const getSessions = async (user_id) => {
    return await commonApi(`${BASE_URL}/sessions?user_id=${user_id}`, {}, 'GET');
 }
 
-export const create_session = async (session) => {
+export const createSession = async (session) => {
   return await commonApi(`${BASE_URL}/session`, session, 'POST');
 }
 
-export const update_session = async (session) => {
+export const updateSession = async (session) => {
   return await commonApi(`${BASE_URL}/session`, session, 'PUT');
 }
 

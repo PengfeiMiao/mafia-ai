@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import MessageList from "@/components/MessageList";
-import {get_messages} from "@/api/api";
+import {getMessages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 import {useMessages} from "@/store/MessageProvider";
@@ -15,7 +15,7 @@ const DialoguePage = ({outerStyle}) => {
   const {currentSession} = useContext(GlobalContext);
 
   const getChatHistory = async () => {
-    let result = await get_messages([{id: currentSession?.id}]);
+    let result = await getMessages([{id: currentSession?.id}]);
     if (result) {
       setMessages(result);
     }
