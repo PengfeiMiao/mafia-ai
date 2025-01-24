@@ -1,8 +1,13 @@
 import React, {useRef, useState} from 'react';
-import {Box, Button, Flex, Textarea, Icon} from "@chakra-ui/react";
-import {RiSendPlaneFill, RiSendPlaneLine, RiPauseCircleFill} from "react-icons/ri";
+import {Box, Button, Flex, Textarea, Icon, Center} from "@chakra-ui/react";
+import {RiSendPlaneFill, RiSendPlaneLine, RiPauseCircleFill, RiAttachmentLine} from "react-icons/ri";
+import {
+  FileUploadList,
+  FileUploadRoot,
+  FileUploadTrigger,
+} from "@/components/ui/file-upload"
 
-const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle, children}) => {
+const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const textRef = useRef(null);
 
@@ -37,6 +42,10 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle, 
     }
   };
 
+  const handleUpload = () => {
+
+  };
+
   const getRowHeight = (text, element) => {
     if (!element) {
       return "2lh";
@@ -57,29 +66,46 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle, 
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
-      <Flex padding="12px" bgColor="white" boxShadow="sm">
-        <Textarea
-          ref={textRef}
-          placeholder='Input message here.'
-          mr="10px"
-          h={getRowHeight(message, textRef?.current)}
-          resize="none"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <Button
-          w="40px"
-          borderRadius="4xl"
-          bgColor={(!isEmpty() || isPending) ? 'purple.muted' : 'gray.muted'}
-          onClick={isPending ? handleInterrupt : handleSend}
-        >
-          <Icon h="auto">
-            {isPending ? <RiPauseCircleFill/> : (isEmpty() ? <RiSendPlaneLine/> : <RiSendPlaneFill/>)}
-          </Icon>
-        </Button>
+      <Flex padding="12px" bgColor="white" boxShadow="sm" direction="row">
+        <FileUploadRoot maxFiles={3}>
+          <Flex w="100%">
+            <Textarea
+              ref={textRef}
+              placeholder='Input message here.'
+              mr="4px"
+              h={getRowHeight(message, textRef?.current)}
+              resize="none"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <FileUploadTrigger
+              w="20px"
+              h="auto"
+              mr="12px"
+              borderRadius="sm"
+              bgColor={'purple.muted'}
+              onClick={handleUpload}
+              asChild>
+              <Icon h="100%" w="16px" color={'white'}>
+                <RiAttachmentLine/>
+              </Icon>
+            </FileUploadTrigger>
+
+            <Button
+              w="24px"
+              borderRadius="4xl"
+              bgColor={(!isEmpty() || isPending) ? 'purple.muted' : 'gray.muted'}
+              onClick={isPending ? handleInterrupt : handleSend}
+            >
+              <Icon h="auto">
+                {isPending ? <RiPauseCircleFill/> : (isEmpty() ? <RiSendPlaneLine/> : <RiSendPlaneFill/>)}
+              </Icon>
+            </Button>
+          </Flex>
+          <FileUploadList lineHeight="24px" showSize clearable/>
+        </FileUploadRoot>
       </Flex>
-      {children}
     </Box>
   );
 };

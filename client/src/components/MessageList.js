@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 import {Card, Flex} from "@chakra-ui/react";
 import {MarkdownView} from "@/components/MarkdownView";
 
-const MessageList = ({data, outerStyle, children}) => {
+const MessageList = ({data, outerStyle}) => {
   const listRef = useRef(null);
 
   const rootStyle = {
@@ -37,7 +37,6 @@ const MessageList = ({data, outerStyle, children}) => {
           </Card.Body>
         </Card.Root>)
       )}
-      {children}
     </Flex>
   );
 };
