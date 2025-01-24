@@ -1,26 +1,34 @@
 import logging
+import os
+import shutil
 from datetime import datetime
 from typing import List
-from requests import Request
 
-from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from requests import Request
 from sqlalchemy.orm import Session
 
 from backend.config.config import api_key
 from backend.entity.connection import get_session
+from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
+from backend.repo.attachment_repo import save_attachment
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.session_repo import get_sessions, save_session, get_session_by, update_session
+from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
 
 logging.basicConfig(level=logging.WARNING)
 
 DEFAULT_TITLE = 'untitled'
 DEFAULT_USER = 'unknown'
+UPLOAD_DIR = os.path.expanduser("~/mafia-ai/upload")
+
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
 API_KEY = api_key()
 
@@ -94,6 +102,17 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
     return save_message(db, message)
 
 
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_session)):
+    file_location = os.path.join(UPLOAD_DIR, file.filename)
+
+    with open(file_location, "wb") as buffer:
+        # noinspection PyTypeChecker
+        shutil.copyfileobj(file.file, buffer)
+
+    return save_attachment(db, AttachmentModel(file_name=file.filename, file_size=file.size))
+
+
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()
@@ -132,7 +151,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         try:
             data = await websocket.receive_json()
             if not data.get('type'):
-                 data['type'] = 'user'
+                data['type'] = 'user'
             save_message(db, MessageModel(**data))
             data['id'] = data.get('answer_id')
             response = await ws_send_message(websocket, MessageModel(**data))

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Type, List
+from typing import List
 
 from sqlalchemy.orm import Session as DBSession
 
@@ -33,6 +33,3 @@ def get_sessions(db: DBSession, user_id: str):
               .filter_by(user_id=user_id, status='active')
               .order_by(Session.created_at.desc())
               .all())
-
-def get_session_by(db: DBSession, session: SessionModel) -> Type[Session]:
-    return db.query(Session).filter_by(id=session.id).one()

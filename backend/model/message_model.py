@@ -1,5 +1,7 @@
-from typing import Union
+from typing import Union, List
 from pydantic import BaseModel
+
+from backend.model.attachment_model import AttachmentModel
 
 
 class MessageModel(BaseModel):
@@ -8,3 +10,4 @@ class MessageModel(BaseModel):
     content: Union[str, None] = None
     type: Union[str, None] = None
     created_at: Union[str, None] = None
+    attachments: Union[List[AttachmentModel], None] = None
