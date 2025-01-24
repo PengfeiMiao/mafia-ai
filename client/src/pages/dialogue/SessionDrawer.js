@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import React, {useContext, useEffect, useState} from "react";
 import {SlArrowLeft, SlArrowRight, SlMenu} from "react-icons/sl";
-import {getSessions, updateSession} from "@/api/api";
+import {createSession, getSessions, updateSession} from "@/api/api";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {EditableLabel} from "@/components/EditableLabel";
@@ -37,12 +37,20 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     }
   };
 
+  const handleCreate = async () => {
+    let session = await createSession({user_id: 'unknown'});
+    if(session?.id) {
+      setSessions((prev) => [session, ...prev]);
+      setCurrentSession(session);
+    }
+  };
+
   const handleEdit = (id) => {
     setEditedId(id);
-  }
+  };
 
   const handleDelete = async (id) => {
-    if(id === currentSession?.id) {
+    if (id === currentSession?.id) {
       let index = sessions.findIndex(it => it.id !== currentSession?.id);
       if (index > -1) {
         setCurrentSession(sessions[index]);
@@ -50,12 +58,12 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     }
     await updateSession({id, status: 'inactive'});
     setSessions((prev) => prev.filter(it => it.id !== id));
-  }
+  };
 
   const handleSubmit = async (id, title) => {
     await updateSession({id, title});
     setEditedId('');
-  }
+  };
 
   useEffect(() => {
     getAllSessions().then();
@@ -82,7 +90,7 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
   }
 
   return (
-    <Flex h="100%" justify="center" direction="row" >
+    <Flex h="100%" justify="center" direction="row">
       <Presence
         style={rootStyle}
         bgColor={'bg.panel'}
@@ -95,7 +103,7 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
         animationDuration="slow"
       >
         <Center>
-          <Button w="90%" mt="12px" borderRadius="xl">
+          <Button w="90%" mt="12px" borderRadius="xl" onClick={handleCreate}>
             <Text>New Session</Text>
           </Button>
         </Center>
