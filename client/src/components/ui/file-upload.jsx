@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 function _nullishCoalesce(lhs, rhsFn) {
   if (lhs != null) {
     return lhs
@@ -53,7 +55,7 @@ export const FileUploadDropzone = React.forwardRef(
 const FileUploadItem = React.forwardRef(function FileUploadItem(props, ref) {
   const { file, showSize, clearable } = props
   return (
-    <ChakraFileUpload.Item file={file} ref={ref}>
+    <ChakraFileUpload.Item file={file} ref={ref} paddingY={'8px'}>
       <ChakraFileUpload.ItemPreview asChild>
         <Icon fontSize='lg' color='fg.muted'>
           <LuFile />
@@ -80,12 +82,29 @@ const FileUploadItem = React.forwardRef(function FileUploadItem(props, ref) {
   )
 })
 
+export const handleDuplicateFiles = (files) => {
+  let groupedFiles = _.groupBy(files, file => file.name);
+
+  return _.flatMap(groupedFiles, (group, groupName) => {
+    if (group.length > 1) {
+      return group.map((file, index) => {
+        if (index === 0) return file;
+        const parts = file.name.split('.');
+        const newName = parts.length > 1 ? `${parts[0]}-${index}.${parts[1]}` : `${parts[0]}-${index}`;
+        return new File([file], newName, {type: file.type});
+      });
+    } else {
+      return group;
+    }
+  });
+};
+
 export const FileUploadList = React.forwardRef(
   function FileUploadList(props, ref) {
     const { showSize, clearable, files, ...rest } = props
 
     const fileUpload = useFileUploadContext()
-    const acceptedFiles = _nullishCoalesce(
+    let acceptedFiles = _nullishCoalesce(
       files,
       () => fileUpload.acceptedFiles,
     )
@@ -94,9 +113,9 @@ export const FileUploadList = React.forwardRef(
 
     return (
       <ChakraFileUpload.ItemGroup ref={ref} {...rest}>
-        {acceptedFiles.map((file) => (
+        {acceptedFiles.map((file, index) => (
           <FileUploadItem
-            key={file.name}
+            key={`${file.name}-${index}`}
             file={file}
             showSize={showSize}
             clearable={clearable}

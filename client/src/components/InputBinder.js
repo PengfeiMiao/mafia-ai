@@ -1,19 +1,16 @@
 import React, {useRef, useState} from 'react';
-import {Box, Button, Flex, Textarea, Icon} from "@chakra-ui/react";
-import {RiSendPlaneFill, RiSendPlaneLine, RiPauseCircleFill, RiAttachmentLine} from "react-icons/ri";
-import {
-  FileUploadList,
-  FileUploadRoot,
-  FileUploadTrigger,
-} from "@/components/ui/file-upload"
+import {Box, Button, FileUploadClearTrigger, Flex, Icon, Textarea} from "@chakra-ui/react";
+import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
+import {FileUploadList, FileUploadRoot, FileUploadTrigger, handleDuplicateFiles,} from "@/components/ui/file-upload"
 import _ from "lodash";
 import {uploadAttachment} from "@/api/api";
 
 const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
-  const [attachments, setAttachments] = useState([]);
-  const [attachmentFiles, setAttachmentFiles] = useState([]);
+  const [attachments, setAttachments] = useState(new Map());
+  const [fileList, setFileList] = useState([]);
   const textRef = useRef(null);
+  const clearRef = useRef(null);
 
   const rootStyle = {
     width: '60vw',
@@ -29,10 +26,11 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
     if (isEmpty()) {
       return;
     }
-    onSend(message, attachments);
+    onSend(message, Array.from(attachments.values()));
     setMessage('');
-    setAttachments([]);
-    setAttachmentFiles([]);
+    setAttachments(new Map());
+    clearRef.current.click();
+    setFileList([]);
   };
 
   const handleInterrupt = () => {
@@ -50,16 +48,27 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
 
   const handleUpload = async (params) => {
     let files = params.acceptedFiles;
-    let newFiles = _.difference(files, attachmentFiles);
-    let deprecatedFiles = _.difference(attachmentFiles, files);
-    console.log(newFiles, deprecatedFiles);
+    let renamedFiles = handleDuplicateFiles(files);
+
+    let cachedFiles = Array.from(attachments.keys());
+    let newFiles = _.difference(renamedFiles, cachedFiles);
+    let deprecatedFiles = _.difference(cachedFiles, renamedFiles);
     if (newFiles.length > 0) {
       let result = await uploadAttachment(newFiles);
       if (result) {
-        setAttachments(result);
+        let newMap = new Map(attachments);
+        for (let file of newFiles) {
+          newMap.set(file, result.find(({file_name}) => file_name === file.name))
+        }
+        setAttachments(newMap);
       }
     }
-    setAttachmentFiles(files);
+    if (deprecatedFiles.length > 0) {
+      let newMap = new Map(attachments);
+      deprecatedFiles.forEach(item => newMap.delete(item))
+      setAttachments(newMap);
+    }
+    setFileList(files);
   };
 
   const getRowHeight = (text, element) => {
@@ -118,7 +127,8 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
               </Icon>
             </Button>
           </Flex>
-          <FileUploadList lineHeight="24px" showSize clearable files={attachmentFiles}/>
+          <FileUploadList lineHeight="24px" showSize clearable files={fileList}/>
+          <FileUploadClearTrigger ref={clearRef} hidden/>
         </FileUploadRoot>
       </Flex>
     </Box>
