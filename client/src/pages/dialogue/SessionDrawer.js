@@ -82,10 +82,11 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
   }
 
   return (
-    <Flex h="100%" justify="center" direction="row">
+    <Flex h="100%" justify="center" direction="row" >
       <Presence
         style={rootStyle}
         bgColor={'bg.panel'}
+        boxShadow="4px 0px 4px 2px rgba(0,0,0,0.1)"
         present={open}
         animationName={{
           _open: "slide-from-left-full",
@@ -129,6 +130,7 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
           w="20px"
           borderRightRadius="md"
           bgColor={'purple.muted'}
+          boxShadow="4px 0px 4px 2px rgba(0,0,0,0.1)"
           onClick={onToggle}
         >
           {open ? <SlArrowLeft/> : <SlArrowRight/>}

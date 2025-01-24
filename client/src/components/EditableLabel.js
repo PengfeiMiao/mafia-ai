@@ -9,7 +9,7 @@ export const EditableLabel = ({isEditable, onSelect, onSubmit, children}) => {
       readOnly={!isEditable}
       defaultEdit={isEditable}
     >
-      <Editable.Preview w="100%" onClick={onSelect}/>
+      <Editable.Preview w="100%" cursor="pointer" onClick={onSelect}/>
       <Editable.Input onBlur={onSubmit}/>
     </Editable.Root>
   )
