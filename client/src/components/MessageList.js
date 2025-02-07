@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Card, Flex} from "@chakra-ui/react";
 import {MarkdownView} from "@/components/MarkdownView";
-import {Tag} from "@/components/ui/tag"
+import {Tag} from "@chakra-ui/react";
 import {RiFile2Line} from "react-icons/ri";
 
 const MessageList = ({data, outerStyle}) => {
@@ -40,9 +40,14 @@ const MessageList = ({data, outerStyle}) => {
           <Flex direction="row" ml={item.type === "user" ? "auto" : "0"} mt="4px">
             {item.attachments ?
               item.attachments.map(({file_name, id}) =>
-                <Tag key={id} size="md" ml="4px" bgColor="gray.solid" variant="solid" startElement={<RiFile2Line/>}>
-                  {file_name}
-                </Tag>
+                <Tag.Root>
+                  <Tag.StartElement>
+                    <RiFile2Line/>
+                  </Tag.StartElement>
+                  <Tag.Label key={id} size="md" ml="4px" color="gray.solid">
+                    {file_name}
+                  </Tag.Label>
+                </Tag.Root>
               )
               : <></>}
           </Flex>
