@@ -40,11 +40,11 @@ const MessageList = ({data, outerStyle}) => {
           <Flex direction="row" ml={item.type === "user" ? "auto" : "0"} mt="4px">
             {item.attachments ?
               item.attachments.map(({file_name, id}) =>
-                <Tag.Root>
+                <Tag.Root key={id} size="md" ml="4px">
                   <Tag.StartElement>
                     <RiFile2Line/>
                   </Tag.StartElement>
-                  <Tag.Label key={id} size="md" ml="4px" color="gray.solid">
+                  <Tag.Label>
                     {file_name}
                   </Tag.Label>
                 </Tag.Root>
