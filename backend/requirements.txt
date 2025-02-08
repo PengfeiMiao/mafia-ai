@@ -8,3 +8,8 @@ langchain-openai
 langchain_community
 websockets
 python-multipart
+unstructured-client
+langchain-unstructured
+unstructured[all-docs]
+langchain_chroma
+langchain_text_splitters

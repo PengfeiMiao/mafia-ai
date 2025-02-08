@@ -10,7 +10,7 @@ from langchain_core.messages import HumanMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from backend.config.config import chat_model_meta, max_tokens
 
@@ -44,10 +44,10 @@ class LLMHelper:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
 
-    def build_llm(self, streaming=False, callbacks=None):
+    def build_model(self, streaming=False, callbacks=None):
         if callbacks is None:
             callbacks = []
-        model = ChatOpenAI(
+        return ChatOpenAI(
             streaming=streaming,
             callbacks=callbacks,
             model=self.chat_model["name"],
@@ -55,6 +55,15 @@ class LLMHelper:
             api_key=self.chat_model["api_key"],
         )
 
+    def build_embd(self):
+        return OpenAIEmbeddings(
+            model="text-embedding-ada-002",
+            base_url=self.chat_model["base_url"],
+            api_key=self.chat_model["api_key"],
+        )
+
+    def build_llm(self, streaming=False, callbacks=None):
+        model = self.build_model(streaming, callbacks)
         trimmer = get_trimmer(model)
 
         chain = (
