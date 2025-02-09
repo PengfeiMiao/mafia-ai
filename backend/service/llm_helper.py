@@ -2,6 +2,10 @@ from operator import itemgetter
 from typing import AsyncIterable
 
 from langchain.callbacks import AsyncIteratorCallbackHandler
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain_chroma import Chroma
 from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
@@ -26,6 +30,10 @@ def get_trimmer(model):
     )
 
 
+def get_session_config(session_id: str):
+    return {"configurable": {"session_id": session_id}}
+
+
 class LLMHelper:
     def __init__(self):
         self.chat_model = chat_model_meta()
@@ -37,7 +45,33 @@ class LLMHelper:
                 ),
                 MessagesPlaceholder(variable_name="messages"), ]
         )
+        self.contextualize_q_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", (
+                    "Given a chat history and the latest user question which might reference context in the chat history, "
+                    "formulate a standalone question which can be understood without the chat history. "
+                    "Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
+                )),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
+        )
+        self.qa_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", (
+                    "You are an assistant for question-answering tasks. "
+                    "Use the following pieces of retrieved context to answer the question. "
+                    "If you don't know the answer, say that you don't know. "
+                    "Use three sentences maximum and keep the answer concise. "
+                    "\n\n"
+                    "{context}"
+                )),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
+        )
         self.store = {}
+        self.embd_dir = 'docs'
 
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
@@ -62,6 +96,23 @@ class LLMHelper:
             api_key=self.chat_model["api_key"],
         )
 
+    def build_rag_chain(self, streaming=False, callbacks=None):
+        _vectorstore = Chroma(persist_directory=self.embd_dir, embedding_function=self.build_embd())
+        retriever = _vectorstore.as_retriever()
+        model = self.build_model(streaming, callbacks)
+        history_aware_retriever = create_history_aware_retriever(
+            model, retriever, self.contextualize_q_prompt
+        )
+        question_answer_chain = create_stuff_documents_chain(model, self.qa_prompt)
+        rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+        return RunnableWithMessageHistory(
+            rag_chain,
+            self.get_session_history,
+            input_messages_key="input",
+            history_messages_key="chat_history",
+            output_messages_key="answer",
+        )
+
     def build_llm(self, streaming=False, callbacks=None):
         model = self.build_model(streaming, callbacks)
         trimmer = get_trimmer(model)
@@ -79,7 +130,7 @@ class LLMHelper:
         )
 
     def completions(self, message: str, session_id: str):
-        config = {"configurable": {"session_id": session_id}}
+        config = get_session_config(session_id)
         llm = self.build_llm()
         response = llm.invoke(
             {"messages": [HumanMessage(content=message)], "language": "Chinese"},
@@ -87,8 +138,17 @@ class LLMHelper:
         )
         return response.content
 
+    def rag_completions(self, message: str, session_id: str):
+        config = get_session_config(session_id)
+        llm = self.build_rag_chain()
+        response = llm.invoke(
+            {"input": message},
+            config=config,
+        )
+        return response["answer"]
+
     async def streaming(self, message: str, session_id: str) -> AsyncIterable[str]:
-        config = {"configurable": {"session_id": session_id}}
+        config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
         llm = self.build_llm(streaming=True, callbacks=[callback])
         try:

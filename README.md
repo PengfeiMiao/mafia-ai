@@ -8,7 +8,13 @@
 
 ## Quick Start
 1. install requirement <br>
-   `pip install -r backend/requirements.txt`
+   `pip install -r backend/requirements.txt` <br>
+   use image: <br>
+   `pip install -r backend/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
+2. install possible-needed os lib for langchain unstructured
+   - libmagic
+   - poppler
+   - tesseract
 2. start database <br>
    `docker-compose up -d`
 3. start backend api <br>
