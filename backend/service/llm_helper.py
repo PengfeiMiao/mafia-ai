@@ -10,13 +10,13 @@ from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
 )
-from langchain_core.messages import HumanMessage, trim_messages
+from langchain_core.messages import trim_messages, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-from backend.config.config import chat_model_meta, max_tokens
+from backend.config.config import chat_model_meta, max_tokens, embd_dir, embd_model
 
 
 def get_trimmer(model):
@@ -41,9 +41,11 @@ class LLMHelper:
             [
                 (
                     "system",
-                    "You are a helpful assistant. Answer all questions to the best of your ability in {language}."
+                    "You are a helpful assistant. Answer all questions to the best of your ability."
                 ),
-                MessagesPlaceholder(variable_name="messages"), ]
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ]
         )
         self.contextualize_q_prompt = ChatPromptTemplate.from_messages(
             [
@@ -71,7 +73,11 @@ class LLMHelper:
             ]
         )
         self.store = {}
-        self.embd_dir = 'docs'
+        self.vectorstore = Chroma(persist_directory=embd_dir(), embedding_function=OpenAIEmbeddings(
+            model=embd_model(),
+            base_url=self.chat_model["base_url"],
+            api_key=self.chat_model["api_key"],
+        ))
 
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
@@ -89,22 +95,14 @@ class LLMHelper:
             api_key=self.chat_model["api_key"],
         )
 
-    def build_embd(self):
-        return OpenAIEmbeddings(
-            model="text-embedding-ada-002",
-            base_url=self.chat_model["base_url"],
-            api_key=self.chat_model["api_key"],
-        )
-
-    def build_rag_chain(self, streaming=False, callbacks=None):
-        _vectorstore = Chroma(persist_directory=self.embd_dir, embedding_function=self.build_embd())
-        retriever = _vectorstore.as_retriever()
+    def build_rag(self, streaming=False, callbacks=None):
+        retriever = self.vectorstore.as_retriever()
         model = self.build_model(streaming, callbacks)
         history_aware_retriever = create_history_aware_retriever(
             model, retriever, self.contextualize_q_prompt
         )
-        question_answer_chain = create_stuff_documents_chain(model, self.qa_prompt)
-        rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+        qa_chain = create_stuff_documents_chain(model, self.qa_prompt)
+        rag_chain = create_retrieval_chain(history_aware_retriever, qa_chain)
         return RunnableWithMessageHistory(
             rag_chain,
             self.get_session_history,
@@ -118,7 +116,7 @@ class LLMHelper:
         trimmer = get_trimmer(model)
 
         chain = (
-                RunnablePassthrough.assign(messages=itemgetter("messages") | trimmer)
+                RunnablePassthrough.assign(messages=itemgetter("chat_history") | trimmer)
                 | self.prompt
                 | model
         )
@@ -126,36 +124,26 @@ class LLMHelper:
         return RunnableWithMessageHistory(
             chain,
             self.get_session_history,
-            input_messages_key="messages",
+            input_messages_key="input",
+            history_messages_key="chat_history",
         )
 
     def completions(self, message: str, session_id: str):
         config = get_session_config(session_id)
         llm = self.build_llm()
-        response = llm.invoke(
-            {"messages": [HumanMessage(content=message)], "language": "Chinese"},
-            config=config,
-        )
+        response = llm.invoke({"input": message}, config=config)
         return response.content
-
-    def rag_completions(self, message: str, session_id: str):
-        config = get_session_config(session_id)
-        llm = self.build_rag_chain()
-        response = llm.invoke(
-            {"input": message},
-            config=config,
-        )
-        return response["answer"]
 
     async def streaming(self, message: str, session_id: str) -> AsyncIterable[str]:
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_llm(streaming=True, callbacks=[callback])
+        llm = self.build_rag(streaming=True, callbacks=[callback])
         try:
-            async for chunk in llm.astream(
-                    {"messages": [HumanMessage(content=message)], "language": "Chinese"},
-                    config=config
-            ):
-                yield chunk.content
+            async for chunk in llm.astream({"input": message}, config=config):
+                print(chunk)
+                if isinstance(chunk, dict) and chunk.get("answer"):
+                    yield chunk["answer"]
+                elif isinstance(chunk, BaseMessage):
+                    yield chunk.content
         except Exception as e:
             yield f"LLM caught exception: {e}"
