@@ -19,13 +19,13 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
-from backend.config.config import chat_model_meta, max_tokens, embd_dir, embd_model, file_dir
+from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model
 from service.router import Router, RouterTypeEnum
 
 
 def get_trimmer(model):
     return trim_messages(
-        max_tokens=max_tokens(),
+        max_tokens=max_token_config(),
         strategy="last",
         token_counter=model,
         include_system=True,
@@ -88,7 +88,7 @@ class LLMHelper:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
 
-    def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=max_tokens()):
+    def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=None):
         if callbacks is None:
             callbacks = []
         return ChatOpenAI(
