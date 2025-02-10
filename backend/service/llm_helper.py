@@ -1,5 +1,6 @@
+from collections import defaultdict
 from operator import itemgetter
-from typing import AsyncIterable
+from typing import AsyncIterable, List
 
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -15,8 +16,10 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_unstructured import UnstructuredLoader
 
-from backend.config.config import chat_model_meta, max_tokens, embd_dir, embd_model
+from backend.config.config import chat_model_meta, max_tokens, embd_dir, embd_model, file_dir
 
 
 def get_trimmer(model):
@@ -128,19 +131,53 @@ class LLMHelper:
             history_messages_key="chat_history",
         )
 
+    def append_rag(self, file_paths: List[str]):
+        def format_docs(_docs):
+            _docs_by_source = defaultdict(list)
+
+            for _doc in _docs:
+                source = _doc.metadata.get('source')
+                if source is not None:
+                    _docs_by_source[source].append(_doc)
+
+            merged_docs = []
+            for _, _docs in _docs_by_source.items():
+                first_doc = _docs[0]
+                merged_page_content = '\n'.join([doc.page_content for doc in docs])
+                first_doc.page_content = merged_page_content
+
+                for key, value in list(first_doc.metadata.items()):
+                    if isinstance(value, list):
+                        first_doc.metadata[key] = ','.join(map(str, value))
+
+                merged_docs.append(first_doc)
+
+            return merged_docs
+
+        loader = UnstructuredLoader(file_paths)
+        docs = loader.load()
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(format_docs(docs))
+        self.vectorstore.add_documents(documents=splits)
+        return
+
     def completions(self, message: str, session_id: str):
         config = get_session_config(session_id)
         llm = self.build_llm()
         response = llm.invoke({"input": message}, config=config)
         return response.content
 
-    async def streaming(self, message: str, session_id: str) -> AsyncIterable[str]:
+    async def streaming(self, message: str, session_id: str, filenames=None) -> AsyncIterable[str]:
+        pre_input = ""
+        if filenames:
+            pre_input = f"These source files are attached to the context: {', '.join(filenames)}. Then is my question: "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
         llm = self.build_rag(streaming=True, callbacks=[callback])
         try:
-            async for chunk in llm.astream({"input": message}, config=config):
-                print(chunk)
+            async for chunk in llm.astream({"input": pre_input + message}, config=config):
+                # print(chunk)
                 if isinstance(chunk, dict) and chunk.get("answer"):
                     yield chunk["answer"]
                 elif isinstance(chunk, BaseMessage):

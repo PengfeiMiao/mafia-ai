@@ -1,9 +1,10 @@
-import React, {useRef, useState} from 'react';
+import React, {useContext, useRef, useState} from 'react';
 import {Box, Button, FileUploadClearTrigger, Flex, Icon, Textarea} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {FileUploadList, FileUploadRoot, FileUploadTrigger, handleDuplicateFiles,} from "@/components/ui/file-upload"
 import _ from "lodash";
 import {uploadAttachment} from "@/api/api";
+import {GlobalContext} from "@/store/GlobalProvider";
 
 const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
@@ -11,6 +12,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
   const [fileList, setFileList] = useState([]);
   const textRef = useRef(null);
   const clearRef = useRef(null);
+  const {currentSession} = useContext(GlobalContext);
 
   const rootStyle = {
     width: '60vw',
@@ -54,7 +56,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
     let newFiles = _.difference(renamedFiles, cachedFiles);
     let deprecatedFiles = _.difference(cachedFiles, renamedFiles);
     if (newFiles.length > 0) {
-      let result = await uploadAttachment(newFiles);
+      let result = await uploadAttachment(currentSession?.id, newFiles);
       if (result) {
         let newMap = new Map(attachments);
         for (let file of newFiles) {

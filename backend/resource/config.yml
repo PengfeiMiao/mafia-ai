@@ -15,7 +15,8 @@ tool_model: "gpt-3.5-turbo"
 chat_model: "gpt-3.5-turbo"
 embedding:
   model: "text-embedding-ada-002"
-  persist_dir: "data/docs"
+  persist_dir: "data/embd"
+file_dir: "data/files"
 max_tokens: 255
 admin_pwd: "123456"
 tavily:

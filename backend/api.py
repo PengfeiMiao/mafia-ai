@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List
 
@@ -11,7 +12,7 @@ from fastapi.responses import JSONResponse
 from requests import Request
 from sqlalchemy.orm import Session
 
-from backend.config.config import api_key
+from backend.config.config import api_key, file_dir
 from backend.entity.connection import get_session
 from backend.entity.models import serialize_model
 from backend.model.attachment_model import AttachmentModel
@@ -27,7 +28,7 @@ logging.basicConfig(level=logging.WARNING)
 
 DEFAULT_TITLE = 'untitled'
 DEFAULT_USER = 'unknown'
-UPLOAD_DIR = os.path.expanduser("~/mafia-ai/upload")
+UPLOAD_DIR = os.path.expanduser(file_dir())
 
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
@@ -35,6 +36,8 @@ if not os.path.exists(UPLOAD_DIR):
 API_KEY = api_key()
 
 llm_helper = LLMHelper()
+
+executor = ThreadPoolExecutor(max_workers=4)
 
 app = FastAPI()
 
@@ -112,18 +115,24 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 
 
 @app.post("/upload")
-async def upload_files(files: List[UploadFile] = File(...), db: Session = Depends(get_session)):
+async def upload_files(session_id: str, files: List[UploadFile] = File(...), db: Session = Depends(get_session)):
     results = []
+    file_paths = []
+    file_folder = os.path.join(UPLOAD_DIR, session_id)
+    if not os.path.exists(file_folder):
+        os.makedirs(file_folder)
 
     for file in files:
-        file_location = os.path.join(UPLOAD_DIR, file.filename)
-
-        with open(file_location, "wb") as buffer:
+        file_loc = os.path.join(file_folder, file.filename)
+        file_paths.append(file_loc)
+        with open(file_loc, "wb") as buffer:
             # noinspection PyTypeChecker
             shutil.copyfileobj(file.file, buffer)
 
         result = save_attachment(db, AttachmentModel(file_name=file.filename, file_size=file.size))
         results.append(result)
+
+    executor.submit(llm_helper.append_rag, file_paths)
 
     return results
 
@@ -147,8 +156,9 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
     async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
         _response = build_response(_data)
+        _filenames = [item.file_name for item in _data.attachments] if _data.attachments else []
         try:
-            async for chunk in llm_helper.streaming(_data.content, _data.session_id):
+            async for chunk in llm_helper.streaming(_data.content, _data.session_id, filenames=_filenames):
                 _response['content'] += chunk
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'

@@ -54,6 +54,9 @@ def chat_model_meta():
 def max_tokens():
     return get_config("max_tokens")
 
+def file_dir():
+    return get_config("file_dir")
+
 def embd_dir():
     return get_config("embedding.persist_dir")
 

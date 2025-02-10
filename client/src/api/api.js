@@ -20,8 +20,8 @@ export const updateSession = async (session) => {
   return await commonApi(`${BASE_URL}/session`, session, 'PUT');
 }
 
-export const uploadAttachment = async (attachments) => {
-  return await uploadApi(`${BASE_URL}/upload`, attachments, 'POST');
+export const uploadAttachment = async (session_id, attachments) => {
+  return await uploadApi(`${BASE_URL}/upload?session_id=${session_id}`, attachments, 'POST');
 }
 
 
