@@ -44,7 +44,7 @@ class LLMHelper:
             [
                 (
                     "system",
-                    "You are a helpful assistant. Answer all questions to the best of your ability."
+                    "You are a helpful assistant. Answer all questions to the best of your ability in Chinese."
                 ),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
@@ -64,7 +64,7 @@ class LLMHelper:
         self.qa_prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", (
-                    "You are an assistant for question-answering tasks. "
+                    "You are an assistant for question-answering tasks in Chinese. "
                     "Use the following pieces of retrieved context to answer the question. "
                     "If you don't know the answer, say that you don't know. "
                     "Use three sentences maximum and keep the answer concise. "
