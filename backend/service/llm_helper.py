@@ -20,6 +20,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens, embd_dir, embd_model, file_dir
+from service.router import Router, RouterTypeEnum
 
 
 def get_trimmer(model):
@@ -87,7 +88,7 @@ class LLMHelper:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
 
-    def build_model(self, streaming=False, callbacks=None):
+    def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=max_tokens()):
         if callbacks is None:
             callbacks = []
         return ChatOpenAI(
@@ -96,6 +97,8 @@ class LLMHelper:
             model=self.chat_model["name"],
             base_url=self.chat_model["base_url"],
             api_key=self.chat_model["api_key"],
+            temperature=temperature,
+            max_tokens=max_tokens
         )
 
     def build_rag(self, streaming=False, callbacks=None):
@@ -162,6 +165,11 @@ class LLMHelper:
         self.vectorstore.add_documents(documents=splits)
         return
 
+    def route(self, message: str):
+        model = self.build_model(temperature=0.1, max_tokens=60)
+        router = Router(model=model)
+        return router.route(message=message)
+
     def completions(self, message: str, session_id: str):
         config = get_session_config(session_id)
         llm = self.build_llm()
@@ -174,7 +182,11 @@ class LLMHelper:
             pre_input = f"These source files are attached to the context: {', '.join(filenames)}. Then is my question: "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_rag(streaming=True, callbacks=[callback])
+        route_type = self.route(message=message)
+        if route_type == RouterTypeEnum.normal:
+            llm = self.build_llm(streaming=True, callbacks=[callback])
+        else:
+            llm = self.build_rag(streaming=True, callbacks=[callback])
         try:
             async for chunk in llm.astream({"input": pre_input + message}, config=config):
                 # print(chunk)
