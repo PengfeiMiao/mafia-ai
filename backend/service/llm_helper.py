@@ -204,7 +204,7 @@ class LLMHelper:
             pre_input = f"These source files are attached to the context: {previews}. "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_rag(streaming=True, callbacks=[callback])
+        llm = self.build_llm(streaming=True, callbacks=[callback])
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 # print(chunk)
