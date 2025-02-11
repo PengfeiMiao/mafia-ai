@@ -6,8 +6,7 @@ from langchain_openai.chat_models.base import BaseChatOpenAI
 
 class RouterTypeEnum(str, Enum):
     normal = "normal"
-    file_analyze = "file-analyze"
-    file_compare = "file-compare"
+    file_related = "file_related"
 
 
 class Router:
@@ -16,9 +15,9 @@ class Router:
             (
                 "system", (
                     "Do NOT answer the following message as question directly."
-                    "We need to define the type of the message, default type is 'normal'."
+                    "We need to define the type of the message."
                     "Must only return a single word from possible values below:"
-                    "normal, file-analyse, file-compare"
+                    "normal, file_related"
                 )
             ),
             ("human", "{input}")
@@ -27,8 +26,4 @@ class Router:
 
     def route(self, message: str):
         type_name = self.route_chain.invoke({"input": message}).content
-        try:
-            router_type = RouterTypeEnum[type_name]
-        except KeyError:
-            router_type = RouterTypeEnum.normal
-        return router_type
+        return RouterTypeEnum.__members__.get(type_name, RouterTypeEnum.normal)

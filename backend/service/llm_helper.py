@@ -20,7 +20,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model
-from service.router import Router, RouterTypeEnum
+from backend.service.router import Router, RouterTypeEnum
 
 
 def get_trimmer(model):
@@ -166,7 +166,7 @@ class LLMHelper:
         return
 
     def route(self, message: str):
-        model = self.build_model(temperature=0.1, max_tokens=60)
+        model = self.build_model(temperature=0.1, max_tokens=50)
         router = Router(model=model)
         return router.route(message=message)
 
