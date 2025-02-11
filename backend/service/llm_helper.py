@@ -49,7 +49,7 @@ def format_docs(_docs):
     merged_docs = []
     for _, _docs in _docs_by_source.items():
         first_doc = _docs[0]
-        merged_page_content = '\n'.join([doc.page_content for doc in _docs])
+        merged_page_content = '\n\n'.join([doc.page_content for doc in _docs])
         first_doc.page_content = merged_page_content
 
         for key, value in list(first_doc.metadata.items()):
