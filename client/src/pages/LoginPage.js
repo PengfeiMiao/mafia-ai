@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Box, Button, Input, Text} from '@chakra-ui/react';
+import {Box, Button, Flex, Input, Text} from '@chakra-ui/react';
 import {setCookie} from "@/store/CacheStore";
 import {loginApi} from "@/api/api";
 
@@ -18,18 +18,22 @@ const LoginPage = () => {
   };
 
   return (
-    <Box>
-      <Text fontSize="xl" fontWeight="bold" ml={8}>Login Page</Text>
-      <Box display="flex" m={8}>
-        <Input
-          w={'50vw'}
-          mr={2}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}>
-        </Input>
-        <Button onClick={handleLogin}>Login</Button>
-      </Box>
-    </Box>
+    <Flex h="100vh" w="100vw" pt={16} justify="flex-start" align="center" direction="column">
+      <Text fontSize="xl" fontWeight="bold" mb={28}>Mafia AI</Text>
+      <Flex p={8} bgColor={'purple.subtle'} borderRadius="xl" direction="column">
+        <Flex mb={8} justify="center" align="center" direction="row">
+          <Text fontSize="md" fontWeight="500" mr={4}>Username</Text>
+          <Input w={'20vw'} mr={2} value={'mafiadev'} disabled>
+          </Input>
+        </Flex>
+        <Flex justify="center" align="center" direction="row">
+          <Text fontSize="md" fontWeight="500" mr={4}>Password</Text>
+          <Input w={'20vw'} mr={2} value={password} onChange={(e) => setPassword(e.target.value)}>
+          </Input>
+        </Flex>
+      </Flex>
+      <Button w={'12vw'} mt={4} onClick={handleLogin}>Login</Button>
+    </Flex>
   );
 }
 

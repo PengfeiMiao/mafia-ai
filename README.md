@@ -18,7 +18,7 @@
 3. start database <br>
    `docker-compose up -d`
 4. start backend api <br>
-   `python3 -m uvicorn backend.api:app --reload --host 0.0.0.0 --port 8000`
+   `python -m uvicorn backend.api:app --reload --host 0.0.0.0 --port 8000`
 5. install npm dependencies <br>
    `nvm use 20` - switch node to 20 <br>
    `cd client && npm install`
