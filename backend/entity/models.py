@@ -33,8 +33,10 @@ class Attachment(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     message_id = Column(String)
+    session_id = Column(String)
     file_name = Column(String)
     file_size = Column(Integer)
+    preview = Column(String)
     status = Column(String, default="active")
     created_at = Column(DateTime, default=datetime.now())
 

@@ -19,7 +19,8 @@ from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
-from backend.repo.attachment_repo import save_attachment, get_attachments
+from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
+    get_attachments_by_message_ids
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
@@ -69,7 +70,7 @@ async def login(data: UserModel):
 @app.post("/messages")
 async def messages(data: List[SessionModel], db: Session = Depends(get_session)):
     _messages = get_messages(db, session_ids=[item.id for item in data])
-    attachments = get_attachments(db, [str(item.id) for item in _messages])
+    attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
     attachments_by_message = defaultdict(list)
     for attachment in attachments:
         attachments_by_message[str(attachment.message_id)].append(AttachmentModel(**serialize_model(attachment)))
@@ -129,10 +130,20 @@ async def upload_files(session_id: str, files: List[UploadFile] = File(...), db:
             # noinspection PyTypeChecker
             shutil.copyfileobj(file.file, buffer)
 
-        result = save_attachment(db, AttachmentModel(file_name=file.filename, file_size=file.size))
+        attachment = AttachmentModel(file_name=file.filename, file_size=file.size, session_id=session_id)
+        delete_attachments(db, session_id, file.filename)
+        result = save_attachment(db, attachment)
         results.append(result)
 
-    executor.submit(llm_helper.append_rag, file_paths)
+    def update_previews(_db, _session_id, _file_paths: List[str]):
+        _docs = llm_helper.append_docs(_file_paths)
+        for _doc in _docs:
+            update_attachment(_db,
+                              preview=_doc.page_content[:4000],
+                              session_id=_session_id,
+                              file_name=_doc.metadata["filename"])
+
+    executor.submit(update_previews, db, session_id, file_paths)
 
     return results
 
@@ -156,9 +167,11 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
     async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
         _response = build_response(_data)
-        _filenames = [item.file_name for item in _data.attachments] if _data.attachments else []
+        _files = defaultdict(str)
+        for item in _data.attachments:
+            _files[item.file_name] = item.preview
         try:
-            async for chunk in llm_helper.streaming(_data.content, _data.session_id, filenames=_filenames):
+            async for chunk in llm_helper.streaming(_data.content, _data.session_id, files=_files):
                 _response['content'] += chunk
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'
@@ -179,7 +192,10 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 data['type'] = 'user'
             save_message(db, MessageModel(**data))
             data['id'] = data.get('answer_id')
-            response = await ws_send_message(websocket, MessageModel(**data))
+            attachment_ids = [item.get('id') for item in data.get('attachments', [])]
+            message_model = MessageModel(**data)
+            message_model.attachments = get_attachments(db, attachment_ids)
+            response = await ws_send_message(websocket, message_model)
             save_message(db, MessageModel(**response))
         except WebSocketDisconnect:
             print('[/ws/stream] - receive msg disconnected')

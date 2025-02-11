@@ -20,7 +20,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model
-from backend.service.router import Router, RouterTypeEnum
+from backend.service.router import Router
 
 
 def get_trimmer(model):
@@ -38,6 +38,35 @@ def get_session_config(session_id: str):
     return {"configurable": {"session_id": session_id}}
 
 
+def format_docs(_docs):
+    _docs_by_source = defaultdict(list)
+
+    for _doc in _docs:
+        source = _doc.metadata.get('source')
+        if source is not None:
+            _docs_by_source[source].append(_doc)
+
+    merged_docs = []
+    for _, _docs in _docs_by_source.items():
+        first_doc = _docs[0]
+        merged_page_content = '\n'.join([doc.page_content for doc in _docs])
+        first_doc.page_content = merged_page_content
+
+        for key, value in list(first_doc.metadata.items()):
+            if isinstance(value, list):
+                first_doc.metadata[key] = ','.join(map(str, value))
+
+        merged_docs.append(first_doc)
+
+    return merged_docs
+
+
+def parse_docs(file_paths: List[str]):
+    loader = UnstructuredLoader(file_paths)
+    docs = loader.load()
+    return format_docs(docs)
+
+
 class LLMHelper:
     def __init__(self):
         self.chat_model = chat_model_meta()
@@ -48,6 +77,13 @@ class LLMHelper:
                     "You are a helpful assistant. Answer all questions to the best of your ability in Chinese."
                 ),
                 MessagesPlaceholder("chat_history"),
+                ("system", (
+                    "If exist any more context, input it here: "
+                    "\n\n"
+                    "{preview}"
+                    "\n\n"
+                    "If it's None, please ignore."
+                )),
                 ("human", "{input}"),
             ]
         )
@@ -73,6 +109,13 @@ class LLMHelper:
                     "{context}"
                 )),
                 MessagesPlaceholder("chat_history"),
+                ("system", (
+                    "If exist any more context, input it here: "
+                    "\n\n"
+                    "{preview}"
+                    "\n\n"
+                    "If it's None, please ignore."
+                )),
                 ("human", "{input}"),
             ]
         )
@@ -134,36 +177,12 @@ class LLMHelper:
             history_messages_key="chat_history",
         )
 
-    def append_rag(self, file_paths: List[str]):
-        def format_docs(_docs):
-            _docs_by_source = defaultdict(list)
-
-            for _doc in _docs:
-                source = _doc.metadata.get('source')
-                if source is not None:
-                    _docs_by_source[source].append(_doc)
-
-            merged_docs = []
-            for _, _docs in _docs_by_source.items():
-                first_doc = _docs[0]
-                merged_page_content = '\n'.join([doc.page_content for doc in docs])
-                first_doc.page_content = merged_page_content
-
-                for key, value in list(first_doc.metadata.items()):
-                    if isinstance(value, list):
-                        first_doc.metadata[key] = ','.join(map(str, value))
-
-                merged_docs.append(first_doc)
-
-            return merged_docs
-
-        loader = UnstructuredLoader(file_paths)
-        docs = loader.load()
-
+    def append_docs(self, file_paths: List[str]):
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        splits = text_splitter.split_documents(format_docs(docs))
+        documents = parse_docs(file_paths)
+        splits = text_splitter.split_documents(documents)
         self.vectorstore.add_documents(documents=splits)
-        return
+        return documents
 
     def route(self, message: str):
         model = self.build_model(temperature=0.1, max_tokens=50)
@@ -176,19 +195,18 @@ class LLMHelper:
         response = llm.invoke({"input": message}, config=config)
         return response.content
 
-    async def streaming(self, message: str, session_id: str, filenames=None) -> AsyncIterable[str]:
-        pre_input = ""
-        if filenames:
-            pre_input = f"These source files are attached to the context: {', '.join(filenames)}. Then is my question: "
+    async def streaming(self, message: str, session_id: str, files=None) -> AsyncIterable[str]:
+        pre_input = None
+        if files:
+            previews = ""
+            for key, value in files.items():
+                previews += f"\n\n filename: {key} \n\n content: {value}"
+            pre_input = f"These source files are attached to the context: {previews}. "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        route_type = self.route(message=message)
-        if route_type == RouterTypeEnum.normal:
-            llm = self.build_llm(streaming=True, callbacks=[callback])
-        else:
-            llm = self.build_rag(streaming=True, callbacks=[callback])
+        llm = self.build_rag(streaming=True, callbacks=[callback])
         try:
-            async for chunk in llm.astream({"input": pre_input + message}, config=config):
+            async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 # print(chunk)
                 if isinstance(chunk, dict) and chunk.get("answer"):
                     yield chunk["answer"]
