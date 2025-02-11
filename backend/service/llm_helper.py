@@ -2,11 +2,13 @@ from collections import defaultdict
 from operator import itemgetter
 from typing import AsyncIterable, List
 
+import bs4
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_chroma import Chroma
+from langchain_community.document_loaders import WebBaseLoader
 from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
@@ -63,6 +65,17 @@ def format_docs(_docs):
 
 def parse_docs(file_paths: List[str]):
     loader = UnstructuredLoader(file_paths)
+    docs = loader.load()
+    return format_docs(docs)
+
+
+def parse_html(urls: List[str]):
+    loader = WebBaseLoader(
+        web_paths=urls,
+        bs_kwargs=dict(
+            parse_only=bs4.SoupStrainer(['div', 'p'])
+        ),
+    )
     docs = loader.load()
     return format_docs(docs)
 
