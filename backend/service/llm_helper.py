@@ -139,6 +139,14 @@ class LLMHelper:
             api_key=self.chat_model["api_key"],
         ))
 
+    def init_session_history(self, session_history: dict):
+        for session_id, history in session_history.items():
+            if session_id not in self.store:
+                chat_history = []
+                for item in history:
+                    chat_history.extend(item.to_chat_messages())
+                self.store[session_id] = InMemoryChatMessageHistory(messages=chat_history)
+
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
             self.store[session_id] = InMemoryChatMessageHistory()

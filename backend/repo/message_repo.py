@@ -1,4 +1,3 @@
-from collections import defaultdict
 from datetime import datetime
 from typing import List
 
@@ -26,10 +25,11 @@ def save_message(db: Session, message: MessageModel):
     return entity
 
 
-def get_messages(db: Session, session_ids: List[str]):
+def get_messages(db: Session, session_ids: List[str], limit=None):
     if not session_ids:
         return []
     return (db.query(Message)
-              .filter(Message.session_id.in_(session_ids))
-              .order_by(Message.created_at.asc())
-              .all())
+            .filter(Message.session_id.in_(session_ids))
+            .order_by(Message.created_at.asc())
+            .limit(limit)
+            .all())

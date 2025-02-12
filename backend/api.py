@@ -70,12 +70,16 @@ async def login(data: UserModel):
 @app.post("/messages")
 async def messages(data: List[SessionModel], db: Session = Depends(get_session)):
     _messages = get_messages(db, session_ids=[item.id for item in data])
+    _messages = [MessageModel(**serialize_model(item)) for item in _messages]
     attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
     attachments_by_message = defaultdict(list)
     for attachment in attachments:
         attachments_by_message[str(attachment.message_id)].append(AttachmentModel(**serialize_model(attachment)))
+    messages_by_session = defaultdict(list)
     for _message in _messages:
         _message.attachments = attachments_by_message.get(str(_message.id))
+        messages_by_session[str(_message.session_id)].append(_message)
+    llm_helper.init_session_history(messages_by_session)
     return _messages
 
 
