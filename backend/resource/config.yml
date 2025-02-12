@@ -23,7 +23,7 @@ tavily:
   enabled: true
   key: ""
 database:
-  host: "localhost"
+  host: "database"
   port: "5432"
   username: "mafiadev"
   password: "mafia123"
