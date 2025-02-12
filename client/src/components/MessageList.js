@@ -9,7 +9,7 @@ const MessageList = ({data, outerStyle}) => {
 
   const rootStyle = {
     height: '100%',
-    width: '60vw',
+    width: '60%',
     padding: '12px 32px',
     ...outerStyle
   };

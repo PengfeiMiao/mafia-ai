@@ -15,7 +15,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
   const {currentSession} = useContext(GlobalContext);
 
   const rootStyle = {
-    width: '60vw',
+    width: '60%',
     padding: '12px 12px 2px 12px',
     ...outerStyle
   };

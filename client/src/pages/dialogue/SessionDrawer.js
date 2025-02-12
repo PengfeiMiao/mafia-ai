@@ -97,8 +97,8 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
         boxShadow="4px 0px 4px 2px rgba(0,0,0,0.1)"
         present={open}
         animationName={{
-          _open: "slide-from-left-full",
-          _closed: "slide-to-left-full",
+          _open: "slide-from-left",
+          _closed: "slide-to-left",
         }}
         animationDuration="slow"
       >
