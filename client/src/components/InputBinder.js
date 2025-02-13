@@ -1,10 +1,11 @@
 import React, {useContext, useRef, useState} from 'react';
-import {Box, Button, FileUploadClearTrigger, Flex, Icon, Textarea} from "@chakra-ui/react";
+import {Box, Button, FileUploadClearTrigger, Flex, Icon, Separator, Textarea} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {FileUploadList, FileUploadRoot, FileUploadTrigger, handleDuplicateFiles,} from "@/components/ui/file-upload"
 import _ from "lodash";
 import {uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
+import {MdCleaningServices} from "react-icons/md";
 
 const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
@@ -23,6 +24,8 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
   const isEmpty = () => {
     return message === null || message.trim().length === 0;
   }
+
+  const handleClear = () => {};
 
   const handleSend = () => {
     if (isEmpty()) {
@@ -96,6 +99,17 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
       <Flex padding="12px" bgColor="white" boxShadow="sm" direction="row">
         <FileUploadRoot maxFiles={3} onFileChange={handleUpload}>
           <Flex w="100%">
+            <Button
+              w="24px"
+              borderRadius="md"
+              bgColor={!isPending ? 'purple.muted' : 'gray.muted'}
+              onClick={handleClear}
+            >
+              <Icon h="auto">
+                <MdCleaningServices />
+              </Icon>
+            </Button>
+            <Separator marginX="8px" orientation="vertical" height="auto" />
             <Textarea
               ref={textRef}
               placeholder='Input message here.'
@@ -120,7 +134,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
 
             <Button
               w="24px"
-              borderRadius="4xl"
+              borderRadius="full"
               bgColor={(!isEmpty() || isPending) ? 'purple.muted' : 'gray.muted'}
               onClick={isPending ? handleInterrupt : handleSend}
             >
