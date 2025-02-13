@@ -1,7 +1,7 @@
 FROM nikolaik/python-nodejs:python3.9-nodejs20-slim
 
 RUN apt-get update && \
-    apt-get install curl lsof libmagic1 poppler-utils tesseract-ocr -y
+    apt-get install curl lsof libgl1-mesa-glx libmagic1 poppler-utils tesseract-ocr -y
 
 WORKDIR /app
 

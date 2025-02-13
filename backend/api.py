@@ -94,7 +94,7 @@ async def sessions(db: Session = Depends(get_session)):
 
 
 @app.get("/session")
-async def sessions(session_id: str, db: Session = Depends(get_session)):
+async def sessions(session_id: str):
     llm_helper.clean_session_history(session_id)
     return {'status': True}
 
@@ -149,11 +149,12 @@ async def upload_files(session_id: str, files: List[UploadFile] = File(...), db:
         _docs = llm_helper.append_docs(_file_paths)
         for _doc in _docs:
             update_attachment(_db,
-                              preview=_doc.page_content[:4000],
+                              preview=_doc.page_content[:8000],
                               session_id=_session_id,
                               file_name=_doc.metadata["filename"])
 
     executor.submit(update_previews, db, session_id, file_paths)
+    # update_previews(db, session_id, file_paths)
 
     return results
 

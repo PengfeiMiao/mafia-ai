@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from operator import itemgetter
 from typing import AsyncIterable, List
@@ -55,8 +56,8 @@ def format_docs(_docs):
         first_doc.page_content = merged_page_content
 
         for key, value in list(first_doc.metadata.items()):
-            if isinstance(value, list):
-                first_doc.metadata[key] = ','.join(map(str, value))
+            if not isinstance(value, (str, int, float, bool)):
+                first_doc.metadata[key] = json.dumps(value)
 
         merged_docs.append(first_doc)
 
@@ -239,3 +240,8 @@ class LLMHelper:
                     yield chunk.content
         except Exception as e:
             yield f"LLM caught exception: {e}"
+
+
+if __name__ == '__main__':
+    res = parse_docs(["./Java_MPF.pdf"])
+    print(res)
