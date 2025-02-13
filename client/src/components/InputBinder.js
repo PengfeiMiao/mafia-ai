@@ -127,7 +127,7 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
             />
             <FileUploadTrigger
               w="20px"
-              h="auto"
+              maxH="40px"
               mr="12px"
               borderRadius="sm"
               bgColor={'purple.muted'}
