@@ -39,7 +39,7 @@ const MenuBar = ({outerStyle}) => {
   return (
     <Flex
       style={rootStyle}
-      zIndex="999"
+      zIndex={999}
       justify="flex-start"
       align="center"
       bgColor={'purple.300'}

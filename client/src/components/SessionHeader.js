@@ -38,7 +38,7 @@ const SessionHeader = () => {
       bgColor={"gray.100"}
       justify="flex-start"
       align="center"
-      zIndex={888}>
+      zIndex={777}>
       <Icon
         ml="12px"
         boxSize="36px">
