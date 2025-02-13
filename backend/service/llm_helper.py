@@ -152,6 +152,10 @@ class LLMHelper:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
 
+    def clean_session_history(self, session_id: str):
+        if session_id in self.store:
+            self.store[session_id] = InMemoryChatMessageHistory()
+
     def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=None):
         if callbacks is None:
             callbacks = []

@@ -93,6 +93,12 @@ async def sessions(db: Session = Depends(get_session)):
     return session_list
 
 
+@app.get("/session")
+async def sessions(session_id: str, db: Session = Depends(get_session)):
+    llm_helper.clean_session_history(session_id)
+    return {'status': True}
+
+
 @app.post("/session")
 async def sessions(data: SessionModel, db: Session = Depends(get_session)):
     if not data.user_id:

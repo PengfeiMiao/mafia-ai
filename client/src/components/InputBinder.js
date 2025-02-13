@@ -3,11 +3,11 @@ import {Box, Button, FileUploadClearTrigger, Flex, Icon, Separator, Textarea} fr
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {FileUploadList, FileUploadRoot, FileUploadTrigger, handleDuplicateFiles,} from "@/components/ui/file-upload"
 import _ from "lodash";
-import {uploadAttachment} from "@/api/api";
+import {cleanSession, uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {MdCleaningServices} from "react-icons/md";
 
-const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle}) => {
+const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const [attachments, setAttachments] = useState(new Map());
   const [fileList, setFileList] = useState([]);
@@ -25,7 +25,12 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
     return message === null || message.trim().length === 0;
   }
 
-  const handleClear = () => {};
+  const handleClean = async () => {
+    let result = await cleanSession(currentSession?.id);
+    if(result) {
+      onClean();
+    }
+  };
 
   const handleSend = () => {
     if (isEmpty()) {
@@ -103,7 +108,7 @@ const InputBinder = ({onSend, onInterrupt, isPending, defaultValue, outerStyle})
               w="24px"
               borderRadius="md"
               bgColor={!isPending ? 'purple.muted' : 'gray.muted'}
-              onClick={handleClear}
+              onClick={handleClean}
             >
               <Icon h="auto">
                 <MdCleaningServices />

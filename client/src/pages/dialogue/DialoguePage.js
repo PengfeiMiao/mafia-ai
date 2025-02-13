@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
+import TipsHeader from "@/components/TipsHeader";
 import MessageList from "@/components/MessageList";
 import {getMessages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
@@ -11,6 +12,7 @@ import {GlobalContext} from "@/store/GlobalProvider";
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingId, setPendingId] = useState('');
+  const [cleaned, setCleaned] = useState(false);
   const {messageMap, sendMessage, interruptMessage} = useMessages();
   const {currentSession} = useContext(GlobalContext);
 
@@ -19,6 +21,13 @@ const DialoguePage = ({outerStyle}) => {
     if (result) {
       setMessages(result);
     }
+  };
+
+  const handleClean = () => {
+    setCleaned(true);
+    setTimeout(() => {
+      setCleaned(false);
+    }, 1000);
   };
 
   const handleSend = (newMessage, attachments) => {
@@ -65,12 +74,14 @@ const DialoguePage = ({outerStyle}) => {
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
+      <TipsHeader title={'Context has been cleaned.'} cleaned={cleaned} />
       <MessageList data={messages} outerStyle={outerStyle} />
       <InputBinder
         onSend={handleSend}
         onInterrupt={handleInterrupt}
         isPending={!!pendingId}
-        outerStyle={outerStyle} />
+        outerStyle={outerStyle}
+        onClean={handleClean} />
     </Flex>
   );
 }

@@ -18,7 +18,7 @@ import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {EditableLabel} from "@/components/EditableLabel";
 
-export const SessionDrawer = ({open, onToggle, outerStyle}) => {
+const SessionDrawer = ({open, onToggle, outerStyle}) => {
   const [sessions, setSessions] = useState([]);
   const [editedId, setEditedId] = useState('');
   const {currentSession, setCurrentSession} = useContext(GlobalContext);
@@ -147,3 +147,5 @@ export const SessionDrawer = ({open, onToggle, outerStyle}) => {
     </Flex>
   );
 }
+
+export default SessionDrawer;

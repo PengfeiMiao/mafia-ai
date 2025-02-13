@@ -3,7 +3,7 @@ import {HiOutlineChatAlt} from "react-icons/hi";
 import {TbInputSearch, TbTestPipe} from "react-icons/tb";
 import {useState} from "react";
 
-export const MenuBar = ({outerStyle}) => {
+const MenuBar = ({outerStyle}) => {
   const [selectedMenu, setSelectedMenu] = useState("");
 
   const handleSelect = (text) => {
@@ -63,3 +63,5 @@ export const MenuBar = ({outerStyle}) => {
     </Flex>
   );
 }
+
+export default MenuBar;

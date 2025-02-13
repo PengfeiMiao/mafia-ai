@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
 import {Flex, useDisclosure} from '@chakra-ui/react';
 import DialoguePage from "@/pages/dialogue/DialoguePage";
-import {SessionDrawer} from "@/pages/dialogue/SessionDrawer";
-import {MenuBar} from "@/pages/dialogue/MenuBar";
+import SessionDrawer from "@/pages/dialogue/SessionDrawer";
+import MenuBar from "@/pages/dialogue/MenuBar";
 
 const HomePage = () => {
   const { open, onToggle } = useDisclosure();
