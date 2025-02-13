@@ -90,7 +90,7 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   }
 
   return (
-    <Flex h="100%" justify="center" direction="row">
+    <Flex h="100%" direction="row" justify="flex-end" position="relative" zIndex={999}>
       <Presence
         style={rootStyle}
         bgColor={'bg.panel'}
@@ -132,10 +132,13 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
         h="100%"
         justify="center"
         direction="column"
+        position="absolute"
+        right="-20px"
       >
         <Icon
           h="40px"
           w="20px"
+          zIndex={999}
           borderRightRadius="md"
           bgColor={'purple.muted'}
           boxShadow="4px 0px 4px 2px rgba(0,0,0,0.1)"

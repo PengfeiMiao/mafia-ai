@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Flex} from '@chakra-ui/react';
+import {Flex, Text} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import TipsHeader from "@/components/TipsHeader";
 import MessageList from "@/components/MessageList";
@@ -8,6 +8,7 @@ import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 import {useMessages} from "@/store/MessageProvider";
 import {GlobalContext} from "@/store/GlobalProvider";
+import SessionHeader from "@/components/SessionHeader";
 
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
@@ -74,14 +75,15 @@ const DialoguePage = ({outerStyle}) => {
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
-      <TipsHeader title={'Context has been cleaned.'} cleaned={cleaned} />
-      <MessageList data={messages} outerStyle={outerStyle} />
+      <TipsHeader title={'Context has been cleaned.'} cleaned={cleaned}/>
+      <SessionHeader/>
+      <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder
         onSend={handleSend}
         onInterrupt={handleInterrupt}
         isPending={!!pendingId}
         outerStyle={outerStyle}
-        onClean={handleClean} />
+        onClean={handleClean}/>
     </Flex>
   );
 }
