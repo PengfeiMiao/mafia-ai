@@ -6,6 +6,7 @@ from sqlalchemy import Column, String, UUID, DateTime, Integer
 from sqlalchemy.orm import DeclarativeMeta
 
 from backend.entity.connection import Base, engine
+from backend.util.common import now_utc, DEFAULT_FORMAT
 
 
 class Message(Base):
@@ -15,7 +16,7 @@ class Message(Base):
     session_id = Column(String)
     content = Column(String)
     type = Column(String)
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=now_utc())
 
 
 class Session(Base):
@@ -25,7 +26,7 @@ class Session(Base):
     user_id = Column(String)
     title = Column(String)
     status = Column(String, default="active")
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=now_utc())
 
 
 class Attachment(Base):
@@ -38,7 +39,7 @@ class Attachment(Base):
     file_size = Column(Integer)
     preview = Column(String)
     status = Column(String, default="active")
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=now_utc())
 
 
 def serialize_model(model_instance: Any) -> Dict[str, Any]:
@@ -47,7 +48,7 @@ def serialize_model(model_instance: Any) -> Dict[str, Any]:
         for column in model_instance.__table__.columns:
             value = getattr(model_instance, column.name)
             if isinstance(value, datetime):
-                value = value.strftime("%Y-%m-%d %H:%M:%S")
+                value = value.strftime(DEFAULT_FORMAT)
             elif isinstance(value, (int, float, str, bool)) or value is None:
                 pass
             else:

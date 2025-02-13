@@ -23,7 +23,7 @@ const DialoguePage = ({outerStyle}) => {
 
   const handleSend = (newMessage, attachments) => {
     let answerId = uuidv4();
-    let createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
+    let createdAt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
     let messageObj = {
       id: uuidv4(),
       answer_id: answerId,

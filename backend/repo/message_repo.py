@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from backend.entity.models import Message
 from backend.model.message_model import MessageModel
-from backend.repo.attachment_repo import update_attachments, get_attachments
+from backend.repo.attachment_repo import update_attachments
+from backend.util.common import DEFAULT_FORMAT, now_utc
 
 
 def save_message(db: Session, message: MessageModel):
-    created_at = datetime.strptime(message.created_at, "%Y-%m-%d %H:%M:%S") \
-        if message.created_at else datetime.now()
+    created_at = datetime.strptime(message.created_at, DEFAULT_FORMAT) \
+        if message.created_at else now_utc()
     entity = Message(
         id=message.id,
         content=message.content,

@@ -3,7 +3,6 @@ import os
 import shutil
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 from typing import List
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File
@@ -24,6 +23,7 @@ from backend.repo.attachment_repo import save_attachment, get_attachments, updat
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
+from backend.util.common import now_str
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -156,16 +156,13 @@ async def upload_files(session_id: str, files: List[UploadFile] = File(...), db:
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()
 
-    def now():
-        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
     def build_response(_data: MessageModel):
         return {
             'id': _data.id,
             'session_id': _data.session_id,
             'content': '',
             'type': 'system',
-            'created_at': now(),
+            'created_at': now_str(),
             'status': 'pending'
         }
 
@@ -179,12 +176,12 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 _response['content'] += chunk
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'
-            _response['created_at'] = now()
+            _response['created_at'] = now_str()
             await _websocket.send_json(_response)
             return _response
         except WebSocketDisconnect:
             print('[/ws/stream] - send msg disconnected')
-            _response['created_at'] = now()
+            _response['created_at'] = now_str()
             if _response.get('content') == '':
                 _response['content'] = 'No Response.'
             return _response
