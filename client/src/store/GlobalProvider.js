@@ -4,6 +4,7 @@ export const GlobalContext = React.createContext({});
 
 const GlobalProvider = ({ children }) => {
 	const [currentSession, setCurrentSession] = useState(null);
+	const [currentMenu, setCurrentMenu] = useState('dialog');
 
 	useEffect(() => {
 	}, []);
@@ -12,7 +13,9 @@ const GlobalProvider = ({ children }) => {
 		<GlobalContext.Provider
 			value={{
 				currentSession,
-				setCurrentSession
+				setCurrentSession,
+				currentMenu,
+				setCurrentMenu
 			}}
 		>
 			{children}

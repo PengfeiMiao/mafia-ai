@@ -1,13 +1,18 @@
 import {Flex, Icon, Image, Text} from "@chakra-ui/react";
 import {HiOutlineChatAlt} from "react-icons/hi";
 import {TbInputSearch, TbTestPipe} from "react-icons/tb";
-import {useState} from "react";
+import {useContext} from "react";
+import {GlobalContext} from "@/store/GlobalProvider";
+import {useNavigate} from "react-router-dom";
 
 const MenuBar = ({outerStyle}) => {
-  const [selectedMenu, setSelectedMenu] = useState("");
+  const {currentMenu, setCurrentMenu} = useContext(GlobalContext);
+  const navigate = useNavigate();
 
   const handleSelect = (text) => {
-    setSelectedMenu(text);
+    let menu = text.toLowerCase();
+    setCurrentMenu(menu);
+    navigate(`/${menu}`, {replace: true});
   };
 
   const rootStyle = {
@@ -27,7 +32,7 @@ const MenuBar = ({outerStyle}) => {
           p="6px"
           boxSize="40px"
           borderRadius="full"
-          bgColor={selected === text ? 'purple.muted' : ''}
+          bgColor={selected === text.toLowerCase() ? 'purple.muted' : ''}
           color={'white'}>
           {icon}
         </Icon>
@@ -56,9 +61,9 @@ const MenuBar = ({outerStyle}) => {
         justify="flex-start"
         align="center"
         direction="column">
-        {renderMenu("Dialog", <HiOutlineChatAlt/>, handleSelect, selectedMenu)}
-        {renderMenu("RAG", <TbInputSearch/>, handleSelect, selectedMenu)}
-        {renderMenu("DEMO", <TbTestPipe/>, handleSelect, selectedMenu)}
+        {renderMenu("Dialog", <HiOutlineChatAlt/>, handleSelect, currentMenu)}
+        {renderMenu("RAG", <TbInputSearch/>, handleSelect, currentMenu)}
+        {renderMenu("DEMO", <TbTestPipe/>, handleSelect, currentMenu)}
       </Flex>
     </Flex>
   );

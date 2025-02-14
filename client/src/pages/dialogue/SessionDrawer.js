@@ -17,11 +17,19 @@ import {createSession, getSessions, updateSession} from "@/api/api";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {EditableLabel} from "@/components/EditableLabel";
+import {useNavigate} from "react-router-dom";
 
 const SessionDrawer = ({open, onToggle, outerStyle}) => {
+  const {currentSession, setCurrentSession} = useContext(GlobalContext);
   const [sessions, setSessions] = useState([]);
   const [editedId, setEditedId] = useState('');
-  const {currentSession, setCurrentSession} = useContext(GlobalContext);
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const currentSessionId = searchParams.get('sessionId');
+
+  useEffect(() => {
+    getAllSessions().then();
+  }, []);
 
   const rootStyle = {
     height: '100%',
@@ -30,16 +38,22 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   };
 
   const getAllSessions = async () => {
-    let result = await getSessions('123');
+    let result = await getSessions('unknown');
     if (result) {
       setSessions(result);
-      setCurrentSession(result[0]);
+      let curr = currentSessionId ? result.find(it => it.id === currentSessionId) : result[0];
+      handleSelect(curr);
     }
   };
 
+  const handleSelect = (item) => {
+    setCurrentSession(item);
+    navigate(`/dialog?sessionId=${item?.id}`, {replace: true});
+  }
+
   const handleCreate = async () => {
     let session = await createSession({user_id: 'unknown'});
-    if(session?.id) {
+    if (session?.id) {
       setSessions((prev) => [session, ...prev]);
       setCurrentSession(session);
     }
@@ -64,10 +78,6 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
     await updateSession({id, title});
     setEditedId('');
   };
-
-  useEffect(() => {
-    getAllSessions().then();
-  }, []);
 
   const renderMenu = (key) => {
     return <Box position="relative">
@@ -118,7 +128,7 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
                 <EditableLabel
                   onSubmit={(e) => handleSubmit(item.id, e.target.value)}
                   isEditable={item.id === editedId}
-                  onSelect={() => setCurrentSession(item)}
+                  onSelect={() => handleSelect(item)}
                 >
                   {item.title}
                 </EditableLabel>

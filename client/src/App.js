@@ -6,7 +6,9 @@ import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom
 import LoginPage from "@/pages/LoginPage";
 import GlobalProvider from "@/store/GlobalProvider";
 import {MessagesProvider} from "@/store/MessageProvider";
-import HomePage from "@/pages/HomePage";
+import DialogPage from "@/pages/DialogPage";
+import RagPage from "@/pages/RagPage";
+import DemoPage from "@/pages/DemoPage";
 
 function App() {
   return (
@@ -16,8 +18,10 @@ function App() {
           <Router>
             <Box bgColor={'gray.100'}>
               <Routes>
-                <Route exact path='/' element={<Navigate to="/homePage"/>}/>
-                <Route exact path="/homePage" element={<HomePage/>}/>
+                <Route exact path='/' element={<Navigate to="/dialog"/>}/>
+                <Route exact path="/dialog" element={<DialogPage/>}/>
+                <Route exact path="/rag" element={<RagPage/>}/>
+                <Route exact path="/demo" element={<DemoPage/>}/>
                 <Route exact path='/login' element={<LoginPage/>}/>
               </Routes>
             </Box>

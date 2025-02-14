@@ -4,12 +4,12 @@ import DialoguePage from "@/pages/dialogue/DialoguePage";
 import SessionDrawer from "@/pages/dialogue/SessionDrawer";
 import MenuBar from "@/pages/dialogue/MenuBar";
 
-const HomePage = () => {
-  const {open, onToggle} = useDisclosure();
+const DialogPage = () => {
+  const {open, onToggle, onOpen} = useDisclosure();
   const [dialogWidth, setDialogWidth] = useState(75);
 
   useEffect(() => {
-    onToggle();
+    onOpen();
   }, []);
 
   const handleToggle = () => {
@@ -32,4 +32,4 @@ const HomePage = () => {
   );
 }
 
-export default HomePage;
+export default DialogPage;
