@@ -1,13 +1,20 @@
 import {Flex, Icon, Image, Text} from "@chakra-ui/react";
 import {HiOutlineChatAlt} from "react-icons/hi";
 import {TbInputSearch, TbTestPipe} from "react-icons/tb";
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {useNavigate} from "react-router-dom";
 
 const MenuBar = ({outerStyle}) => {
   const {currentMenu, setCurrentMenu} = useContext(GlobalContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let menu = location.pathname.replace('/', '')
+    if (menu) {
+      setCurrentMenu(menu);
+    }
+  }, []);
 
   const handleSelect = (text) => {
     let menu = text.toLowerCase();

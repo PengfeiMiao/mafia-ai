@@ -10,7 +10,7 @@ const DemoPage = () => {
   return (
     <Flex h="100vh" w="100vw" direction="row">
       <MenuBar outerStyle={{width: '64px', minWidth: '64px'}}/>
-      <Text>Empty Page</Text>
+      <Flex h="100vh" w="auto" bgColor={'gray.100'}></Flex>
     </Flex>
   );
 }
