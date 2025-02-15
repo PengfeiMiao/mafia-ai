@@ -1,8 +1,10 @@
 import React, {useEffect} from 'react';
-import {Flex, Center, Tabs} from '@chakra-ui/react';
+import {Center, Flex, Tabs} from '@chakra-ui/react';
 import MenuBar from "@/pages/dialogue/MenuBar";
-import { LuFolder, LuSquareCheck } from "react-icons/lu"
+import {LuFolder, LuSquareCheck} from "react-icons/lu"
 import RagList from "@/pages/rag/RagList";
+import FileList from "@/pages/rag/FileList";
+import {PiBugDroid} from "react-icons/pi";
 
 const RagPage = () => {
   useEffect(() => {
@@ -23,12 +25,18 @@ const RagPage = () => {
                 <LuSquareCheck />
                 Files
               </Tabs.Trigger>
+              <Tabs.Trigger value="crawlers">
+                <PiBugDroid />
+                Crawlers
+              </Tabs.Trigger>
             </Tabs.List>
             <Tabs.Content h="90%" paddingY="0" value="rags">
               <RagList/>
             </Tabs.Content>
-            <Tabs.Content value="files">
-              Manage your Files
+            <Tabs.Content h="90%" paddingY="0" value="files">
+              <FileList/>
+            </Tabs.Content>
+            <Tabs.Content h="90%" paddingY="0" value="crawlers">
             </Tabs.Content>
           </Tabs.Root>
         </Flex>

@@ -218,7 +218,7 @@ class LLMHelper:
     def completions(self, message: str, session_id: str):
         config = get_session_config(session_id)
         llm = self.build_llm()
-        response = llm.invoke({"input": message}, config=config)
+        response = llm.invoke({"input": message, "preview": None}, config=config)
         return response.content
 
     async def streaming(self, message: str, session_id: str, files=None) -> AsyncIterable[str]:

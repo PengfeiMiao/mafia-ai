@@ -1,34 +1,38 @@
 import React, {useEffect, useState} from "react";
 import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
-import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
+import {RiDeleteBin5Line} from "react-icons/ri";
+import {GrView} from "react-icons/gr";
 
 
-const RagList = () => {
-  const [ragList, setRagList] = new useState([]);
+const FileList = () => {
+  const [fileList, setFileList] = new useState([]);
 
   useEffect(() => {
-    setRagList([
+    setFileList([
       {
         id: 1,
         name: 'test1',
+        preview: '123456',
+        size: 10,
         created_by: 'unknown',
-        created_at: '2024-01-01 00:00:00',
-        count: 10
+        created_at: '2024-01-01 00:00:00'
       },
       {
         id: 2,
         name: 'test2',
+        preview: '123456',
+        size: 8,
         created_by: 'unknown',
-        created_at: '2024-01-01 00:00:00',
-        count: 8
+        created_at: '2024-01-01 00:00:00'
       },
       {
         id: 3,
         name: 'test3',
+        preview: '123456',
+        size: 6,
         created_by: 'unknown',
         created_at: '2024-01-01 00:00:00',
-        count: 6
       }
     ]);
   }, []);
@@ -39,11 +43,11 @@ const RagList = () => {
         <Button h="32px" marginY="8px">New</Button>
       </Flex>
       <DataList
-        dateList={ragList}
-        headers={["name", "created_by", "count"]}
+        dateList={fileList}
+        headers={["name", "created_by", "size"]}
         operations={
           <Flex align={'flex-end'}>
-            <RiEdit2Line style={{marginLeft: 'auto'}}/>
+            <GrView style={{marginLeft: 'auto'}}/>
             <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
           </Flex>
         }
@@ -52,4 +56,4 @@ const RagList = () => {
   );
 };
 
-export default RagList;
+export default FileList;
