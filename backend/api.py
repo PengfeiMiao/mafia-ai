@@ -1,6 +1,8 @@
+import asyncio
 import logging
 import os
 import shutil
+import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
@@ -40,6 +42,9 @@ API_KEY = api_key()
 llm_helper = LLMHelper()
 
 executor = ThreadPoolExecutor(max_workers=4)
+
+file_queue = defaultdict(list)
+lock = threading.Lock()
 
 app = FastAPI()
 
@@ -152,11 +157,15 @@ async def upload_files(session_id: str = "default",
     def update_previews(_db, _session_id, _file_paths: List[str]):
         _docs = llm_helper.append_docs(_file_paths)
         for _doc in _docs:
-            update_attachment(_db,
+            _updated = update_attachment(_db,
                               preview=_doc.page_content[:4000],
                               session_id=_session_id,
                               file_name=_doc.metadata["filename"])
+            with lock:
+                file_queue[session_id] = list(filter(lambda x: x != str(_updated.id),file_queue[session_id]))
 
+    with lock:
+        file_queue[session_id].extend([str(file.id) for file in results])
     executor.submit(update_previews, db, session_id, file_paths)
     # update_previews(db, session_id, file_paths)
 
@@ -215,6 +224,27 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
             message_model.attachments = get_attachments(db, attachment_ids)
             response = await ws_send_message(websocket, message_model)
             save_message(db, MessageModel(**response))
+        except WebSocketDisconnect:
+            print('[/ws/stream] - receive msg disconnected')
+        except RuntimeError as e:
+            print(f"[/ws/stream] - receive msg disconnected, {e}")
+            break
+
+
+@app.websocket("/ws/files")
+async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
+    session_id = 'default'
+    await websocket.accept()
+
+    while True:
+        try:
+            pre_value = file_queue[session_id]
+            await asyncio.sleep(1)
+            new_value = file_queue[session_id]
+            diff = list(set(pre_value) - set(new_value))
+            files = get_attachments(db, diff)
+            files = [AttachmentModel(**serialize_model(file)) for file in files]
+            await websocket.send_json(files)
         except WebSocketDisconnect:
             print('[/ws/stream] - receive msg disconnected')
         except RuntimeError as e:

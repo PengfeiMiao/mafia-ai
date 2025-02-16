@@ -5,7 +5,7 @@ import {Provider} from "@/components/ui/provider"
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
 import LoginPage from "@/pages/LoginPage";
 import GlobalProvider from "@/store/GlobalProvider";
-import {MessagesProvider} from "@/store/MessageProvider";
+import {MessagesProvider} from "@/store/MessagesProvider";
 import DialogPage from "@/pages/DialogPage";
 import RagPage from "@/pages/RagPage";
 import DemoPage from "@/pages/DemoPage";
