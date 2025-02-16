@@ -31,7 +31,7 @@ const DataList = ({dateList, headers, operations}) => {
                 <Table.Cell key={field}>{item[field]}</Table.Cell>
               ))}
               <Table.Cell>
-                {operations}
+                {operations(item)}
               </Table.Cell>
             </Table.Row>
           ))}

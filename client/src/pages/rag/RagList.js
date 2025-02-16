@@ -41,12 +41,12 @@ const RagList = () => {
       <DataList
         dateList={ragList}
         headers={["name", "created_by", "count"]}
-        operations={
+        operations={(_) => (
           <Flex align={'flex-end'}>
             <RiEdit2Line style={{marginLeft: 'auto'}}/>
             <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
           </Flex>
-        }
+        )}
       />
     </Flex>
   );

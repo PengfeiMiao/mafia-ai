@@ -1,18 +1,16 @@
 import React, {useContext, useRef, useState} from 'react';
-import {Box, Button, FileUploadClearTrigger, Flex, Icon, Separator, Textarea} from "@chakra-ui/react";
+import {Box, Button, Flex, Icon, Separator, Textarea} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
-import {FileUploadList, FileUploadRoot, FileUploadTrigger, handleDuplicateFiles,} from "@/components/ui/file-upload"
-import _ from "lodash";
 import {cleanSession, uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {MdCleaningServices} from "react-icons/md";
+import FileUploader from "@/components/FileUploader";
 
 const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const [attachments, setAttachments] = useState(new Map());
-  const [fileList, setFileList] = useState([]);
-  const textRef = useRef(null);
   const clearRef = useRef(null);
+  const textRef = useRef(null);
   const {currentSession} = useContext(GlobalContext);
 
   const rootStyle = {
@@ -27,7 +25,7 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
 
   const handleClean = async () => {
     let result = await cleanSession(currentSession?.id);
-    if(result) {
+    if (result) {
       onClean();
     }
   };
@@ -40,7 +38,6 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
     setMessage('');
     setAttachments(new Map());
     clearRef.current.click();
-    setFileList([]);
   };
 
   const handleInterrupt = () => {
@@ -54,31 +51,6 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
       event.preventDefault();
       handleSend();
     }
-  };
-
-  const handleUpload = async (params) => {
-    let files = params.acceptedFiles;
-    let renamedFiles = handleDuplicateFiles(files);
-
-    let cachedFiles = Array.from(attachments.keys());
-    let newFiles = _.difference(renamedFiles, cachedFiles);
-    let deprecatedFiles = _.difference(cachedFiles, renamedFiles);
-    if (newFiles.length > 0) {
-      let result = await uploadAttachment(currentSession?.id, newFiles);
-      if (result) {
-        let newMap = new Map(attachments);
-        for (let file of newFiles) {
-          newMap.set(file, result.find(({file_name}) => file_name === file.name))
-        }
-        setAttachments(newMap);
-      }
-    }
-    if (deprecatedFiles.length > 0) {
-      let newMap = new Map(attachments);
-      deprecatedFiles.forEach(item => newMap.delete(item))
-      setAttachments(newMap);
-    }
-    setFileList(files);
   };
 
   const getRowHeight = (text, element) => {
@@ -102,8 +74,13 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
       style={rootStyle}
       bgColor={'gray.100'}>
       <Flex padding="12px" bgColor="white" boxShadow="sm" direction="row">
-        <FileUploadRoot maxFiles={3} onFileChange={handleUpload}>
-          <Flex w="100%">
+        <FileUploader
+          onUpload={(newFiles) => uploadAttachment(currentSession?.id, newFiles)}
+          onChange={(newAttachments) => {
+            setAttachments(newAttachments);
+          }}
+          clearRef={clearRef}
+          preElements={<>
             <Button
               w="24px"
               borderRadius="md"
@@ -111,10 +88,10 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
               onClick={handleClean}
             >
               <Icon h="auto">
-                <MdCleaningServices />
+                <MdCleaningServices/>
               </Icon>
             </Button>
-            <Separator marginX="8px" orientation="vertical" height="auto" />
+            <Separator marginX="8px" orientation="vertical" height="auto"/>
             <Textarea
               ref={textRef}
               placeholder='Input message here.'
@@ -125,18 +102,8 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
             />
-            <FileUploadTrigger
-              w="20px"
-              maxH="40px"
-              mr="12px"
-              borderRadius="sm"
-              bgColor={'purple.muted'}
-              asChild>
-              <Icon h="100%" w="16px" color={'white'}>
-                <RiAttachmentLine/>
-              </Icon>
-            </FileUploadTrigger>
-
+          </>}
+          postElements={
             <Button
               w="24px"
               borderRadius="full"
@@ -147,10 +114,19 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
                 {isPending ? <RiPauseCircleFill/> : (isEmpty() ? <RiSendPlaneLine/> : <RiSendPlaneFill/>)}
               </Icon>
             </Button>
-          </Flex>
-          <FileUploadList lineHeight="24px" showSize clearable files={fileList}/>
-          <FileUploadClearTrigger ref={clearRef} hidden/>
-        </FileUploadRoot>
+          }
+        >
+          <Icon
+            w="20px"
+            h="100%"
+            maxH="40px"
+            mr="12px"
+            borderRadius="sm"
+            bgColor={'purple.muted'}
+            color={'white'}>
+            <RiAttachmentLine/>
+          </Icon>
+        </FileUploader>
       </Flex>
     </Box>
   );

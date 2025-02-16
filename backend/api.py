@@ -24,6 +24,7 @@ from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
 from backend.util.common import now_str
+from repo.attachment_repo import get_attachments_by_session_id
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -126,7 +127,9 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 
 
 @app.post("/upload")
-async def upload_files(session_id: str, files: List[UploadFile] = File(...), db: Session = Depends(get_session)):
+async def upload_files(session_id: str = "default",
+                       files: List[UploadFile] = File(...),
+                       db: Session = Depends(get_session)):
     results = []
     file_paths = []
     file_folder = os.path.join(UPLOAD_DIR, session_id)
@@ -140,7 +143,8 @@ async def upload_files(session_id: str, files: List[UploadFile] = File(...), db:
             # noinspection PyTypeChecker
             shutil.copyfileobj(file.file, buffer)
 
-        attachment = AttachmentModel(file_name=file.filename, file_size=file.size, session_id=session_id)
+        attachment = AttachmentModel(file_name=file.filename, file_size=file.size,
+                                     session_id=session_id, created_at=now_str())
         delete_attachments(db, session_id, file.filename)
         result = save_attachment(db, attachment)
         results.append(result)
@@ -157,6 +161,12 @@ async def upload_files(session_id: str, files: List[UploadFile] = File(...), db:
     # update_previews(db, session_id, file_paths)
 
     return results
+
+
+@app.get("/files")
+async def file_list(db: Session = Depends(get_session)):
+    files = get_attachments_by_session_id(db, "default")
+    return [AttachmentModel(**serialize_model(file)) for file in files]
 
 
 @app.websocket("/ws/stream")

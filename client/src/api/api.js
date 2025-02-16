@@ -24,10 +24,13 @@ export const cleanSession = async (session_id) => {
   return await commonApi(`${BASE_URL}/session?session_id=${session_id}`, {}, 'GET');
 }
 
+export const getFiles = async () => {
+  return await commonApi(`${BASE_URL}/files`, {}, 'GET');
+}
+
 export const uploadAttachment = async (session_id, attachments) => {
   return await uploadApi(`${BASE_URL}/upload?session_id=${session_id}`, attachments, 'POST');
 }
-
 
 // export const completions = async (message) => {
 //   return await commonApi(`${BASE_URL}/completions`, message, 'POST');

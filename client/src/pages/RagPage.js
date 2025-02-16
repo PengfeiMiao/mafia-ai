@@ -4,7 +4,7 @@ import MenuBar from "@/pages/dialogue/MenuBar";
 import {LuFolder, LuSquareCheck} from "react-icons/lu"
 import RagList from "@/pages/rag/RagList";
 import FileList from "@/pages/rag/FileList";
-import {PiBugDroid} from "react-icons/pi";
+import {PiPlanetBold} from "react-icons/pi";
 
 const RagPage = () => {
   useEffect(() => {
@@ -15,7 +15,7 @@ const RagPage = () => {
       <MenuBar outerStyle={{width: '64px', minWidth: '64px'}}/>
       <Center h="100%" w="100%" padding="20px" bgColor={'gray.100'}>
         <Flex h="100%" w="100%" bgColor={'white'}>
-          <Tabs.Root defaultValue="rags" w="100%">
+          <Tabs.Root w="100%" defaultValue="files">
             <Tabs.List>
               <Tabs.Trigger value="rags">
                 <LuFolder />
@@ -25,9 +25,9 @@ const RagPage = () => {
                 <LuSquareCheck />
                 Files
               </Tabs.Trigger>
-              <Tabs.Trigger value="crawlers">
-                <PiBugDroid />
-                Crawlers
+              <Tabs.Trigger value="websites">
+                <PiPlanetBold />
+                Websites
               </Tabs.Trigger>
             </Tabs.List>
             <Tabs.Content h="90%" paddingY="0" value="rags">
@@ -36,7 +36,7 @@ const RagPage = () => {
             <Tabs.Content h="90%" paddingY="0" value="files">
               <FileList/>
             </Tabs.Content>
-            <Tabs.Content h="90%" paddingY="0" value="crawlers">
+            <Tabs.Content h="90%" paddingY="0" value="websites">
             </Tabs.Content>
           </Tabs.Root>
         </Flex>

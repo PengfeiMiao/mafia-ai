@@ -43,6 +43,14 @@ def get_attachments_by_message_ids(db: DBSession, message_ids: List[str]):
               .order_by(Attachment.created_at.desc())
               .all())
 
+def get_attachments_by_session_id(db: DBSession, session_id: str):
+    if session_id is None:
+        return []
+    return (db.query(Attachment)
+            .filter_by(session_id=session_id, status='active')
+            .order_by(Attachment.created_at.desc())
+            .all())
+
 def get_attachments(db: DBSession, ids: List[str]):
     if len(ids) == 0:
         return []

@@ -75,7 +75,7 @@ const DialoguePage = ({outerStyle}) => {
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
-      <TipsHeader title={'Context has been cleaned.'} cleaned={cleaned}/>
+      <TipsHeader title={'Context has been cleaned.'} hidden={!cleaned}/>
       <SessionHeader/>
       <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder

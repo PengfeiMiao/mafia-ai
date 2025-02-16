@@ -1,8 +1,14 @@
 import {Alert} from '@chakra-ui/react';
 
-const TipsHeader = ({title, cleaned}) => {
+const TipsHeader = ({title, hidden, outerStyle}) => {
+  const rootStyle = {
+    width: "auto",
+    position: "fixed",
+    ...outerStyle
+  };
+
   return (
-    <Alert.Root w="auto" hidden={!cleaned} position="fixed" top={2} zIndex={999}>
+    <Alert.Root style={rootStyle} top={2} zIndex={999} hidden={hidden}>
       <Alert.Indicator/>
       <Alert.Content>
         <Alert.Title>{title}</Alert.Title>
