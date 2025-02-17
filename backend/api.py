@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import shutil
@@ -21,12 +20,11 @@ from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
-    get_attachments_by_message_ids
+    get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
 from backend.util.common import now_str
-from backend.repo.attachment_repo import get_attachments_by_session_id
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -56,7 +54,7 @@ unauthorized_res = JSONResponse(
 
 @app.middleware("http")
 async def check_authorization(request: Request, call_next):
-    if request.url.path != "/login":
+    if request.url.path not in ["/login", "/proxy"]:
         auth_header = request.headers.get("api-key")
         if not auth_header or auth_header != API_KEY:
             return unauthorized_res
@@ -179,8 +177,8 @@ async def file_list(db: Session = Depends(get_session)):
 
 
 @app.delete("/file")
-async def file_deletion(id: str, db: Session = Depends(get_session)):
-    delete_attachments(db, file_id=id)
+async def file_deletion(file_id: str, db: Session = Depends(get_session)):
+    delete_attachments(db, file_id=file_id)
     return {'status': True}
 
 
@@ -218,50 +216,44 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 _response['content'] = 'No Response.'
             return _response
 
-    try:
-        while True:
-            try:
-                data = await websocket.receive_json()
-                if not data.get('type'):
-                    data['type'] = 'user'
-                save_message(db, MessageModel(**data))
-                data['id'] = data.get('answer_id')
-                attachment_ids = [item.get('id') for item in data.get('attachments', [])]
-                message_model = MessageModel(**data)
-                message_model.attachments = get_attachments(db, attachment_ids)
-                response = await ws_send_message(websocket, message_model)
-                save_message(db, MessageModel(**response))
-            except WebSocketDisconnect:
-                print('[/ws/stream] - receive msg disconnected')
-            except RuntimeError as e:
-                print(f"[/ws/stream] - receive msg disconnected, {e}")
-                break
-    finally:
-        db.close()
+    while True:
+        try:
+            data = await websocket.receive_json()
+            if not data.get('type'):
+                data['type'] = 'user'
+            save_message(db, MessageModel(**data))
+            data['id'] = data.get('answer_id')
+            attachment_ids = [item.get('id') for item in data.get('attachments', [])]
+            message_model = MessageModel(**data)
+            message_model.attachments = get_attachments(db, attachment_ids)
+            response = await ws_send_message(websocket, message_model)
+            save_message(db, MessageModel(**response))
+        except WebSocketDisconnect:
+            print('[/ws/stream] - receive msg disconnected')
+        except RuntimeError as e:
+            print(f"[/ws/stream] - receive msg disconnected, {e}")
+            break
 
 
 @app.websocket("/ws/files")
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
-    session_id = 'default'
     await websocket.accept()
+    session_id = 'default'
 
-    try:
-        while True:
-            try:
-                with lock:
-                    pre_value = file_queue[session_id]
-                await asyncio.sleep(3)
-                with lock:
-                    new_value = file_queue[session_id]
-                diff = list(set(pre_value) - set(new_value))
-                if len(diff) > 0:
-                    files = get_attachments(db, diff)
-                    files = [serialize_model(file) for file in files]
-                    await websocket.send_json(files)
-            except WebSocketDisconnect:
-                print('[/ws/stream] - receive msg disconnected')
-            except RuntimeError or asyncio.exceptions.CancelledError as e:
-                print(f"[/ws/stream] - receive msg disconnected, {e}")
-                break
-    finally:
-        db.close()
+    while True:
+        try:
+            with lock:
+                pre_value = file_queue[session_id]
+            await websocket.receive_json()
+            with lock:
+                new_value = file_queue[session_id]
+            diff = list(set(pre_value) - set(new_value))
+            if len(diff) > 0:
+                files = get_attachments(db, diff)
+                files = [serialize_model(file) for file in files]
+                await websocket.send_json(files)
+        except WebSocketDisconnect:
+            print('[/ws/stream] - receive msg disconnected')
+        except RuntimeError as e:
+            print(f"[/ws/stream] - receive msg disconnected, {e}")
+            break

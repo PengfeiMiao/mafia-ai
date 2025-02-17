@@ -49,7 +49,7 @@ const WsProvider = ({ uri, children }) => {
     newSocket.onerror = (error) => {
       console.log(`[error] ${error.message}`);
     };
-  }
+  };
 
   const attemptReconnect = () => {
     console.log(`Attempting to reconnect in ${reconnectInterval / 1000} seconds...`);
@@ -59,8 +59,7 @@ const WsProvider = ({ uri, children }) => {
     }, reconnectInterval);
 
     return () => clearTimeout(timeoutId);
-  }
-
+  };
 
   useEffect(() => {
     connectWebSocket();

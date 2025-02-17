@@ -64,7 +64,7 @@ const formatBytes = (bytes) => {
 const FileList = () => {
   const [fileList, setFileList] = new useState([]);
   const [pendingMaps, setPendingMaps] = new useState(new Map());
-  const {message} = useWebsocket();
+  const {message, sendMessage} = useWebsocket();
 
   const getAllFiles = async () => {
     let files = await getFiles() ?? [];
@@ -77,6 +77,7 @@ const FileList = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      sendMessage({});
       let newMaps = new Map(pendingMaps);
       newMaps.forEach((value, key, newMaps) => {
         newMaps.set(key, {...value, progress: value['progress'] + value['stride']});
