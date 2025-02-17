@@ -147,7 +147,7 @@ class LLMHelper:
         for session_id, history in session_history.items():
             if session_id not in self.store:
                 chat_history = []
-                for item in history:
+                for item in history[-10:]:
                     chat_history.extend(item.to_chat_messages())
                 self.store[session_id] = InMemoryChatMessageHistory(messages=chat_history)
 
