@@ -218,23 +218,26 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 _response['content'] = 'No Response.'
             return _response
 
-    while True:
-        try:
-            data = await websocket.receive_json()
-            if not data.get('type'):
-                data['type'] = 'user'
-            save_message(db, MessageModel(**data))
-            data['id'] = data.get('answer_id')
-            attachment_ids = [item.get('id') for item in data.get('attachments', [])]
-            message_model = MessageModel(**data)
-            message_model.attachments = get_attachments(db, attachment_ids)
-            response = await ws_send_message(websocket, message_model)
-            save_message(db, MessageModel(**response))
-        except WebSocketDisconnect:
-            print('[/ws/stream] - receive msg disconnected')
-        except RuntimeError as e:
-            print(f"[/ws/stream] - receive msg disconnected, {e}")
-            break
+    try:
+        while True:
+            try:
+                data = await websocket.receive_json()
+                if not data.get('type'):
+                    data['type'] = 'user'
+                save_message(db, MessageModel(**data))
+                data['id'] = data.get('answer_id')
+                attachment_ids = [item.get('id') for item in data.get('attachments', [])]
+                message_model = MessageModel(**data)
+                message_model.attachments = get_attachments(db, attachment_ids)
+                response = await ws_send_message(websocket, message_model)
+                save_message(db, MessageModel(**response))
+            except WebSocketDisconnect:
+                print('[/ws/stream] - receive msg disconnected')
+            except RuntimeError as e:
+                print(f"[/ws/stream] - receive msg disconnected, {e}")
+                break
+    finally:
+        db.close()
 
 
 @app.websocket("/ws/files")
@@ -242,20 +245,23 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
     session_id = 'default'
     await websocket.accept()
 
-    while True:
-        try:
-            with lock:
-                pre_value = file_queue[session_id]
-            await asyncio.sleep(5)
-            with lock:
-                new_value = file_queue[session_id]
-            diff = list(set(pre_value) - set(new_value))
-            if len(diff) > 0:
-                files = get_attachments(db, diff)
-                files = [serialize_model(file) for file in files]
-                await websocket.send_json(files)
-        except WebSocketDisconnect:
-            print('[/ws/stream] - receive msg disconnected')
-        except RuntimeError as e:
-            print(f"[/ws/stream] - receive msg disconnected, {e}")
-            break
+    try:
+        while True:
+            try:
+                with lock:
+                    pre_value = file_queue[session_id]
+                await asyncio.sleep(3)
+                with lock:
+                    new_value = file_queue[session_id]
+                diff = list(set(pre_value) - set(new_value))
+                if len(diff) > 0:
+                    files = get_attachments(db, diff)
+                    files = [serialize_model(file) for file in files]
+                    await websocket.send_json(files)
+            except WebSocketDisconnect:
+                print('[/ws/stream] - receive msg disconnected')
+            except RuntimeError or asyncio.exceptions.CancelledError as e:
+                print(f"[/ws/stream] - receive msg disconnected, {e}")
+                break
+    finally:
+        db.close()

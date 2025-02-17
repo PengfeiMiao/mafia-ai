@@ -4,7 +4,11 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.config.config import db_url
 
-engine = create_engine(db_url())
+engine = create_engine(
+    url=db_url(),
+    pool_size=10,
+    max_overflow=20,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
