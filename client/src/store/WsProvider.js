@@ -1,11 +1,25 @@
 import React, {createContext, useEffect, useState} from 'react';
 import {WS_URL} from "@/api/api";
 
-export const WsContext = createContext(null);
+const WsContext = createContext(null);
 
-const WsProvider = ({ uri, onMessage, children }) => {
+const WsProvider = ({ uri, children }) => {
+  const [message, setMessage] = useState(null);
   const [socket, setSocket] = useState(null);
   const [reconnectInterval, setReconnectInterval] = useState(1000);
+
+  const sendMessage = (message) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(message));
+    }
+  };
+
+  const interruptMessage = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.close();
+      connectWebSocket();
+    }
+  };
 
   const connectWebSocket = ()=> {
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -20,7 +34,7 @@ const WsProvider = ({ uri, onMessage, children }) => {
 
     newSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      onMessage(data);
+      setMessage(data);
     };
 
     newSocket.onclose = (event) => {
@@ -59,10 +73,18 @@ const WsProvider = ({ uri, onMessage, children }) => {
   }, []);
 
   return (
-    <WsContext.Provider value={{ socket, connectWebSocket }}>
+    <WsContext.Provider value={{ message, sendMessage, interruptMessage }}>
       {children}
     </WsContext.Provider>
   );
 };
 
 export default WsProvider;
+
+export const useWebsocket = () => {
+  const context = React.useContext(WsContext);
+  if (!context) {
+    throw new Error("useWebsocket must be used within a WsProvider");
+  }
+  return context;
+};

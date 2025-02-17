@@ -30,10 +30,10 @@ const FileCreator = ({onChange, children}) => {
 
   const handleSave = async () => {
     if (attachments.size > 0) {
-      await uploadAttachment("default", attachments.keys());
+      let files = await uploadAttachment("default", attachments.keys());
       closeRef.current.click();
       handleTipsHidden();
-      onChange();
+      onChange(files);
     }
   };
 

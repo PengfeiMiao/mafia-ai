@@ -56,8 +56,11 @@ def format_docs(_docs):
         first_doc.page_content = merged_page_content
 
         for key, value in list(first_doc.metadata.items()):
-            if not isinstance(value, (str, int, float, bool)):
-                first_doc.metadata[key] = json.dumps(value)
+            try:
+                if not isinstance(value, (str, int, float, bool)):
+                    first_doc.metadata[key] = json.dumps(value)
+            except RuntimeError:
+                first_doc.metadata[key] = None
 
         merged_docs.append(first_doc)
 

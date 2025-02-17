@@ -6,15 +6,15 @@ import MessageList from "@/components/MessageList";
 import {getMessages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
-import {useMessages} from "@/store/MessagesProvider";
 import {GlobalContext} from "@/store/GlobalProvider";
 import SessionHeader from "@/components/SessionHeader";
+import {useWebsocket} from "@/store/WsProvider";
 
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingId, setPendingId] = useState('');
   const [cleaned, setCleaned] = useState(false);
-  const {messageMap, sendMessage, interruptMessage} = useMessages();
+  const {message, sendMessage, interruptMessage} = useWebsocket();
   const {currentSession} = useContext(GlobalContext);
 
   const getChatHistory = async () => {
@@ -58,20 +58,19 @@ const DialoguePage = ({outerStyle}) => {
   }, [currentSession]);
 
   useEffect(() => {
-    let latestMsg = messageMap.get(pendingId);
-    if (!latestMsg) return;
+    if (!message || message?.id !== pendingId) return;
     let msgIndex = messages.findIndex(it => it.id === pendingId);
     if (msgIndex > -1) {
       let newMsgList = [...messages];
-      newMsgList[msgIndex] = latestMsg;
+      newMsgList[msgIndex] = message;
       setMessages(newMsgList);
     } else {
-      setMessages([...messages, latestMsg]);
+      setMessages([...messages, message]);
     }
-    if (latestMsg?.status === 'completed') {
+    if (message?.status === 'completed') {
       setPendingId('');
     }
-  }, [messageMap]);
+  }, [message]);
 
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">

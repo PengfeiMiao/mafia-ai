@@ -26,7 +26,7 @@ from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.service.llm_helper import LLMHelper
 from backend.util.common import now_str
-from repo.attachment_repo import get_attachments_by_session_id
+from backend.repo.attachment_repo import get_attachments_by_session_id
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -238,13 +238,16 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
     while True:
         try:
-            pre_value = file_queue[session_id]
+            with lock:
+                pre_value = file_queue[session_id]
             await asyncio.sleep(1)
-            new_value = file_queue[session_id]
+            with lock:
+                new_value = file_queue[session_id]
             diff = list(set(pre_value) - set(new_value))
-            files = get_attachments(db, diff)
-            files = [AttachmentModel(**serialize_model(file)) for file in files]
-            await websocket.send_json(files)
+            if len(diff) > 0:
+                files = get_attachments(db, diff)
+                files = [serialize_model(file) for file in files]
+                await websocket.send_json(files)
         except WebSocketDisconnect:
             print('[/ws/stream] - receive msg disconnected')
         except RuntimeError as e:

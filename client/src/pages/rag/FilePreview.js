@@ -15,7 +15,7 @@ import {MarkdownView} from "@/components/MarkdownView";
 
 const FilePreview = ({preview, children}) => {
   return (
-    <DialogRoot>
+    <DialogRoot size="xl">
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
