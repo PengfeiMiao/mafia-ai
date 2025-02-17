@@ -178,6 +178,12 @@ async def file_list(db: Session = Depends(get_session)):
     return [AttachmentModel(**serialize_model(file)) for file in files]
 
 
+@app.delete("/file")
+async def file_deletion(id: str, db: Session = Depends(get_session)):
+    delete_attachments(db, file_id=id)
+    return {'status': True}
+
+
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()

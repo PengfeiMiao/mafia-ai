@@ -28,6 +28,10 @@ export const getFiles = async () => {
   return await commonApi(`${BASE_URL}/files`, {}, 'GET');
 }
 
+export const deleteFiles = async (id) => {
+  return await commonApi(`${BASE_URL}/file?id=${id}`, {}, 'DELETE');
+}
+
 export const uploadAttachment = async (session_id, attachments) => {
   return await uploadApi(`${BASE_URL}/upload?session_id=${session_id}`, attachments, 'POST');
 }

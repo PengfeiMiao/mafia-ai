@@ -1,15 +1,55 @@
-import React, {useEffect, useState} from "react";
-import {Button, EmptyState, Flex, VStack, ProgressCircle} from "@chakra-ui/react";
+import React, {useEffect, useRef, useState} from "react";
+import {Button, EmptyState, Flex, Group, ProgressCircle, VStack} from "@chakra-ui/react";
+import {
+  PopoverArrow,
+  PopoverCloseTrigger,
+  PopoverContent,
+  PopoverFooter,
+  PopoverRoot,
+  PopoverTrigger
+} from "@/components/ui/popover"
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line} from "react-icons/ri";
 import {GrView} from "react-icons/gr";
 import FileCreator from "@/pages/rag/FileCreator";
-import {getFiles} from "@/api/api";
+import {deleteFiles, getFiles} from "@/api/api";
 import FilePreview from "@/pages/rag/FilePreview";
 import {TbFileSad} from "react-icons/tb";
 import {useWebsocket} from "@/store/WsProvider";
 import _ from "lodash";
+import {LuCheck, LuX} from "react-icons/lu";
 
+const DeletePopover = ({onDelete, children}) => {
+  const closeRef = useRef(null);
+  const confirmRef = useRef(null);
+
+  return (
+    <PopoverRoot size="xs" initialFocusEl={() => confirmRef.current}>
+      <PopoverTrigger asChild>
+        {children}
+      </PopoverTrigger>
+      <PopoverContent w="auto">
+        <PopoverArrow/>
+        <PopoverFooter pt={"12px"}>
+          <Group>
+            <Button boxSize="24px" size="xs" bgColor="white" ref={confirmRef} onClick={() => {
+              onDelete();
+              closeRef.current.click();
+            }}>
+              <LuCheck color="black"/>
+            </Button>
+            <Button boxSize="24px" size="xs" bgColor="white" onClick={() => {
+              closeRef.current.click();
+            }}>
+              <LuX color="black"/>
+            </Button>
+          </Group>
+        </PopoverFooter>
+        <PopoverCloseTrigger ref={closeRef} hidden/>
+      </PopoverContent>
+    </PopoverRoot>
+  );
+};
 
 const FileList = () => {
   const [fileList, setFileList] = new useState([]);
@@ -52,7 +92,7 @@ const FileList = () => {
       });
       let newMaps = new Map(pendingMaps);
       newMaps.forEach((value, key, newMaps) => {
-        if(unionArray.find(it => newMaps.has(it.id))) {
+        if (unionArray.find(it => newMaps.has(it.id))) {
           newMaps.set(key, {progress: value['progress'] + 1, stride: value['stride'] + 1});
         }
       });
@@ -63,6 +103,11 @@ const FileList = () => {
 
   const handleChange = (files) => {
     setPendingMaps(new Map(files.map(it => [it.id, {progress: 0, stride: 1}])));
+    getAllFiles().then();
+  };
+
+  const handleDelete = async (id) => {
+    await deleteFiles(id);
     getAllFiles().then();
   };
 
@@ -105,7 +150,9 @@ const FileList = () => {
                   <GrView style={{marginLeft: 'auto'}}/>
                 </FilePreview>
               )}
-              < RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+              <DeletePopover onDelete={() => handleDelete(item?.id)}>
+                <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+              </DeletePopover>
             </Flex>
           )}
         />)}

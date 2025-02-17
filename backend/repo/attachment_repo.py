@@ -14,9 +14,13 @@ def save_attachment(db: DBSession, attachment: AttachmentModel):
     db.refresh(entity)
     return copy.deepcopy(entity)
 
-def delete_attachments(db: DBSession, session_id: str, file_name: str):
-    entity = (db.query(Attachment)
-              .filter_by(session_id=session_id, file_name=file_name, status='active'))
+def delete_attachments(db: DBSession, session_id: str=None, file_name: str=None, file_id: str=None):
+    if file_id:
+        entity = (db.query(Attachment)
+                  .filter_by(id=file_id, status='active'))
+    else:
+        entity = (db.query(Attachment)
+                  .filter_by(session_id=session_id, file_name=file_name, status='active'))
     entity.update({Attachment.status: 'inactive'})
     db.commit()
 
