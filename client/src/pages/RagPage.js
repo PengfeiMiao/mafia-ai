@@ -5,7 +5,6 @@ import {LuFolder, LuSquareCheck} from "react-icons/lu"
 import RagList from "@/pages/rag/RagList";
 import FileList from "@/pages/rag/FileList";
 import {PiPlanetBold} from "react-icons/pi";
-import WsProvider from "@/store/WsProvider";
 
 const RagPage = () => {
   useEffect(() => {
@@ -35,9 +34,7 @@ const RagPage = () => {
               <RagList/>
             </Tabs.Content>
             <Tabs.Content h="90%" paddingY="0" value="files">
-              <WsProvider uri={"/ws/files"}>
-                <FileList/>
-              </WsProvider>
+              <FileList/>
             </Tabs.Content>
             <Tabs.Content h="90%" paddingY="0" value="websites">
             </Tabs.Content>

@@ -8,6 +8,7 @@ import GlobalProvider from "@/store/GlobalProvider";
 import DialogPage from "@/pages/DialogPage";
 import RagPage from "@/pages/RagPage";
 import DemoPage from "@/pages/DemoPage";
+import WsProvider from "@/store/WsProvider";
 
 function App() {
   return (
@@ -17,8 +18,16 @@ function App() {
           <Box bgColor={'gray.100'}>
             <Routes>
               <Route exact path='/' element={<Navigate to="/dialog"/>}/>
-              <Route exact path="/dialog" element={<DialogPage/>}/>
-              <Route exact path="/rag" element={<RagPage/>}/>
+              <Route exact path="/dialog" element={
+                <WsProvider uri={"/ws/stream"}>
+                  <DialogPage/>
+                </WsProvider>
+              }/>
+              <Route exact path="/rag" element={
+                <WsProvider uri={"/ws/files"}>
+                  <RagPage/>
+                </WsProvider>
+              }/>
               <Route exact path="/demo" element={<DemoPage/>}/>
               <Route exact path='/login' element={<LoginPage/>}/>
             </Routes>
