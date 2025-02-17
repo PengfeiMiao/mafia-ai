@@ -51,6 +51,16 @@ const DeletePopover = ({onDelete, children}) => {
   );
 };
 
+const formatBytes = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 const FileList = () => {
   const [fileList, setFileList] = new useState([]);
   const [pendingMaps, setPendingMaps] = new useState(new Map());
@@ -136,6 +146,7 @@ const FileList = () => {
         (<DataList
           dateList={fileList}
           headers={["file_name", "created_at", "file_size"]}
+          functions={[null, null, formatBytes]}
           operations={(item) => (
             <Flex align={'flex-end'}>
               {pendingMaps.has(item?.id) ? (

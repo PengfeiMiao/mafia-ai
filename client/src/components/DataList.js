@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/pagination"
 
 
-const DataList = ({dateList, headers, operations}) => {
+const DataList = ({dateList, headers, functions, operations}) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -27,8 +27,10 @@ const DataList = ({dateList, headers, operations}) => {
         <Table.Body>
           {dateList.slice((page - 1) * pageSize, page * pageSize).map((item) => (
             <Table.Row key={item.id}>
-              {headers.map(field => (
-                <Table.Cell key={field}>{item[field]}</Table.Cell>
+              {headers.map((field, index) => (
+                <Table.Cell key={field}>
+                  {functions && functions[index] ? functions[index](item[field]) : item[field]}
+                </Table.Cell>
               ))}
               <Table.Cell>
                 {operations(item)}

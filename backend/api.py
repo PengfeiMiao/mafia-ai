@@ -246,7 +246,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         try:
             with lock:
                 pre_value = file_queue[session_id]
-            await asyncio.sleep(1)
+            await asyncio.sleep(5)
             with lock:
                 new_value = file_queue[session_id]
             diff = list(set(pre_value) - set(new_value))
