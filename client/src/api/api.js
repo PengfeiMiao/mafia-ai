@@ -32,6 +32,10 @@ export const deleteFiles = async (file_id) => {
   return await commonApi(`${BASE_URL}/file?file_id=${file_id}`, {}, 'DELETE');
 }
 
+export const getProxyPage = async (url, method) => {
+  return await commonApi(`${BASE_URL}/proxy`, {url, method}, 'POST');
+}
+
 export const uploadAttachment = async (session_id, attachments) => {
   return await uploadApi(`${BASE_URL}/upload?session_id=${session_id}`, attachments, 'POST');
 }

@@ -6,10 +6,10 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
-from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File
+import httpx
+from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from requests import Request
 from sqlalchemy.orm import Session
 
 from backend.config.config import api_key, file_dir
@@ -69,6 +69,33 @@ async def login(data: UserModel):
     if data_dict['password'] != API_KEY:
         return unauthorized_res
     return {'status': True}
+
+
+@app.post("/proxy")
+async def proxy(request: Request):
+    body = await request.json()
+    target_url = body.get('url')
+    if not target_url:
+        return {"error": "No target URL provided"}
+
+    async with httpx.AsyncClient() as client:
+        method = body.get('method', 'GET').upper()
+        headers = body.get('headers', {})
+        params = body.get('params', {})
+        data = body.get('data', {})
+
+        if method == 'GET':
+            response = await client.get(target_url, headers=headers, params=params)
+        elif method == 'POST':
+            response = await client.post(target_url, headers=headers, params=params, json=data)
+        else:
+            return {"error": "Unsupported method"}
+
+        return {
+            "status_code": response.status_code,
+            "content": response.text,
+            "headers": dict(response.headers),
+        }
 
 
 @app.post("/messages")
