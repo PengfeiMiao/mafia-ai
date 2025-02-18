@@ -22,7 +22,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
-from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model
+from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model, max_histories
 from backend.service.router import Router
 
 
@@ -147,14 +147,19 @@ class LLMHelper:
         for session_id, history in session_history.items():
             if session_id not in self.store:
                 chat_history = []
-                for item in history[-10:]:
+                for item in history[-max_histories():]:
                     chat_history.extend(item.to_chat_messages())
                 self.store[session_id] = InMemoryChatMessageHistory(messages=chat_history)
 
     def get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         if session_id not in self.store:
             self.store[session_id] = InMemoryChatMessageHistory()
-        return self.store[session_id]
+        chat_memory: InMemoryChatMessageHistory = self.store[session_id]
+        chat_history = list(chat_memory.messages)[-max_histories():]
+        chat_memory.clear()
+        chat_memory.add_messages(chat_history)
+
+        return chat_memory
 
     def clean_session_history(self, session_id: str):
         if session_id in self.store:

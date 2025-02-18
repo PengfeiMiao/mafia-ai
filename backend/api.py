@@ -236,7 +236,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
 
 @app.websocket("/ws/files")
-async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_session)):
+async def websocket_files(websocket: WebSocket, db: Session = Depends(get_session)):
     await websocket.accept()
     session_id = 'default'
 
@@ -253,7 +253,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 files = [serialize_model(file) for file in files]
                 await websocket.send_json(files)
         except WebSocketDisconnect:
-            print('[/ws/stream] - receive msg disconnected')
+            print('[/ws/files] - receive msg disconnected')
         except RuntimeError as e:
-            print(f"[/ws/stream] - receive msg disconnected, {e}")
+            print(f"[/ws/files] - receive msg disconnected, {e}")
             break

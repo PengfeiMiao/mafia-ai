@@ -54,6 +54,9 @@ def chat_model_meta():
 def max_tokens():
     return get_config("max_tokens")
 
+def max_histories():
+    return get_config("max_histories")
+
 def file_dir():
     return get_config("file_dir")
 
