@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {getProxyPage} from "@/api/api";
-import {Box, Button, Flex, Input} from "@chakra-ui/react";
+import {Box, Button, Flex, Icon, Input} from "@chakra-ui/react";
+import {FaArrowAltCircleLeft, FaArrowAltCircleRight} from "react-icons/fa";
 
 let windowUrl = "";
 
@@ -64,7 +65,9 @@ const WebsiteList = () => {
 
   return (
     <Box h="100%" w="100%" p="8px">
-      <Flex>
+      <Flex align="center">
+        <Icon boxSize="28px"><FaArrowAltCircleLeft /></Icon>
+        <Icon ml="4px" mr="8px" boxSize="28px"><FaArrowAltCircleRight/></Icon>
         <Input value={webUrl} onChange={(e) => setWebUrl(e.target.value)} onKeyDown={handleKeyDown}/>
         <Button ml="8px" onClick={handleEnter}>Enter</Button>
       </Flex>
