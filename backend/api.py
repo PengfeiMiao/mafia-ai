@@ -78,23 +78,23 @@ async def proxy(request: Request):
     if not target_url:
         return {"error": "No target URL provided"}
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
         method = body.get('method', 'GET').upper()
         headers = body.get('headers', {})
         params = body.get('params', {})
         data = body.get('data', {})
 
         if method == 'GET':
-            response = await client.get(target_url, headers=headers, params=params)
+            resp = await client.get(target_url, headers=headers, params=params)
         elif method == 'POST':
-            response = await client.post(target_url, headers=headers, params=params, json=data)
+            resp = await client.post(target_url, headers=headers, params=params, json=data)
         else:
             return {"error": "Unsupported method"}
 
         return {
-            "status_code": response.status_code,
-            "text": response.text,
-            "headers": dict(response.headers),
+            "status_code": resp.status_code,
+            "content": resp.content.decode('utf-8', errors='ignore'),
+            "headers": dict(resp.headers),
         }
 
 

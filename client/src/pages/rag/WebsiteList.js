@@ -36,7 +36,7 @@ const WebsiteList = () => {
               </script>
             </head>
             <body>
-              ${r?.text}
+              ${r?.content}
             </body>
           </html>`
       ));
