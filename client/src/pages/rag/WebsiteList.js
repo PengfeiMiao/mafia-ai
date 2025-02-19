@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {getProxyPage} from "@/api/api";
 import {Box, Button, Flex, Input} from "@chakra-ui/react";
 
@@ -7,7 +7,6 @@ let windowUrl = "";
 const WebsiteList = () => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("");
-  const iframeRef = useRef(null);
 
   useEffect(() => {
     windowUrl = "";
@@ -19,33 +18,29 @@ const WebsiteList = () => {
       uri = `http://${url}`;
     }
     getProxyPage(uri, "GET")
-      .then(r => setInnerDoc(
-        `<!DOCTYPE html>
-          <html lang="en">
-            <head>
-              <title>website</title>
-              <script type="text/javascript">
-                document.addEventListener('click', function(event) {
-                  const anchorTag = event.target?.closest('a');
-                  if (anchorTag) {
-                    event.preventDefault();
-                    const targetUrl = anchorTag.href;
-                    window.parent.postMessage({type: 'navigate', url: targetUrl}, '*');
-                  }
-                }, false);
-              </script>
-            </head>
-            <body>
-              ${r?.content}
-            </body>
-          </html>`
-      ));
+      .then(r => {
+        const script = `<script type="text/javascript">
+          (function() {
+            document.addEventListener('click', function(event) {
+              const anchorTag = event.target?.closest('a');
+              if (anchorTag) {
+                if (!/^https?:\\/\\//i.test(anchorTag.href)) return;
+                event.preventDefault();
+                const targetUrl = anchorTag.href;
+                window.parent.postMessage({type: 'navigate', url: targetUrl}, '*');
+              }
+            }, true);
+          })();
+        </script>`;
+        let content = r?.content.replace('</head>', `${script}</head>`);
+        setInnerDoc(content);
+      });
   }
 
   const handleMessage = async (event) => {
     if (event.data && event.data.type === 'navigate') {
       const targetUrl = event.data.url;
-      if (windowUrl !== targetUrl) {
+      if (windowUrl !== targetUrl && !targetUrl.startsWith(window.location.origin)) {
         console.log('Intercepted navigation to:', targetUrl);
         windowUrl = targetUrl;
         setWebUrl(targetUrl);
@@ -73,7 +68,7 @@ const WebsiteList = () => {
         <Input value={webUrl} onChange={(e) => setWebUrl(e.target.value)} onKeyDown={handleKeyDown}/>
         <Button ml="8px" onClick={handleEnter}>Enter</Button>
       </Flex>
-      <iframe ref={iframeRef} srcDoc={innerDoc} width="100%" height="100%" title="external"/>
+      <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
     </Box>
   );
 };
