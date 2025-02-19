@@ -93,7 +93,7 @@ async def proxy(request: Request):
 
         return {
             "status_code": response.status_code,
-            "content": response.text,
+            "text": response.text,
             "headers": dict(response.headers),
         }
 

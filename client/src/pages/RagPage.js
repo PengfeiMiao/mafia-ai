@@ -17,7 +17,7 @@ const RagPage = () => {
       <MenuBar outerStyle={{width: '64px', minWidth: '64px'}}/>
       <Center h="100%" w="100%" padding="20px" bgColor={'gray.100'}>
         <Flex h="100%" w="100%" bgColor={'white'}>
-          <Tabs.Root w="100%" defaultValue="files">
+          <Tabs.Root w="100%" defaultValue="websites">
             <Tabs.List>
               <Tabs.Trigger value="rags">
                 <LuFolder/>
