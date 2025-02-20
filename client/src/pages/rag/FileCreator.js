@@ -8,7 +8,7 @@ import {
   DialogRoot,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {Button} from "@chakra-ui/react";
 import {HiUpload} from "react-icons/hi"
 import React, {useRef, useState} from "react";

@@ -1,11 +1,12 @@
 import {useEffect, useState} from "react";
 import {getProxyPage} from "@/api/api";
-import {Box, Button, Flex, Icon, Input} from "@chakra-ui/react";
+import {Box, Button, Flex, Icon, Input, Text} from "@chakra-ui/react";
 import {FaArrowAltCircleLeft, FaArrowAltCircleRight} from "react-icons/fa";
+import SlideBox from "@/components/SlideBox";
 
 let windowUrl = "";
 
-const WebsiteList = () => {
+const WebPreview = ({parseOpen, children}) => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("");
   const [history, setHistory] = useState([]);
@@ -93,7 +94,7 @@ const WebsiteList = () => {
   }
 
   return (
-    <Box h="100%" w="100%" p="8px">
+    <Box h="100%" w="100%">
       <Flex align="center" mb="4px">
         <Icon boxSize="28px" onClick={() => handleRollBackHistories(currIndex - 1)}>
           <FaArrowAltCircleLeft/>
@@ -103,10 +104,16 @@ const WebsiteList = () => {
         </Icon>
         <Input value={webUrl} onChange={(e) => setWebUrl(e.target.value)} onKeyDown={handleKeyDown}/>
         <Button ml="8px" onClick={handleEnter}>Enter</Button>
+        {children}
       </Flex>
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
+      <Flex position="relative" h="50vh" bottom="50vh">
+        <SlideBox open={parseOpen} align="bottom" outerStyle={{backgroundColor: "gray", borderTopRadius: "8px", opacity: 0.8}}>
+          <Text>placeholder</Text>
+        </SlideBox>
+      </Flex>
     </Box>
   );
 };
 
-export default WebsiteList;
+export default WebPreview;

@@ -5,8 +5,8 @@ import {LuFolder, LuSquareCheck} from "react-icons/lu"
 import RagList from "@/pages/rag/RagList";
 import FileList from "@/pages/rag/FileList";
 import {PiPlanetBold} from "react-icons/pi";
-import WebsiteList from "@/pages/rag/WebsiteList";
 import WsProvider from "@/store/WsProvider";
+import WebList from "@/pages/rag/WebList";
 
 const RagPage = () => {
   useEffect(() => {
@@ -41,7 +41,7 @@ const RagPage = () => {
               </WsProvider>
             </Tabs.Content>
             <Tabs.Content h="90%" paddingY="0" value="websites">
-              <WebsiteList/>
+              <WebList/>
             </Tabs.Content>
           </Tabs.Root>
         </Flex>
