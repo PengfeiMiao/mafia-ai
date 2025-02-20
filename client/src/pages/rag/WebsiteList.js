@@ -8,16 +8,14 @@ let windowUrl = "";
 const WebsiteList = () => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("");
+  const [history, setHistory] = useState([]);
+  const [currIndex, setCurrIndex] = useState(0);
 
   useEffect(() => {
     windowUrl = "";
   }, []);
 
-  const handleProxyPage = (url) => {
-    let uri = url.trim();
-    if (!uri.startsWith("http://") && !uri.startsWith("https://")) {
-      uri = `http://${url}`;
-    }
+  const handleProxyPage = (uri) => {
     getProxyPage(uri, "GET")
       .then(r => {
         const script = `<script type="text/javascript">
@@ -41,11 +39,11 @@ const WebsiteList = () => {
   const handleMessage = async (event) => {
     if (event.data && event.data.type === 'navigate') {
       const targetUrl = event.data.url;
-      if (windowUrl !== targetUrl && !targetUrl.startsWith(window.location.origin)) {
+      if (windowUrl !== targetUrl) {
         console.log('Intercepted navigation to:', targetUrl);
         windowUrl = targetUrl;
         setWebUrl(targetUrl);
-        handleProxyPage(targetUrl);
+        handleNewUrl(targetUrl);
       }
     }
   };
@@ -53,21 +51,56 @@ const WebsiteList = () => {
   window.addEventListener('message', handleMessage);
 
   const handleEnter = () => {
-    handleProxyPage(webUrl);
+    handleNewUrl(webUrl);
   };
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      handleProxyPage(webUrl);
+      handleNewUrl(webUrl);
     }
   };
 
+  const handleRollBackHistories = (targetIndex) => {
+    let length = history.length;
+    if (length > 0 && targetIndex >= 0 && targetIndex < length) {
+      let uri = history[targetIndex];
+      handleProxyPage(uri);
+      setWebUrl(uri);
+      setCurrIndex(targetIndex);
+    }
+  };
+
+  const handleAddHistories = (uri) => {
+    setHistory(prev => {
+      setCurrIndex(prev.length);
+      return [...prev, uri];
+    });
+  };
+
+  const handleFinalUri = (url) => {
+    let uri = url.trim();
+    if (!uri.startsWith("http://") && !uri.startsWith("https://")) {
+      uri = `http://${url}`;
+    }
+    return uri;
+  };
+
+  const handleNewUrl = (url) => {
+    let uri = handleFinalUri(url);
+    handleProxyPage(uri);
+    handleAddHistories(uri);
+  }
+
   return (
     <Box h="100%" w="100%" p="8px">
-      <Flex align="center">
-        <Icon boxSize="28px"><FaArrowAltCircleLeft /></Icon>
-        <Icon ml="4px" mr="8px" boxSize="28px"><FaArrowAltCircleRight/></Icon>
+      <Flex align="center" mb="4px">
+        <Icon boxSize="28px" onClick={() => handleRollBackHistories(currIndex - 1)}>
+          <FaArrowAltCircleLeft/>
+        </Icon>
+        <Icon ml="4px" mr="8px" boxSize="28px" onClick={() => handleRollBackHistories(currIndex + 1)}>
+          <FaArrowAltCircleRight/>
+        </Icon>
         <Input value={webUrl} onChange={(e) => setWebUrl(e.target.value)} onKeyDown={handleKeyDown}/>
         <Button ml="8px" onClick={handleEnter}>Enter</Button>
       </Flex>
