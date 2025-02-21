@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
 import {getProxyPage} from "@/api/api";
-import {Box, Button, Flex, Icon, Input, Text} from "@chakra-ui/react";
+import {Box, Button, Flex, Icon, Input} from "@chakra-ui/react";
 import {FaArrowAltCircleLeft, FaArrowAltCircleRight} from "react-icons/fa";
 import SlideBox from "@/components/SlideBox";
+import DomTreeView from "@/components/DomTreeView";
 
 let windowUrl = "";
 
@@ -108,8 +109,11 @@ const WebPreview = ({parseOpen, children}) => {
       </Flex>
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
       <Flex position="relative" h="50vh" bottom="50vh">
-        <SlideBox open={parseOpen} align="bottom" outerStyle={{backgroundColor: "gray", borderTopRadius: "8px", opacity: 0.8}}>
-          <Text>placeholder</Text>
+        <SlideBox open={parseOpen} align="bottom" outerStyle={{
+          backgroundColor: "var(--lt-color-gray-300)", borderTopRadius: "8px", opacity: 0.8
+        }}>
+          <Input placeholder={'Please select xpath here.'}></Input>
+          <DomTreeView html={innerDoc} outerStyle={{maxHeight: "90%"}}></DomTreeView>
         </SlideBox>
       </Flex>
     </Box>

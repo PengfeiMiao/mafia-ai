@@ -1,13 +1,13 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Flex, Text} from '@chakra-ui/react';
+import {Flex} from '@chakra-ui/react';
 import InputBinder from "@/components/InputBinder";
 import TipsHeader from "@/components/TipsHeader";
-import MessageList from "@/components/MessageList";
+import MessageList from "@/pages/dialogue/MessageList";
 import {getMessages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
 import {GlobalContext} from "@/store/GlobalProvider";
-import SessionHeader from "@/components/SessionHeader";
+import SessionHeader from "@/pages/dialogue/SessionHeader";
 import {useWebsocket} from "@/store/WsProvider";
 
 const DialoguePage = ({outerStyle}) => {
