@@ -110,9 +110,12 @@ const WebPreview = ({parseOpen, children}) => {
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
       <Flex position="relative" h="50vh" bottom="50vh">
         <SlideBox open={parseOpen} align="bottom" outerStyle={{
-          backgroundColor: "var(--lt-color-gray-300)", borderTopRadius: "8px", opacity: 0.8
+          backgroundColor: "var(--chakra-colors-gray-300)", borderTopRadius: "8px", opacity: 0.8
         }}>
-          <Input placeholder={'Please select xpath here.'}></Input>
+          <Flex>
+            <Input placeholder={'Please select xpath here.'}></Input>
+            <Button>Add</Button>
+          </Flex>
           <DomTreeView html={innerDoc} outerStyle={{maxHeight: "90%"}}></DomTreeView>
         </SlideBox>
       </Flex>
