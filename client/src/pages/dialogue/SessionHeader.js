@@ -20,7 +20,7 @@ const models = createListCollection({
     {label: "qwen", value: "qwen"},
     {label: "deepseek", value: "deepseek"},
   ],
-})
+});
 
 const SessionHeader = () => {
   const [selectedValue, setSelectedValue] = useState(String(models.items[0].value));
@@ -69,6 +69,6 @@ const SessionHeader = () => {
       </SelectRoot>
     </Flex>
   );
-}
+};
 
 export default SessionHeader;

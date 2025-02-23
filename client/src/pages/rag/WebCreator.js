@@ -56,7 +56,7 @@ const WebCreator = ({children}) => {
         </DialogHeader>
         <DialogBody h="100%" pt="0px">
           <SlideBox open={previewOpen} align="left">
-            <WebPreview parseOpen={parseOpen}>
+            <WebPreview open={parseOpen}>
               {!parseOpen ?
                 <Button ml="8px" onClick={handleParse}>Parse</Button>
                 :

@@ -16,7 +16,7 @@ const TreeNode = ({node}) => {
 
   const toggle = () => setExpanded(!expanded);
 
-  if (!node?.tag || ['script', 'style', 'head'].includes(node.tag)) {
+  if (!node?.tag || node?.ignored) {
     return <></>;
   }
 
@@ -49,8 +49,9 @@ const TreeNode = ({node}) => {
   );
 };
 
-const DomTreeView = ({html, outerStyle}) => {
+const DomTreeView = ({html, outerStyle, ignoredTags, onLoad}) => {
   const [treeData, setTreeData] = useState(null);
+  let tags = new Set();
 
   const rootStyle = {
     maxHeight: "100%",
@@ -67,13 +68,16 @@ const DomTreeView = ({html, outerStyle}) => {
 
   const generateTreeData = (node) => {
     const children = Array.from(node.children).map(child => generateTreeData(child));
+    const tagName = String(node.tagName).toLowerCase();
+    tags.add(tagName);
     return {
-      tag: String(node.tagName).toLowerCase(),
+      tag: tagName,
       props: {
         outerHTML: formatHtml(node.outerHTML),
         className: String(node.className).replace(/\s+/g, ' ').trim(),
         id: node.id
       },
+      ignored: ignoredTags?.includes(tagName) ?? false,
       children
     };
   };
@@ -88,11 +92,17 @@ const DomTreeView = ({html, outerStyle}) => {
     let tree = parseHtml(html);
     console.log('tree', tree);
     setTreeData(tree);
+    if (onLoad) onLoad(tags);
   }, [html]);
+
+  useEffect(() => {
+    let tree = parseHtml(html);
+    setTreeData(tree);
+  }, [ignoredTags]);
 
   return (
     <Box style={rootStyle} p="16px" overflowY="auto">
-      <TreeNode node={treeData}/>
+      <TreeNode node={treeData} ignoredTags={ignoredTags}/>
     </Box>
   );
 };
