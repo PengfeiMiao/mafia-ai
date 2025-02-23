@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Box} from "@chakra-ui/react";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import {a11yLight, atelierCaveLight} from "react-syntax-highlighter/src/styles/hljs";
+import {atelierCaveLight} from "react-syntax-highlighter/src/styles/hljs";
 
 const HtmlSyntaxHighlighter = ({html}) => {
   return (
@@ -71,7 +71,7 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
     const tagName = String(node.tagName).toLowerCase();
     tags.add(tagName);
     let isRelated = true;
-    if(keyword) {
+    if (keyword) {
       isRelated = node?.innerText?.includes(keyword);
     }
     return {
@@ -92,6 +92,47 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
     return generateTreeData(doc.documentElement);
   };
 
+  const filterTreeData = (node) => {
+    if (node.ignored) return null;
+    return {
+      tag: node.tag,
+      props: node.props,
+      children: node.children.map(child => filterTreeData(child)).filter(child => child !== null)
+    };
+  };
+
+  const getXPathSegment = (node) => {
+    if (node.props.id) return `//*[@id='${node.props.id}']`;
+    if (node.props.className) return `//*[contains(@class, '${node.props.className.split(' ')[0]}')]`;
+    const index = node.parent ?
+      node.parent.children.filter(sibling => sibling.tag === node.tag).indexOf(node) + 1 : 1;
+    return `${node.tag}[${index}]`;
+  };
+
+  const getFilteredXPaths = (treeData) => {
+    const generateXPaths = (node) => {
+      const xpaths = [];
+
+      const traverse = (node, pathSegments) => {
+        if (node.children.length === 0) {
+          if (node.props.id) {
+            xpaths.push(`//*[@id='${node.props.id}']`);
+          } else {
+            xpaths.push([...pathSegments, getXPathSegment(node)].join('/'));
+          }
+        } else {
+          node.children.forEach(child => traverse(child, [...pathSegments, getXPathSegment(node)]));
+        }
+      };
+
+      traverse(node, []);
+      return xpaths;
+    };
+
+    const filteredTree = filterTreeData(treeData);
+    return filteredTree ? generateXPaths(filteredTree) : [];
+  }
+
   useEffect(() => {
     let tree = parseHtml(html);
     console.log('tree', tree);
@@ -102,6 +143,7 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
   useEffect(() => {
     let tree = parseHtml(html);
     console.log('tree', tree);
+    console.log('xpaths', getFilteredXPaths(tree));
     setTreeData(tree);
   }, [ignoredTags, keyword]);
 
