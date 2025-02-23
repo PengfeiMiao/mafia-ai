@@ -1,17 +1,7 @@
-import {
-  createListCollection,
-  Flex,
-  Icon
-} from "@chakra-ui/react";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
+import {createListCollection, Flex, Icon} from "@chakra-ui/react";
 import {TbBoxModel2} from "react-icons/tb";
-import {
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText
-} from "@/components/ui/select";
+import CommonSelector from "@/components/CommonSelector";
 
 const models = createListCollection({
   items: [
@@ -24,7 +14,6 @@ const models = createListCollection({
 
 const SessionHeader = () => {
   const [selectedValue, setSelectedValue] = useState(String(models.items[0].value));
-  const modelRef = useRef(null);
 
   useEffect(() => {
     console.log(selectedValue);
@@ -44,29 +33,18 @@ const SessionHeader = () => {
         boxSize="36px">
         <TbBoxModel2/>
       </Icon>
-      <SelectRoot
-        collection={models}
-        defaultValue={selectedValue}
-        onChange={() => {
-          setSelectedValue(modelRef.current?.innerText);
+      <CommonSelector
+        options={models}
+        onSelected={(value) => setSelectedValue(value)}
+        selected={selectedValue}
+        placeholder={models.items[0].value}
+        outerStyle={{
+          size: "sm",
+          width: "160px",
+          marginLeft: "56px",
+          top: "14px"
         }}
-        size="sm"
-        w="160px"
-        variant="outline"
-        position="absolute"
-        ml="56px"
-        top="14px">
-        <SelectTrigger>
-          <SelectValueText placeholder={models.items[0].label} ref={modelRef}/>
-        </SelectTrigger>
-        <SelectContent>
-          {models.items.map((model) => (
-            <SelectItem item={model} key={model.value}>
-              {model.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </SelectRoot>
+      />
     </Flex>
   );
 };

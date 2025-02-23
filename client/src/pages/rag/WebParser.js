@@ -1,18 +1,9 @@
-import {
-  Button,
-  createListCollection,
-  Flex,
-  Input, ListCollection,
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText
-} from "@chakra-ui/react";
+import React, {useEffect, useState} from "react";
+import {Button, createListCollection, Flex, Input} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import DomTreeView from "@/components/DomTreeView";
+import CommonSelector from "@/components/CommonSelector";
 
-import React, {useEffect, useState} from "react";
 
 const getSelectOptions = (options) => createListCollection({
   items: Array.from(options).sort().map(item => ({label: item, value: item}))
@@ -26,19 +17,6 @@ const WebParser = ({open, innerDoc}) => {
     console.log(selectedValue);
   }, [selectedValue]);
 
-  const handleSelected = (e) => {
-    let elem = e.target;
-    if (elem?.role === "option") {
-      setSelectedValue((prev) => {
-        let selected = new Set(prev);
-        elem?.dataset?.state === "unchecked" ?
-          selected.add(elem?.innerText) :
-          selected.delete(elem?.innerText);
-        return Array.from(selected);
-      });
-    }
-  };
-
   const handleLoadOptions = (options) => {
     setTagOptions(getSelectOptions(options));
   };
@@ -49,24 +27,17 @@ const WebParser = ({open, innerDoc}) => {
         backgroundColor: "var(--chakra-colors-gray-300)", borderTopRadius: "8px", opacity: 0.8
       }}>
         <Flex position="absolute" w="100%">
-          <SelectRoot
-            w="50%"
+          <CommonSelector
             multiple={true}
-            collection={tagOptions}
-            defaultValue={selectedValue}
-            onClick={handleSelected}
-          >
-            <SelectTrigger>
-              <SelectValueText placeholder={'Please ignore tags here.'}/>
-            </SelectTrigger>
-            <SelectContent position="relative">
-              {tagOptions.items.map((option) => (
-                <SelectItem item={option} key={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </SelectRoot>
+            options={tagOptions}
+            onSelected={(value) => setSelectedValue(value)}
+            selected={selectedValue}
+            placeholder={'Please ignore tags here.'}
+            outerStyle={{
+              position: "relative",
+              width: "50%"
+            }}
+          />
           <Input w="50%" placeholder={'Please select xpath here.'}></Input>
           <Button w="80px">Add</Button>
         </Flex>
