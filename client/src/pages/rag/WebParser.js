@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Button, createListCollection, Flex, Input} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import DomTreeView from "@/components/DomTreeView";
@@ -12,6 +12,9 @@ const getSelectOptions = (options) => createListCollection({
 const WebParser = ({open, innerDoc}) => {
   const [selectedValue, setSelectedValue] = useState([]);
   const [tagOptions, setTagOptions] = useState(getSelectOptions([]));
+  const [keyword, setKeyword] = useState('');
+  const [xpath, setXpath] = useState('');
+  const keywordRef = useRef(null);
 
   useEffect(() => {
     console.log(selectedValue);
@@ -19,6 +22,13 @@ const WebParser = ({open, innerDoc}) => {
 
   const handleLoadOptions = (options) => {
     setTagOptions(getSelectOptions(options));
+  };
+
+  const handleSearch = () => {
+    setKeyword(keywordRef?.current?.value);
+  };
+
+  const handleAdd = () => {
   };
 
   return (
@@ -35,16 +45,21 @@ const WebParser = ({open, innerDoc}) => {
             placeholder={'Please ignore tags here.'}
             outerStyle={{
               position: "relative",
-              width: "50%"
+              width: "33%"
             }}
           />
-          <Input w="50%" placeholder={'Please select xpath here.'}></Input>
-          <Button w="80px">Add</Button>
+          <Input w="33%" placeholder={'Please input keywords here.'} ref={keywordRef}></Input>
+          <Button w="60px" onClick={handleSearch}>Search</Button>
+          <Input w="33%" placeholder={'Please select xpath here.'}
+                 value={xpath}
+                 onChange={(e) => setXpath(e.target.value.trim())}/>
+          <Button w="60px" onClick={handleAdd}>Add</Button>
         </Flex>
         <DomTreeView
           html={innerDoc}
           outerStyle={{maxHeight: "90%", marginTop: "40px"}}
           onLoad={handleLoadOptions}
+          keyword={keyword}
           ignoredTags={selectedValue}/>
       </SlideBox>
     </Flex>

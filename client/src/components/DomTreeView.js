@@ -49,7 +49,7 @@ const TreeNode = ({node}) => {
   );
 };
 
-const DomTreeView = ({html, outerStyle, ignoredTags, onLoad}) => {
+const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
   const [treeData, setTreeData] = useState(null);
   let tags = new Set();
 
@@ -70,6 +70,10 @@ const DomTreeView = ({html, outerStyle, ignoredTags, onLoad}) => {
     const children = Array.from(node.children).map(child => generateTreeData(child));
     const tagName = String(node.tagName).toLowerCase();
     tags.add(tagName);
+    let isRelated = true;
+    if(keyword) {
+      isRelated = node?.innerText?.includes(keyword);
+    }
     return {
       tag: tagName,
       props: {
@@ -77,7 +81,7 @@ const DomTreeView = ({html, outerStyle, ignoredTags, onLoad}) => {
         className: String(node.className).replace(/\s+/g, ' ').trim(),
         id: node.id
       },
-      ignored: ignoredTags?.includes(tagName) ?? false,
+      ignored: !isRelated || (ignoredTags?.includes(tagName) ?? false),
       children
     };
   };
@@ -97,12 +101,13 @@ const DomTreeView = ({html, outerStyle, ignoredTags, onLoad}) => {
 
   useEffect(() => {
     let tree = parseHtml(html);
+    console.log('tree', tree);
     setTreeData(tree);
-  }, [ignoredTags]);
+  }, [ignoredTags, keyword]);
 
   return (
     <Box style={rootStyle} p="16px" overflowY="auto">
-      <TreeNode node={treeData} ignoredTags={ignoredTags}/>
+      <TreeNode node={treeData}/>
     </Box>
   );
 };

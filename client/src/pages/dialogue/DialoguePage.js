@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Flex} from '@chakra-ui/react';
-import InputBinder from "@/components/InputBinder";
+import InputBinder from "@/pages/dialogue/InputBinder";
 import TipsHeader from "@/components/TipsHeader";
 import MessageList from "@/pages/dialogue/MessageList";
 import {getMessages} from "@/api/api";
