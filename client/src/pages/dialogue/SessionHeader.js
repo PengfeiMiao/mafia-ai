@@ -34,6 +34,7 @@ const SessionHeader = () => {
         <TbBoxModel2/>
       </Icon>
       <CommonSelector
+        custom={true}
         options={models}
         onSelected={(value) => setSelectedValue(value)}
         selected={selectedValue}
