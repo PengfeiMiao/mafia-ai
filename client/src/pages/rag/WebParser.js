@@ -1,17 +1,12 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Button, createListCollection, Flex, Input} from "@chakra-ui/react";
+import {Button, Flex, Input} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import DomTreeView from "@/components/DomTreeView";
 import CommonSelector from "@/components/CommonSelector";
 
-
-const getSelectOptions = (options) => createListCollection({
-  items: Array.from(options).sort().map(item => ({label: item, value: item}))
-})
-
 const WebParser = ({open, innerDoc}) => {
   const [selectedValue, setSelectedValue] = useState([]);
-  const [tagOptions, setTagOptions] = useState(getSelectOptions([]));
+  const [tagOptions, setTagOptions] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [xpath, setXpath] = useState('');
   const keywordRef = useRef(null);
@@ -21,7 +16,7 @@ const WebParser = ({open, innerDoc}) => {
   }, [selectedValue]);
 
   const handleLoadOptions = (options) => {
-    setTagOptions(getSelectOptions(options));
+    setTagOptions(options);
   };
 
   const handleSearch = () => {
@@ -38,6 +33,7 @@ const WebParser = ({open, innerDoc}) => {
       }}>
         <Flex position="absolute" w="100%">
           <CommonSelector
+            custom={true}
             multiple={true}
             options={tagOptions}
             onSelected={(value) => setSelectedValue(value)}

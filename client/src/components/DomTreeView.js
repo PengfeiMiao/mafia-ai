@@ -137,7 +137,7 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
     let tree = parseHtml(html);
     console.log('tree', tree);
     setTreeData(tree);
-    if (onLoad) onLoad(tags);
+    if (onLoad) onLoad(Array.from(tags));
   }, [html]);
 
   useEffect(() => {

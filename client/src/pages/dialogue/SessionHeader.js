@@ -1,19 +1,17 @@
 import React, {useEffect, useState} from "react";
-import {createListCollection, Flex, Icon} from "@chakra-ui/react";
+import {Flex, Icon} from "@chakra-ui/react";
 import {TbBoxModel2} from "react-icons/tb";
 import CommonSelector from "@/components/CommonSelector";
 
-const models = createListCollection({
-  items: [
-    {label: "gpt-3.5-turbo", value: "gpt-3.5-turbo"},
-    {label: "gpt-4o-mini", value: "gpt-4o-mini"},
-    {label: "qwen", value: "qwen"},
-    {label: "deepseek", value: "deepseek"},
-  ],
-});
+const modelOptions = [
+  "gpt-3.5-turbo",
+  "gpt-4o-mini",
+  "qwen",
+  "deepseek"
+];
 
 const SessionHeader = () => {
-  const [selectedValue, setSelectedValue] = useState(String(models.items[0].value));
+  const [selectedValue, setSelectedValue] = useState(modelOptions[0]);
 
   useEffect(() => {
     console.log(selectedValue);
@@ -34,11 +32,10 @@ const SessionHeader = () => {
         <TbBoxModel2/>
       </Icon>
       <CommonSelector
-        custom={true}
-        options={models}
+        options={modelOptions}
         onSelected={(value) => setSelectedValue(value)}
         selected={selectedValue}
-        placeholder={models.items[0].value}
+        placeholder={modelOptions[0]}
         outerStyle={{
           size: "sm",
           width: "160px",
