@@ -35,7 +35,7 @@ const WebParser = ({open, innerDoc}) => {
           <CommonSelector
             custom={true}
             multiple={true}
-            options={tagOptions}
+            options={tagOptions.sort()}
             onSelected={(value) => setSelectedValue(value)}
             selected={selectedValue}
             placeholder={'Please ignore tags here.'}

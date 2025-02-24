@@ -19,7 +19,7 @@ const getSelectOptions = (options) => createListCollection({
   items: _.uniq(options).map(item => ({label: item, value: item}))
 });
 
-const CommonSelector = ({options, placeholder, selected, onSelected, multiple, custom, outerStyle}) => {
+const CommonSelector = ({options, placeholder, selected, onSelected, multiple, custom = false, outerStyle}) => {
   const [inEdit, setInEdit] = useState(false);
   const [editValue, setEditValue] = useState('');
   const editRef = useRef(null);
@@ -29,6 +29,10 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
     position: "absolute",
     ...outerStyle
   };
+
+  useEffect(() => {
+    setOptionCollection(getSelectOptions(options));
+  }, [options]);
 
   const handleSelected = (e) => {
     let elem = e.target;
@@ -47,6 +51,13 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
 
   const handleEditConfirm = (e) => {
     e.preventDefault();
+    if (!String(editValue)?.trim()) {
+      return;
+    }
+    if (editValue.includes(",")) {
+      window.alert("Custom option cannot contains comma(,)");
+      return;
+    }
     let items = optionCollection.items.map(item => item.value);
     let newOptions = [editValue].concat(items);
     setOptionCollection(getSelectOptions(newOptions));
@@ -60,10 +71,17 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
     }
   };
 
+  const handleDeleteOption = (value) => {
+    let newOptions = optionCollection.items
+      .map(item => item.value)
+      .filter(item => item !== value);
+    setOptionCollection(getSelectOptions(newOptions));
+  };
+
   useEffect(() => {
-    if (inEdit) {
+    if (custom && inEdit) {
       editRef?.current.focus();
-      setEditValue(selected);
+      setEditValue(selected instanceof Array && selected.length > 0 ? selected[0] : selected);
     }
   }, [inEdit]);
 
@@ -100,10 +118,12 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
         <SelectTrigger>
           <SelectValueText placeholder={placeholder}/>
           <Group>
-            <RiEdit2Line onClick={(e) => {
-              e.preventDefault();
-              setInEdit(true);
-            }}/>
+            {custom ?
+              <RiEdit2Line onClick={(e) => {
+                e.preventDefault();
+                setInEdit(true);
+              }}/> : null
+            }
             <GrDown/>
           </Group>
         </SelectTrigger>
@@ -112,6 +132,9 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
         {optionCollection.items.map((option) => (
           <SelectItem item={option} key={option.value}>
             {option.label}
+            {!options.includes(option.value) ?
+              <LuX color="gray" onClick={() => handleDeleteOption(option.value)}/>
+              : null}
           </SelectItem>
         ))}
       </SelectContent>
