@@ -103,7 +103,7 @@ const WebPreview = ({open, children}) => {
           <FaArrowAltCircleRight/>
         </Icon>
         <Input value={webUrl} onChange={(e) => setWebUrl(e.target.value)} onKeyDown={handleKeyDown}/>
-        <Button ml="8px" onClick={handleEnter}>Enter</Button>
+        <Button ml="8px" w="60px" onClick={handleEnter}>Enter</Button>
         {children}
       </Flex>
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>

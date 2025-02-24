@@ -46,7 +46,6 @@ const WebParser = ({open, innerDoc}) => {
           <Button w="60px" onClick={handleSearch}>Search</Button>
           <CommonSelector
             custom={true}
-            multiple={true}
             options={xpathOptions}
             onSelected={(value) => setXpathSelected(value)}
             selected={xpathSelected}

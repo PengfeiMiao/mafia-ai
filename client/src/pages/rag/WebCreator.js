@@ -58,19 +58,19 @@ const WebCreator = ({children}) => {
           <SlideBox open={previewOpen} align="left">
             <WebPreview open={parseOpen}>
               {!parseOpen ?
-                <Button ml="8px" onClick={handleParse}>Parse</Button>
+                <Button ml="8px" w="60px" onClick={handleParse}>Parse</Button>
                 :
                 <>
-                  <Button ml="8px" onClick={handleCancel}>Cancel</Button>
-                  <Button ml="8px" onClick={handleNext}>Next</Button>
+                  <Button ml="8px" w="60px" onClick={handleCancel}>Cancel</Button>
+                  <Button ml="8px" w="60px" onClick={handleNext}>Next</Button>
                 </>
               }
             </WebPreview>
           </SlideBox>
           <SlideBox open={formOpen} align="right">
             <Flex h="100%" w="100%" p="8px" justify="space-between">
-              <Button ml="8px" onClick={handleBack}>Back</Button>
-              <Button ml="8px" onClick={handleSubmit}>Submit</Button>
+              <Button ml="8px" w="60px" onClick={handleBack}>Back</Button>
+              <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
             </Flex>
           </SlideBox>
         </DialogBody>
