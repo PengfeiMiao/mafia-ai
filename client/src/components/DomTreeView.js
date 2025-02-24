@@ -49,7 +49,7 @@ const TreeNode = ({node}) => {
   );
 };
 
-const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
+const DomTreeView = ({html, ignoredTags, keyword, onLoad, onRefresh, outerStyle}) => {
   const [treeData, setTreeData] = useState(null);
   let tags = new Set();
 
@@ -138,13 +138,13 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, outerStyle}) => {
     console.log('tree', tree);
     setTreeData(tree);
     if (onLoad) onLoad(Array.from(tags));
+    if (onRefresh) onRefresh(getFilteredXPaths(tree));
   }, [html]);
 
   useEffect(() => {
     let tree = parseHtml(html);
-    console.log('tree', tree);
-    console.log('xpaths', getFilteredXPaths(tree));
     setTreeData(tree);
+    if (onRefresh) onRefresh(getFilteredXPaths(tree));
   }, [ignoredTags, keyword]);
 
   return (
