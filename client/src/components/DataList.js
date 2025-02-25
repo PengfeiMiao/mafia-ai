@@ -29,7 +29,7 @@ const DataList = ({dateList, headers, functions, operations}) => {
             <Table.Row key={item.id}>
               {headers.map((field, index) => (
                 <Table.Cell key={field}>
-                  {functions && functions[index] ? functions[index](item[field]) : item[field]}
+                  {functions && functions[index] ? functions[index](item[field]) : String(item[field])}
                 </Table.Cell>
               ))}
               <Table.Cell>

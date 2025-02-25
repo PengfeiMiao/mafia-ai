@@ -3,6 +3,8 @@ import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import WebCreator from "@/pages/rag/WebCreator";
+import {GrView} from "react-icons/gr";
+import {VscDebugRerun} from "react-icons/vsc";
 
 
 const WebList = () => {
@@ -12,24 +14,36 @@ const WebList = () => {
     setWebList([
       {
         id: 1,
-        name: 'test1',
+        title: 'test1',
+        url: 'http://www.baidu.com',
+        xpaths: '//*[id=test]',
+        scheduled: true,
+        cron: '* 0 * * ? *',
+        preview: 'test1',
         created_by: 'unknown',
         created_at: '2024-01-01 00:00:00',
-        count: 10
       },
       {
         id: 2,
-        name: 'test2',
+        title: 'test2',
+        url: 'http://weibo.cn/pub',
+        xpaths: '//*[id=test]',
+        scheduled: true,
+        cron: '* 12 * * ? *',
+        preview: 'test1',
         created_by: 'unknown',
         created_at: '2024-01-01 00:00:00',
-        count: 8
       },
       {
         id: 3,
-        name: 'test3',
+        title: 'test3',
+        url: 'http://localhost:3000',
+        xpaths: '//*[id=test]',
+        scheduled: false,
+        cron: null,
+        preview: 'test1',
         created_by: 'unknown',
         created_at: '2024-01-01 00:00:00',
-        count: 6
       }
     ]);
   }, []);
@@ -43,10 +57,12 @@ const WebList = () => {
       </Flex>
       <DataList
         dateList={webList}
-        headers={["name", "created_by", "count"]}
+        headers={["title", "url", "xpaths", "scheduled", "cron"]}
         operations={(_) => (
           <Flex align={'flex-end'}>
-            <RiEdit2Line style={{marginLeft: 'auto'}}/>
+            <VscDebugRerun style={{marginLeft: 'auto'}}/>
+            <GrView style={{marginLeft: '12px'}}/>
+            <RiEdit2Line style={{marginLeft: '12px'}}/>
             <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
           </Flex>
         )}
