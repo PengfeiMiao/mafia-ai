@@ -7,9 +7,19 @@ const WebForm = ({data, onChange}) => {
   const [scheduled, setScheduled] = useState("1");
   const [cron, setCron] = useState('');
 
+  const checkCron = (cronExpression) => {
+    const regex = /^([*?]|\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?\s+){5}([*?]|\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?\s+)(\*|(\d{4}(,\d{4})*))$/;
+    return regex.test(cronExpression);
+  };
+
   useEffect(() => {
-    onChange(scheduled === "1", cron);
+    const isScheduled = scheduled === "1";
+    onChange(isScheduled, isScheduled ? cron : "");
   }, [scheduled, cron]);
+
+  useEffect(() => {
+    console.log(checkCron(cron));
+  }, [cron]);
 
   return (
     <Flex w="100%" p="8px 16px" direction="column">
