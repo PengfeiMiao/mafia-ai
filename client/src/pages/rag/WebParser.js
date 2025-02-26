@@ -1,10 +1,11 @@
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Button, Flex, Input, Text} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import DomTreeView from "@/components/DomTreeView";
 import CommonSelector from "@/components/CommonSelector";
 import _ from "lodash";
 import {LuX} from "react-icons/lu";
+import OverflowText from "@/components/OverflowText";
 
 const WebParser = ({open, innerDoc}) => {
   const [tagSelected, setTagSelected] = useState([]);
@@ -14,6 +15,9 @@ const WebParser = ({open, innerDoc}) => {
   const [xpathSelected, setXpathSelected] = useState([]);
   const [xpathCandidate, setXpathCandidate] = useState([]);
   const keywordRef = useRef(null);
+  const candidateRef = useRef(null);
+
+  const maxCandidate = 5;
 
   const handleLoadTags = (options) => {
     setTagOptions(options);
@@ -27,12 +31,24 @@ const WebParser = ({open, innerDoc}) => {
     setKeyword(keywordRef?.current?.value);
   };
 
-  const handleAdd = () => {
+  const handleAdd = (newItem) => {
     setXpathCandidate((prev) => {
-      prev.push(xpathSelected);
+      prev.push(newItem);
       return _.uniq(prev);
     })
   };
+
+  const handleDelete = (deprecated) => {
+    setXpathCandidate((prev) => {
+      return _.without(prev, deprecated);
+    })
+  };
+
+  useEffect(() => {
+    if (candidateRef.current) {
+      candidateRef.current.scrollTop = candidateRef.current.scrollHeight;
+    }
+  }, [xpathCandidate]);
 
   return (
     <Flex position="relative" h="50vh" bottom="50vh">
@@ -42,34 +58,30 @@ const WebParser = ({open, innerDoc}) => {
         <Flex
           position="absolute"
           w="100%"
-          top={`-${38 * xpathCandidate.length}px`}
+          top={`-${38 * Math.min(xpathCandidate.length, maxCandidate)}px`}
           direction="column"
-          // overflowY="auto"
-          // maxH="30vh"
+          overflowY="auto"
+          maxH={`${38 * maxCandidate}px`}
+          ref={candidateRef}
         >
           {xpathCandidate.map(item => (
             <Flex
               key={item}
               align="center"
               justify="flex-end"
-              ml="auto"
               maxW="50vw"
+              bgColor="white"
               boxShadow="4px 2px 4px 2px rgba(0,0,0,0.1)"
               borderColor="gray.300"
               borderWidth="1px"
               borderRadius="sm"
+              margin="4px 60px 4px auto"
               p="4px"
-              mb="8px"
             >
-              <Text style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '90%',
-                display: 'block'
-              }}>{item}</Text>
+              <OverflowText content={item}/>
               <LuX style={{marginLeft: "8px"}} color="black" onClick={(e) => {
                 e.preventDefault();
+                handleDelete(item);
               }}/>
             </Flex>
           ))}
@@ -97,7 +109,7 @@ const WebParser = ({open, innerDoc}) => {
               position: "relative", width: "33%"
             }}
           />
-          <Button w="60px" onClick={handleAdd}>Add</Button>
+          <Button w="60px" onClick={() => handleAdd(xpathSelected)}>Add</Button>
         </Flex>
         <DomTreeView
           html={innerDoc}

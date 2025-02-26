@@ -54,10 +54,6 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
     if (!String(editValue)?.trim()) {
       return;
     }
-    if (editValue.includes(",")) {
-      window.alert("Custom option cannot contains comma(,)");
-      return;
-    }
     let items = optionCollection.items.map(item => item.value);
     let newOptions = [editValue].concat(items);
     setOptionCollection(getSelectOptions(newOptions));
@@ -76,6 +72,10 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
       .map(item => item.value)
       .filter(item => item !== value);
     setOptionCollection(getSelectOptions(newOptions));
+  };
+
+  const isSelected = (_selected, value) => {
+    return _selected.includes(value);
   };
 
   useEffect(() => {
@@ -128,9 +128,10 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
           </Group>
         </SelectTrigger>
       }
-      <SelectContent maxH="40vh">
+      <SelectContent maxH="40vh" bgColor="white">
         {optionCollection.items.map((option) => (
-          <SelectItem item={option} key={option.value}>
+          <SelectItem item={option} key={option.value}
+                      bgColor={isSelected(selected, option.value) ? "gray.100" : ""}>
             {option.label}
             {!options.includes(option.value) ?
               <LuX color="gray" onClick={() => handleDeleteOption(option.value)}/>
