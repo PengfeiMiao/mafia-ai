@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Button, Flex, Input, Text} from "@chakra-ui/react";
+import {Button, Flex, Icon, Input} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import DomTreeView from "@/components/DomTreeView";
 import CommonSelector from "@/components/CommonSelector";
@@ -12,7 +12,7 @@ const WebParser = ({open, innerDoc}) => {
   const [tagOptions, setTagOptions] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [xpathOptions, setXpathOptions] = useState('');
-  const [xpathSelected, setXpathSelected] = useState([]);
+  const [xpathSelected, setXpathSelected] = useState('');
   const [xpathCandidate, setXpathCandidate] = useState([]);
   const keywordRef = useRef(null);
   const candidateRef = useRef(null);
@@ -50,6 +50,11 @@ const WebParser = ({open, innerDoc}) => {
     }
   }, [xpathCandidate]);
 
+  useEffect(() => {
+    setXpathSelected('');
+    setXpathCandidate([]);
+  }, [innerDoc]);
+
   return (
     <Flex position="relative" h="50vh" bottom="50vh">
       <SlideBox open={open} align="bottom" outerStyle={{
@@ -79,10 +84,12 @@ const WebParser = ({open, innerDoc}) => {
               p="4px"
             >
               <OverflowText content={item}/>
-              <LuX style={{marginLeft: "8px"}} color="black" onClick={(e) => {
+              <Icon style={{marginLeft: "8px"}} color="black" onClick={(e) => {
                 e.preventDefault();
                 handleDelete(item);
-              }}/>
+              }}>
+                <LuX/>
+              </Icon>
             </Flex>
           ))}
         </Flex>
