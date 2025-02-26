@@ -6,15 +6,20 @@ import WebParser from "@/pages/rag/WebParser";
 
 let windowUrl = "";
 
-const WebPreview = ({open, children}) => {
+const WebPreview = ({open, onChange, children}) => {
   const [innerDoc, setInnerDoc] = useState("<div />");
-  const [webUrl, setWebUrl] = useState("");
+  const [webUrl, setWebUrl] = useState("www.baidu.com");
   const [history, setHistory] = useState([]);
   const [currIndex, setCurrIndex] = useState(0);
+  const [xpaths, setXpaths] = useState([]);
 
   useEffect(() => {
     windowUrl = "";
   }, []);
+
+  useEffect(() => {
+    onChange(handleFinalUri(webUrl), xpaths);
+  }, [webUrl, xpaths]);
 
   const handleProxyPage = (uri) => {
     getProxyPage(uri, "GET")
@@ -107,7 +112,7 @@ const WebPreview = ({open, children}) => {
         {children}
       </Flex>
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
-      <WebParser open={open} innerDoc={innerDoc}></WebParser>
+      <WebParser open={open} innerDoc={innerDoc} onChange={(_xpaths) => setXpaths(_xpaths)}></WebParser>
     </Box>
   );
 };

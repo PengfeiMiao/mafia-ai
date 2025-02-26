@@ -131,7 +131,7 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
       <SelectContent maxH="40vh" bgColor="white">
         {optionCollection.items.map((option) => (
           <SelectItem item={option} key={option.value}
-                      bgColor={isSelected(selected, option.value) ? "gray.100" : ""}>
+                      bgColor={isSelected(selected, option.value) ? "gray.200" : ""}>
             {option.label}
             {!options.includes(option.value) ?
               <LuX color="gray" onClick={() => handleDeleteOption(option.value)}/>

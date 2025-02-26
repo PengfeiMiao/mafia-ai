@@ -7,7 +7,7 @@ import _ from "lodash";
 import {LuX} from "react-icons/lu";
 import OverflowText from "@/components/OverflowText";
 
-const WebParser = ({open, innerDoc}) => {
+const WebParser = ({open, onChange, innerDoc}) => {
   const [tagSelected, setTagSelected] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [keyword, setKeyword] = useState('');
@@ -48,6 +48,7 @@ const WebParser = ({open, innerDoc}) => {
     if (candidateRef.current) {
       candidateRef.current.scrollTop = candidateRef.current.scrollHeight;
     }
+    onChange(xpathCandidate);
   }, [xpathCandidate]);
 
   useEffect(() => {

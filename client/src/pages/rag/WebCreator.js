@@ -13,6 +13,7 @@ import TipsHeader from "@/components/TipsHeader";
 import WebPreview from "@/pages/rag/WebPreview";
 import {Button, Flex} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
+import WebForm from "@/pages/rag/WebForm";
 
 
 const WebCreator = ({children}) => {
@@ -20,12 +21,25 @@ const WebCreator = ({children}) => {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [parseOpen, setParseOpen] = useState(false);
+  const [formData, setFormData] = useState({});
   const closeRef = useRef(null);
 
   const handleNext = () => {
     setPreviewOpen(false);
     setFormOpen(true);
     setParseOpen(false);
+  };
+
+  const handleToNext = (uri, xpaths) => {
+    setFormData((prev) => {
+      return {...prev, uri, xpaths};
+    });
+  };
+
+  const handleToSubmit = (scheduled, cron) => {
+    setFormData((prev) => {
+      return {...prev, scheduled, cron};
+    });
   };
 
   const handleBack = () => {
@@ -42,6 +56,7 @@ const WebCreator = ({children}) => {
   };
 
   const handleSubmit = () => {
+    console.log(formData);
   };
 
   return (
@@ -56,7 +71,7 @@ const WebCreator = ({children}) => {
         </DialogHeader>
         <DialogBody h="100%" pt="0px">
           <SlideBox open={previewOpen} align="left">
-            <WebPreview open={parseOpen}>
+            <WebPreview open={parseOpen} onChange={handleToNext}>
               {!parseOpen ?
                 <Button ml="8px" w="60px" onClick={handleParse}>Parse</Button>
                 :
@@ -68,10 +83,11 @@ const WebCreator = ({children}) => {
             </WebPreview>
           </SlideBox>
           <SlideBox open={formOpen} align="right">
-            <Flex h="100%" w="100%" p="8px" justify="space-between">
-              <Button ml="8px" w="60px" onClick={handleBack}>Back</Button>
+            <Flex h="auto" w="100%" p="8px" justify="space-between">
+              <Button w="60px" onClick={handleBack}>Back</Button>
               <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
             </Flex>
+            <WebForm data={formData} onChange={handleToSubmit}/>
           </SlideBox>
         </DialogBody>
         <DialogFooter/>
