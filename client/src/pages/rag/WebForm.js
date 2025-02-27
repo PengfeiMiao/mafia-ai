@@ -16,6 +16,10 @@ const WebForm = () => {
   };
 
   useEffect(() => {
+    setNewTitle(formData?.title);
+  }, []);
+
+  useEffect(() => {
     const isScheduled = scheduled === "1";
     setFormData({
       ...formData,

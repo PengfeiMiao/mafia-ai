@@ -46,15 +46,21 @@ const WebCreator = ({onChange, children}) => {
     setParseOpen(false);
   };
 
-  const handleSubmit = async () => {
-    let res = await createWebsite(formData);
-    if (res) {
-      if (onChange) onChange(res);
+  const handleClose = () => {
+    closeRef?.current.click();
+    setTimeout(() => {
       setPreviewOpen(true);
       setFormOpen(false);
       setParseOpen(false);
       setFormData({});
-      closeRef.current.click();
+    }, 300);
+  };
+
+  const handleSubmit = async () => {
+    let res = await createWebsite(formData);
+    if (res) {
+      if (onChange) onChange(res);
+      handleClose();
       onToggle();
     }
   };
@@ -87,11 +93,11 @@ const WebCreator = ({onChange, children}) => {
               <Button w="60px" onClick={handleBack}>Back</Button>
               <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
             </Flex>
-            <WebForm/>
+            {formOpen ? <WebForm/> : <></>}
           </SlideBox>
         </DialogBody>
         <DialogFooter/>
-        <DialogCloseTrigger ref={closeRef}/>
+        <DialogCloseTrigger ref={closeRef} onClick={handleClose}/>
       </DialogContent>
     </DialogRoot>
   );
