@@ -8,40 +8,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import React, {useRef, useState} from "react";
+import React, {useContext, useRef, useState} from "react";
 import TipsHeader from "@/components/TipsHeader";
 import WebPreview from "@/pages/rag/WebPreview";
 import {Button, Flex} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import WebForm from "@/pages/rag/WebForm";
 import {createWebsite} from "@/api/api";
-import {useDelayToggle} from "@/store/GlobalProvider";
+import {useDelayToggle} from "@/store/Hook";
+import {WebContext} from "@/store/WebProvider";
 
 
 const WebCreator = ({onChange, children}) => {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [parseOpen, setParseOpen] = useState(false);
-  const [formData, setFormData] = useState({});
   const closeRef = useRef(null);
   const {toggle, onToggle} = useDelayToggle();
+  const {formData, setFormData} = useContext(WebContext);
 
   const handleNext = () => {
     setPreviewOpen(false);
     setFormOpen(true);
     setParseOpen(false);
-  };
-
-  const handleToNext = (title, uri, xpaths) => {
-    setFormData((prev) => {
-      return {...prev, title, uri, xpaths};
-    });
-  };
-
-  const handleToSubmit = (title, scheduled, cron) => {
-    setFormData((prev) => {
-      return {...prev, title, scheduled, cron};
-    });
   };
 
   const handleBack = () => {
@@ -59,9 +48,9 @@ const WebCreator = ({onChange, children}) => {
 
   const handleSubmit = async () => {
     let res = await createWebsite(formData);
-    if(res) {
-      if(onChange) onChange(res);
-      setPreviewOpen(false);
+    if (res) {
+      if (onChange) onChange(res);
+      setPreviewOpen(true);
       setFormOpen(false);
       setParseOpen(false);
       setFormData({});
@@ -82,7 +71,7 @@ const WebCreator = ({onChange, children}) => {
         </DialogHeader>
         <DialogBody h="100%" pt="0px">
           <SlideBox open={previewOpen} align="left">
-            <WebPreview open={parseOpen} onChange={handleToNext}>
+            <WebPreview open={parseOpen}>
               {!parseOpen ?
                 <Button ml="8px" w="60px" onClick={handleParse}>Parse</Button>
                 :
@@ -98,7 +87,7 @@ const WebCreator = ({onChange, children}) => {
               <Button w="60px" onClick={handleBack}>Back</Button>
               <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
             </Flex>
-            <WebForm data={formData} onChange={handleToSubmit}/>
+            <WebForm/>
           </SlideBox>
         </DialogBody>
         <DialogFooter/>

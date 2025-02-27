@@ -1,18 +1,19 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {getProxyPage} from "@/api/api";
 import {Box, Button, Flex, Icon, Input} from "@chakra-ui/react";
 import {FaArrowAltCircleLeft, FaArrowAltCircleRight} from "react-icons/fa";
 import WebParser from "@/pages/rag/WebParser";
+import {WebContext} from "@/store/WebProvider";
 
 let windowUrl = "";
 
-const WebPreview = ({open, onChange, children}) => {
+const WebPreview = ({open, children}) => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("www.baidu.com");
-  const [title, setTitle] = useState("");
   const [history, setHistory] = useState([]);
   const [currIndex, setCurrIndex] = useState(0);
   const [xpaths, setXpaths] = useState([]);
+  const {formData, setFormData} = useContext(WebContext);
   const parser = new DOMParser();
 
   useEffect(() => {
@@ -20,8 +21,10 @@ const WebPreview = ({open, onChange, children}) => {
   }, []);
 
   useEffect(() => {
-    onChange(title, handleFinalUri(webUrl), xpaths);
-  }, [title, webUrl, xpaths]);
+    const htmlDoc = parser.parseFromString(innerDoc, 'text/html');
+    const title = htmlDoc.head.querySelector('title')?.textContent;
+    setFormData({...formData, title, uri: handleFinalUri(webUrl), xpaths});
+  }, [innerDoc, webUrl, xpaths]);
 
   const handleProxyPage = (uri) => {
     getProxyPage(uri, "GET")
@@ -40,9 +43,6 @@ const WebPreview = ({open, onChange, children}) => {
           })();
         </script>`;
         let content = r?.content.replace('</head>', `${script}</head>`);
-        const htmlDoc = parser.parseFromString(content, 'text/html');
-        const title = htmlDoc.head.querySelector('title').textContent;
-        setTitle(title);
         setInnerDoc(content);
       });
   }
@@ -101,7 +101,7 @@ const WebPreview = ({open, onChange, children}) => {
     let uri = handleFinalUri(url);
     handleProxyPage(uri);
     handleAddHistories(uri);
-  }
+  };
 
   return (
     <Box h="100%" w="100%">

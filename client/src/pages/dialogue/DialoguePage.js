@@ -6,9 +6,10 @@ import MessageList from "@/pages/dialogue/MessageList";
 import {getMessages} from "@/api/api";
 import {v4 as uuidv4} from "uuid";
 import moment from "moment";
-import {GlobalContext, useDelayToggle} from "@/store/GlobalProvider";
+import {GlobalContext} from "@/store/GlobalProvider";
 import SessionHeader from "@/pages/dialogue/SessionHeader";
 import {useWebsocket} from "@/store/WsProvider";
+import {useDelayToggle} from "@/store/Hook";
 
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);

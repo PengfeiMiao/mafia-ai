@@ -9,7 +9,8 @@ import {deleteWebsite, getWebsites} from "@/api/api";
 import TipsHeader from "@/components/TipsHeader";
 import ConfirmPopover from "@/components/ConfirmPopover";
 import _ from "lodash";
-import {useDelayToggle} from "@/store/GlobalProvider";
+import {useDelayToggle} from "@/store/Hook";
+import WebProvider from "@/store/WebProvider";
 
 
 const WebList = () => {
@@ -43,11 +44,13 @@ const WebList = () => {
 
   return (
     <Flex h="100%" paddingX="20px" align="center" jusify="flex-end" direction="column">
-      <TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been deleted.'} hidden={toggle}/>
+      <TipsHeader title={'Website have been deleted.'} hidden={toggle}/>
       <Flex h="auto" w="100%" align="flex-start" jusify="flex-end">
-        <WebCreator onChange={handleCallback}>
-          <Button h="32px" marginY="8px">New</Button>
-        </WebCreator>
+        <WebProvider>
+          <WebCreator onChange={handleCallback}>
+            <Button h="32px" marginY="8px">New</Button>
+          </WebCreator>
+        </WebProvider>
       </Flex>
       <DataList
         dateList={webList}
