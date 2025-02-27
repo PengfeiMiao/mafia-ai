@@ -3,9 +3,10 @@ import {Radio, RadioGroup} from "@/components/ui/radio";
 import React, {useEffect, useState} from "react";
 
 const WebForm = ({data, onChange}) => {
-  const {uri, xpaths} = data;
+  const {title, uri, xpaths} = data;
+  const [newTitle, setNewTitle] = useState(title);
   const [scheduled, setScheduled] = useState("1");
-  const [cron, setCron] = useState('');
+  const [cron, setCron] = useState("* * * * ? *");
 
   const checkCron = (cronExpression) => {
     const regex = /^(([*?]|(\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?))\s+){4}[*?]\s+(\*|(\d{4}(,\d{4})*))$/;
@@ -13,9 +14,13 @@ const WebForm = ({data, onChange}) => {
   };
 
   useEffect(() => {
+    setNewTitle(title);
+  }, [data]);
+
+  useEffect(() => {
     const isScheduled = scheduled === "1";
-    onChange(isScheduled, isScheduled ? cron : "");
-  }, [scheduled, cron]);
+    onChange(newTitle, isScheduled, isScheduled ? cron : "");
+  }, [newTitle, scheduled, cron]);
 
   useEffect(() => {
     console.log(`'${cron}'`, checkCron(cron));
@@ -24,6 +29,14 @@ const WebForm = ({data, onChange}) => {
   return (
     <Flex w="100%" p="8px 16px" direction="column">
       <SimpleGrid columns={{base: 2, md: 4}} gap={{base: "8px", md: "16px"}}>
+        <GridItem colSpan={{base: 1, md: 1}}>
+          <Flex h="100%" align="center">
+            <Text>Title</Text>
+          </Flex>
+        </GridItem>
+        <GridItem colSpan={{base: 1, md: 3}}>
+          <Input w="50%" minW="128px" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}/>
+        </GridItem>
         <GridItem colSpan={{base: 1, md: 1}}>
           <Text>Url</Text>
         </GridItem>
@@ -57,7 +70,7 @@ const WebForm = ({data, onChange}) => {
           </Flex>
         </GridItem>
         <GridItem colSpan={{base: 1, md: 3}}>
-          <Input w="50%" minW="128px" value={cron} onChange={(e) => setCron(e.target.value)}></Input>
+          <Input w="50%" minW="128px" value={cron} onChange={(e) => setCron(e.target.value)}/>
         </GridItem>
       </SimpleGrid>
     </Flex>

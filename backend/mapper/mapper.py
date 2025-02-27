@@ -7,7 +7,7 @@ SEPARATOR = ';;;'
 def website_to_model(website: Website) -> WebsiteModel:
     mapping = serialize_model(website)
     xpaths = mapping.get('xpaths')
-    mapping['xpaths'] = str(xpaths).split(';;;') if xpaths else []
+    mapping['xpaths'] = str(xpaths).split(SEPARATOR) if xpaths else []
     return WebsiteModel(**mapping)
 
 

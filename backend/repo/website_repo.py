@@ -17,8 +17,7 @@ def save_website(db: DBSession, website: WebsiteModel):
 
 
 def delete_websites(db: DBSession, ids: List[str]):
-    entity = (db.query(Website)
-              .filter(Website.id.in_(ids)).filter_by(status='active'))
+    entity = db.query(Website).filter(Website.id.in_(ids))
     entity.update({Website.status: 'inactive'})
     db.commit()
 
@@ -38,6 +37,6 @@ def update_website(db: DBSession, website: WebsiteModel, fields: List[str]):
 
 def get_websites(db: DBSession, user_id: str):
     return (db.query(Website)
-            .filter_by(user_id=user_id)
+            .filter_by(user_id=user_id, status='active')
             .order_by(Website.created_at.desc())
             .all())

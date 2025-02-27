@@ -5,65 +5,61 @@ import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import WebCreator from "@/pages/rag/WebCreator";
 import {GrView} from "react-icons/gr";
 import {VscDebugRerun} from "react-icons/vsc";
+import {deleteWebsite, getWebsites} from "@/api/api";
+import TipsHeader from "@/components/TipsHeader";
+import ConfirmPopover from "@/components/ConfirmPopover";
+import _ from "lodash";
+import {useDelayToggle} from "@/store/GlobalProvider";
 
 
 const WebList = () => {
   const [webList, setWebList] = new useState([]);
+  const {toggle, onToggle} = useDelayToggle();
+
+  const getWebsiteList = async () => {
+    let websites = await getWebsites();
+    setWebList(websites);
+  };
+
+  const handleCallback = (newWeb) => {
+    setWebList((prev) => {
+      prev.push(newWeb);
+      return Array.from(prev);
+    });
+  };
+
+  const handleDelete = async (websiteId) => {
+    let res = await deleteWebsite(websiteId);
+    if (res) {
+      const newList = _.reject(webList, (item) => item.id === websiteId);
+      setWebList(newList);
+      onToggle();
+    }
+  };
 
   useEffect(() => {
-    setWebList([
-      {
-        id: 1,
-        title: 'test1',
-        url: 'http://www.baidu.com',
-        xpaths: '//*[id=test]',
-        scheduled: true,
-        cron: '* 0 * * ? *',
-        preview: 'test1',
-        created_by: 'unknown',
-        created_at: '2024-01-01 00:00:00',
-      },
-      {
-        id: 2,
-        title: 'test2',
-        url: 'http://weibo.cn/pub',
-        xpaths: '//*[id=test]',
-        scheduled: true,
-        cron: '* 12 * * ? *',
-        preview: 'test1',
-        created_by: 'unknown',
-        created_at: '2024-01-01 00:00:00',
-      },
-      {
-        id: 3,
-        title: 'test3',
-        url: 'http://localhost:3000',
-        xpaths: '//*[id=test]',
-        scheduled: false,
-        cron: null,
-        preview: 'test1',
-        created_by: 'unknown',
-        created_at: '2024-01-01 00:00:00',
-      }
-    ]);
+    getWebsiteList().then();
   }, []);
 
   return (
     <Flex h="100%" paddingX="20px" align="center" jusify="flex-end" direction="column">
+      <TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been deleted.'} hidden={toggle}/>
       <Flex h="auto" w="100%" align="flex-start" jusify="flex-end">
-        <WebCreator>
+        <WebCreator onChange={handleCallback}>
           <Button h="32px" marginY="8px">New</Button>
         </WebCreator>
       </Flex>
       <DataList
         dateList={webList}
-        headers={["title", "url", "xpaths", "scheduled", "cron"]}
-        operations={(_) => (
+        headers={["title", "uri", "xpaths", "scheduled", "cron"]}
+        operations={(item) => (
           <Flex align={'flex-end'}>
             <VscDebugRerun style={{marginLeft: 'auto'}}/>
             <GrView style={{marginLeft: '12px'}}/>
             <RiEdit2Line style={{marginLeft: '12px'}}/>
-            <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+            <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
+              <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+            </ConfirmPopover>
           </Flex>
         )}
       />

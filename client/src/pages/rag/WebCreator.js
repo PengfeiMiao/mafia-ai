@@ -14,15 +14,17 @@ import WebPreview from "@/pages/rag/WebPreview";
 import {Button, Flex} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
 import WebForm from "@/pages/rag/WebForm";
+import {createWebsite} from "@/api/api";
+import {useDelayToggle} from "@/store/GlobalProvider";
 
 
-const WebCreator = ({children}) => {
-  const [tipsHidden, setTipsHidden] = useState(true);
+const WebCreator = ({onChange, children}) => {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [parseOpen, setParseOpen] = useState(false);
   const [formData, setFormData] = useState({});
   const closeRef = useRef(null);
+  const {toggle, onToggle} = useDelayToggle();
 
   const handleNext = () => {
     setPreviewOpen(false);
@@ -30,15 +32,15 @@ const WebCreator = ({children}) => {
     setParseOpen(false);
   };
 
-  const handleToNext = (uri, xpaths) => {
+  const handleToNext = (title, uri, xpaths) => {
     setFormData((prev) => {
-      return {...prev, uri, xpaths};
+      return {...prev, title, uri, xpaths};
     });
   };
 
-  const handleToSubmit = (scheduled, cron) => {
+  const handleToSubmit = (title, scheduled, cron) => {
     setFormData((prev) => {
-      return {...prev, scheduled, cron};
+      return {...prev, title, scheduled, cron};
     });
   };
 
@@ -55,13 +57,22 @@ const WebCreator = ({children}) => {
     setParseOpen(false);
   };
 
-  const handleSubmit = () => {
-    console.log(formData);
+  const handleSubmit = async () => {
+    let res = await createWebsite(formData);
+    if(res) {
+      if(onChange) onChange(res);
+      setPreviewOpen(false);
+      setFormOpen(false);
+      setParseOpen(false);
+      setFormData({});
+      closeRef.current.click();
+      onToggle();
+    }
   };
 
   return (
     <DialogRoot size="full">
-      <TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Files have been uploaded.'} hidden={tipsHidden}/>
+      <TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been created.'} hidden={toggle}/>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>

@@ -166,7 +166,7 @@ async def create_website_api(website: WebsiteModel, db: Session = Depends(get_se
 
 @app.put("/website")
 async def update_website_api(website: WebsiteModel, db: Session = Depends(get_session)):
-    website = update_website(db, website, ['uri', 'xpaths', 'scheduled', 'cron'])
+    website = update_website(db, website, ['title', 'uri', 'xpaths', 'scheduled', 'cron'])
     return website_to_model(website)
 
 

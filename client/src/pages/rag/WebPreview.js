@@ -9,17 +9,19 @@ let windowUrl = "";
 const WebPreview = ({open, onChange, children}) => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("www.baidu.com");
+  const [title, setTitle] = useState("");
   const [history, setHistory] = useState([]);
   const [currIndex, setCurrIndex] = useState(0);
   const [xpaths, setXpaths] = useState([]);
+  const parser = new DOMParser();
 
   useEffect(() => {
     windowUrl = "";
   }, []);
 
   useEffect(() => {
-    onChange(handleFinalUri(webUrl), xpaths);
-  }, [webUrl, xpaths]);
+    onChange(title, handleFinalUri(webUrl), xpaths);
+  }, [title, webUrl, xpaths]);
 
   const handleProxyPage = (uri) => {
     getProxyPage(uri, "GET")
@@ -38,6 +40,9 @@ const WebPreview = ({open, onChange, children}) => {
           })();
         </script>`;
         let content = r?.content.replace('</head>', `${script}</head>`);
+        const htmlDoc = parser.parseFromString(content, 'text/html');
+        const title = htmlDoc.head.querySelector('title').textContent;
+        setTitle(title);
         setInnerDoc(content);
       });
   }

@@ -24,6 +24,22 @@ export const cleanSession = async (session_id) => {
   return await commonApi(`${BASE_URL}/session?session_id=${session_id}`, {}, 'GET');
 }
 
+export const getWebsites = async () => {
+  return await commonApi(`${BASE_URL}/websites`, {}, 'GET');
+}
+
+export const createWebsite = async (website) => {
+  return await commonApi(`${BASE_URL}/website`, website, 'POST');
+}
+
+export const updateWebsite = async (website) => {
+  return await commonApi(`${BASE_URL}/website`, website, 'PUT');
+}
+
+export const deleteWebsite = async (website_id) => {
+  return await commonApi(`${BASE_URL}/website?website_id=${website_id}`, {}, 'DELETE');
+}
+
 export const getFiles = async () => {
   return await commonApi(`${BASE_URL}/files`, {}, 'GET');
 }
