@@ -8,7 +8,7 @@ const WebForm = ({data, onChange}) => {
   const [cron, setCron] = useState('');
 
   const checkCron = (cronExpression) => {
-    const regex = /^([*?]|\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?\s+){5}([*?]|\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?\s+)(\*|(\d{4}(,\d{4})*))$/;
+    const regex = /^(([*?]|(\d+(-\d+)?(,\d+(-\d+)?)*(\/\d+)?))\s+){4}[*?]\s+(\*|(\d{4}(,\d{4})*))$/;
     return regex.test(cronExpression);
   };
 
@@ -18,7 +18,7 @@ const WebForm = ({data, onChange}) => {
   }, [scheduled, cron]);
 
   useEffect(() => {
-    console.log(checkCron(cron));
+    console.log(`'${cron}'`, checkCron(cron));
   }, [cron]);
 
   return (

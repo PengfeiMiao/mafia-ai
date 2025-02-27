@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict
 
-from sqlalchemy import Column, String, UUID, DateTime, Integer
+from sqlalchemy import Column, String, UUID, DateTime, Integer, Boolean
 from sqlalchemy.orm import DeclarativeMeta
 
 from backend.entity.connection import Base, engine
@@ -40,6 +40,21 @@ class Attachment(Base):
     preview = Column(String)
     status = Column(String, default="active")
     created_at = Column(DateTime, default=now_utc())
+    user_id = Column(String)
+
+
+class Website(Base):
+    __tablename__ = "website"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    uri = Column(String)
+    xpaths = Column(String)
+    scheduled = Column(Boolean)
+    cron = Column(String)
+    preview = Column(String)
+    status = Column(String, default="active")
+    created_at = Column(DateTime, default=now_utc())
+    user_id = Column(String)
 
 
 def serialize_model(model_instance: Any) -> Dict[str, Any]:

@@ -15,14 +15,17 @@ from sqlalchemy.orm import Session
 from backend.config.config import api_key, file_dir
 from backend.entity.connection import get_session
 from backend.entity.models import serialize_model
+from backend.mapper.mapper import website_to_model
 from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
+from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
+from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites
 from backend.service.llm_helper import LLMHelper
 from backend.util.common import now_str
 
@@ -99,7 +102,7 @@ async def proxy(request: Request):
 
 
 @app.post("/messages")
-async def messages(data: List[SessionModel], db: Session = Depends(get_session)):
+async def get_messages_api(data: List[SessionModel], db: Session = Depends(get_session)):
     _messages = get_messages(db, session_ids=[item.id for item in data])
     _messages = [MessageModel(**serialize_model(item)) for item in _messages]
     attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
@@ -115,7 +118,7 @@ async def messages(data: List[SessionModel], db: Session = Depends(get_session))
 
 
 @app.get("/sessions")
-async def sessions(db: Session = Depends(get_session)):
+async def get_sessions_api(db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
     session_list = get_sessions(db, user_id=user_id)
     if len(session_list) == 0:
@@ -125,13 +128,13 @@ async def sessions(db: Session = Depends(get_session)):
 
 
 @app.get("/session")
-async def sessions(session_id: str):
+async def clean_session_api(session_id: str):
     llm_helper.clean_session_history(session_id)
     return {'status': True}
 
 
 @app.post("/session")
-async def sessions(data: SessionModel, db: Session = Depends(get_session)):
+async def create_session_api(data: SessionModel, db: Session = Depends(get_session)):
     if not data.user_id:
         data.user_id = DEFAULT_USER
     if not data.title:
@@ -140,10 +143,37 @@ async def sessions(data: SessionModel, db: Session = Depends(get_session)):
 
 
 @app.put("/session")
-async def sessions(data: SessionModel, db: Session = Depends(get_session)):
+async def update_session_api(data: SessionModel, db: Session = Depends(get_session)):
     if not data.id:
         return {}
     return update_session(db, data, ['title', 'status'])
+
+
+@app.get("/websites")
+async def get_websites_api(db: Session = Depends(get_session)):
+    user_id = DEFAULT_USER
+    websites = get_websites(db, user_id=user_id)
+    return [website_to_model(website) for website in websites]
+
+
+@app.post("/website")
+async def create_website_api(website: WebsiteModel, db: Session = Depends(get_session)):
+    if not website.user_id:
+        website.user_id = DEFAULT_USER
+    website = save_website(db, website)
+    return website_to_model(website)
+
+
+@app.put("/website")
+async def update_website_api(website: WebsiteModel, db: Session = Depends(get_session)):
+    website = update_website(db, website, ['uri', 'xpaths', 'scheduled', 'cron'])
+    return website_to_model(website)
+
+
+@app.delete("/website")
+async def delete_website_api(website_id: str, db: Session = Depends(get_session)):
+    delete_websites(db, [website_id])
+    return {'status': True}
 
 
 @app.post("/completions")
@@ -157,9 +187,9 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 
 
 @app.post("/upload")
-async def upload_files(session_id: str = "default",
-                       files: List[UploadFile] = File(...),
-                       db: Session = Depends(get_session)):
+async def upload_files_api(session_id: str = "default",
+                           files: List[UploadFile] = File(...),
+                           db: Session = Depends(get_session)):
     results = []
     file_paths = []
     file_folder = os.path.join(UPLOAD_DIR, session_id)
@@ -183,11 +213,11 @@ async def upload_files(session_id: str = "default",
         _docs = llm_helper.append_docs(_file_paths)
         for _doc in _docs:
             _updated = update_attachment(_db,
-                              preview=_doc.page_content[:4000],
-                              session_id=_session_id,
-                              file_name=_doc.metadata["filename"])
+                                         preview=_doc.page_content[:4000],
+                                         session_id=_session_id,
+                                         file_name=_doc.metadata["filename"])
             with lock:
-                file_queue[session_id] = list(filter(lambda x: x != str(_updated.id),file_queue[session_id]))
+                file_queue[session_id] = list(filter(lambda x: x != str(_updated.id), file_queue[session_id]))
 
     with lock:
         file_queue[session_id].extend([str(file.id) for file in results])
@@ -198,13 +228,13 @@ async def upload_files(session_id: str = "default",
 
 
 @app.get("/files")
-async def file_list(db: Session = Depends(get_session)):
+async def get_files_api(db: Session = Depends(get_session)):
     files = get_attachments_by_session_id(db, "default")
     return [AttachmentModel(**serialize_model(file)) for file in files]
 
 
 @app.delete("/file")
-async def file_deletion(file_id: str, db: Session = Depends(get_session)):
+async def delete_file_api(file_id: str, db: Session = Depends(get_session)):
     delete_attachments(db, file_id=file_id)
     return {'status': True}
 
