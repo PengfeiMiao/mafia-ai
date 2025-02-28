@@ -3,7 +3,7 @@ import {Radio, RadioGroup} from "@/components/ui/radio";
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {WebContext} from "@/store/WebProvider";
 
-const WebForm = () => {
+const WebForm = ({data}) => {
   const [newTitle, setNewTitle] = useState("");
   const [scheduled, setScheduled] = useState("1");
   const [cron, setCron] = useState("* * * * ? *");
@@ -16,10 +16,11 @@ const WebForm = () => {
   };
 
   useEffect(() => {
-    setNewTitle(formData?.title);
-  }, []);
+    setNewTitle(formData?.title ?? data?.title);
+  }, [data]);
 
   useEffect(() => {
+    console.log('form')
     const isScheduled = scheduled === "1";
     setFormData({
       ...formData,

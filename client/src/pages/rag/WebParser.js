@@ -7,7 +7,7 @@ import _ from "lodash";
 import {LuX} from "react-icons/lu";
 import OverflowText from "@/components/OverflowText";
 
-const WebParser = ({open, onChange, innerDoc}) => {
+const WebParser = ({data, open, onChange, innerDoc}) => {
   const [tagSelected, setTagSelected] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [keyword, setKeyword] = useState('');
@@ -27,34 +27,40 @@ const WebParser = ({open, onChange, innerDoc}) => {
     setXpathOptions(options);
   };
 
+  const handleXpathCandidate = async (values) => {
+    await setXpathCandidate(values);
+    if (candidateRef.current) {
+      candidateRef.current.scrollTop = candidateRef.current.scrollHeight;
+    }
+    onChange(values);
+  }
+
   const handleSearch = () => {
     setKeyword(keywordRef?.current?.value);
   };
 
-  const handleAdd = (newItem) => {
-    setXpathCandidate((prev) => {
-      prev.push(newItem);
-      return _.uniq(prev);
-    })
+  const handleAdd = async (newItem) => {
+    const newXpaths = _.uniq([...xpathCandidate, newItem]);
+    await handleXpathCandidate(newXpaths);
   };
 
-  const handleDelete = (deprecated) => {
-    setXpathCandidate((prev) => {
-      return _.without(prev, deprecated);
-    })
+  const handleDelete = async (deprecated) => {
+    const newXpaths = _.without(xpathCandidate, deprecated);
+    await handleXpathCandidate(newXpaths);
   };
 
   useEffect(() => {
-    if (candidateRef.current) {
-      candidateRef.current.scrollTop = candidateRef.current.scrollHeight;
+    if (innerDoc) {
+      setXpathSelected('');
+      setXpathCandidate([]);
     }
-    onChange(xpathCandidate);
-  }, [xpathCandidate]);
+  }, [innerDoc]);
 
   useEffect(() => {
-    setXpathSelected('');
-    setXpathCandidate([]);
-  }, [innerDoc]);
+    if (data) {
+      handleXpathCandidate(data?.xpaths).then();
+    }
+  }, [data]);
 
   return (
     <Flex position="relative" h="50vh" bottom="50vh">
@@ -87,7 +93,7 @@ const WebParser = ({open, onChange, innerDoc}) => {
               <OverflowText content={item}/>
               <Icon style={{marginLeft: "8px"}} color="black" onClick={(e) => {
                 e.preventDefault();
-                handleDelete(item);
+                handleDelete(item).then();
               }}>
                 <LuX/>
               </Icon>

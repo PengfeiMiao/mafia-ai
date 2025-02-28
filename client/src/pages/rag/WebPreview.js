@@ -7,7 +7,7 @@ import {WebContext} from "@/store/WebProvider";
 
 let windowUrl = "";
 
-const WebPreview = ({open, children}) => {
+const WebPreview = ({data, open, children}) => {
   const [innerDoc, setInnerDoc] = useState("<div />");
   const [webUrl, setWebUrl] = useState("www.baidu.com");
   const [history, setHistory] = useState([]);
@@ -18,6 +18,10 @@ const WebPreview = ({open, children}) => {
 
   useEffect(() => {
     windowUrl = "";
+    if (data) {
+      setWebUrl(data?.uri);
+      setXpaths(data?.xpaths);
+    }
   }, []);
 
   useEffect(() => {
@@ -117,7 +121,7 @@ const WebPreview = ({open, children}) => {
         {children}
       </Flex>
       <iframe srcDoc={innerDoc} width="100%" height="100%" title="external"/>
-      <WebParser open={open} innerDoc={innerDoc} onChange={(_xpaths) => setXpaths(_xpaths)}></WebParser>
+      <WebParser data={data} open={open} innerDoc={innerDoc} onChange={(_xpaths) => setXpaths(_xpaths)}></WebParser>
     </Box>
   );
 };

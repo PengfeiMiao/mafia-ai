@@ -23,10 +23,14 @@ const WebList = () => {
   };
 
   const handleCallback = (newWeb) => {
-    setWebList((prev) => {
-      prev.push(newWeb);
-      return Array.from(prev);
-    });
+    let newList = Array.from(webList);
+    const index = _.findIndex(newList, (item) => item?.id === newWeb?.id)
+    if (index > -1) {
+      newList[index] = newWeb;
+    } else {
+      newList = [...webList, newWeb];
+    }
+    setWebList(newList);
   };
 
   const handleDelete = async (websiteId) => {
@@ -43,30 +47,32 @@ const WebList = () => {
   }, []);
 
   return (
-    <Flex h="100%" paddingX="20px" align="center" jusify="flex-end" direction="column">
-      <TipsHeader title={'Website have been deleted.'} hidden={toggle}/>
-      <Flex h="auto" w="100%" align="flex-start" jusify="flex-end">
-        <WebProvider>
+    <WebProvider>
+      <Flex h="100%" paddingX="20px" align="center" jusify="flex-end" direction="column">
+        <TipsHeader title={'Website have been deleted.'} hidden={toggle}/>
+        <Flex h="auto" w="100%" align="flex-start" jusify="flex-end">
           <WebCreator onChange={handleCallback}>
             <Button h="32px" marginY="8px">New</Button>
           </WebCreator>
-        </WebProvider>
+        </Flex>
+        <DataList
+          dateList={webList}
+          headers={["title", "uri", "xpaths", "scheduled", "cron"]}
+          operations={(item) => (
+            <Flex align={'flex-end'}>
+              <VscDebugRerun style={{marginLeft: 'auto'}}/>
+              <GrView style={{marginLeft: '12px'}}/>
+              <WebCreator onChange={handleCallback} data={item}>
+                <RiEdit2Line style={{marginLeft: '12px'}}/>
+              </WebCreator>
+              <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
+                <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+              </ConfirmPopover>
+            </Flex>
+          )}
+        />
       </Flex>
-      <DataList
-        dateList={webList}
-        headers={["title", "uri", "xpaths", "scheduled", "cron"]}
-        operations={(item) => (
-          <Flex align={'flex-end'}>
-            <VscDebugRerun style={{marginLeft: 'auto'}}/>
-            <GrView style={{marginLeft: '12px'}}/>
-            <RiEdit2Line style={{marginLeft: '12px'}}/>
-            <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
-              <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
-            </ConfirmPopover>
-          </Flex>
-        )}
-      />
-    </Flex>
+    </WebProvider>
   );
 };
 
