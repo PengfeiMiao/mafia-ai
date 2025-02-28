@@ -1,4 +1,7 @@
 import httpx
+from lxml import etree
+
+from backend.util.common import remove_blank_lines
 
 
 async def common_proxy(body, target_url):
@@ -24,3 +27,13 @@ async def common_proxy(body, target_url):
 
 async def get_proxy(target_url):
     return await common_proxy({}, target_url)
+
+
+async def parse_get_proxy(url: str, xpaths: list):
+    resp = await common_proxy({}, url)
+    html_tree = etree.HTML(resp.get('content'))
+    previews = []
+    for xpath_ in xpaths:
+        selected_html= html_tree.xpath(xpath_ + '//text()')
+        previews.append('\n'.join([remove_blank_lines(elem) for elem in list(selected_html)]))
+    return previews

@@ -28,7 +28,7 @@
 ## Iteration Plan
 1. 基本问答 - completed
 2. 会话管理 - completed
-3. 文档解析 - completed
+3. 文档解析 - completed [todo: 考虑接入 elasticsearch]
 4. RAG 知识库 - WIP
 5. Web 深度搜索 - WIP
 6. Web 热搜

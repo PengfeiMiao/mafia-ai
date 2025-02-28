@@ -5,7 +5,6 @@ import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
-from lxml import etree
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File, Request
 from fastapi.encoders import jsonable_encoder
@@ -26,9 +25,10 @@ from backend.repo.attachment_repo import save_attachment, get_attachments, updat
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
+from backend.service import scheduler
 from backend.service.llm_helper import LLMHelper
-from backend.service.proxy import common_proxy, get_proxy
-from backend.util.common import now_str, remove_blank_lines
+from backend.service.proxy import common_proxy, parse_get_proxy
+from backend.util.common import now_str
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -49,6 +49,8 @@ file_queue = defaultdict(list)
 lock = threading.Lock()
 
 app = FastAPI()
+
+executor.submit(scheduler.schedule)
 
 unauthorized_res = JSONResponse(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -144,12 +146,7 @@ async def get_websites_api(db: Session = Depends(get_session)):
 async def preview_website_api(website_id: str, db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
     website = website_to_model(get_website(db, website_id, user_id=user_id))
-    resp = await get_proxy(website.uri)
-    html_tree = etree.HTML(resp.get('content'))
-    previews = []
-    for xpath_ in website.xpaths:
-        selected_html= html_tree.xpath(xpath_ + '//text()')
-        previews.append('\n'.join([remove_blank_lines(elem) for elem in list(selected_html)]))
+    previews = parse_get_proxy(website.uri, website.xpaths)
     website.preview = previews
     website = update_website(db, website, ['preview'])
     return website_to_model(website)

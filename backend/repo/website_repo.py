@@ -35,9 +35,10 @@ def update_website(db: DBSession, website: WebsiteModel, fields: List[str]):
     return entity.one()
 
 
-def get_websites(db: DBSession, user_id: str):
+def get_websites(db: DBSession, user_id: str, scheduled=None):
     return (db.query(Website)
             .filter_by(user_id=user_id, status='active')
+            .filter(Website.scheduled.in_([scheduled] if scheduled else [True, False]))
             .order_by(Website.created_at.desc())
             .all())
 
