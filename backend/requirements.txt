@@ -13,4 +13,4 @@ langchain-unstructured
 unstructured[all-docs]
 langchain_chroma
 langchain_text_splitters
-python-croniter
+croniter
