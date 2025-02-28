@@ -9,3 +9,8 @@ def now_utc():
 
 def now_str():
     return now_utc().strftime(DEFAULT_FORMAT)
+
+
+def remove_blank_lines(text):
+    non_empty_lines = [line for line in text.splitlines() if line.strip()]
+    return '\n'.join(non_empty_lines)

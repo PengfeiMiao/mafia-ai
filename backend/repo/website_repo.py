@@ -40,3 +40,9 @@ def get_websites(db: DBSession, user_id: str):
             .filter_by(user_id=user_id, status='active')
             .order_by(Website.created_at.desc())
             .all())
+
+
+def get_website(db: DBSession, website_id: str, user_id: str):
+    return (db.query(Website)
+            .filter_by(id=website_id, user_id=user_id, status='active')
+            .one())

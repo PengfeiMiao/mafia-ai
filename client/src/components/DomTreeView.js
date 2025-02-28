@@ -102,8 +102,8 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, onRefresh, outerStyle}
   };
 
   const getXPathSegment = (node) => {
-    if (node.props.id) return `//*[@id='${node.props.id}']`;
-    if (node.props.className) return `//*[contains(@class, '${node.props.className.split(' ')[0]}')]`;
+    if (node.props.id) return `/*[@id='${node.props.id}']`;
+    if (node.props.className) return `/*[contains(@class, '${node.props.className.split(' ')[0].trim()}')]`;
     const index = node.parent ?
       node.parent.children.filter(sibling => sibling.tag === node.tag).indexOf(node) + 1 : 1;
     return `${node.tag}[${index}]`;
@@ -118,7 +118,7 @@ const DomTreeView = ({html, ignoredTags, keyword, onLoad, onRefresh, outerStyle}
           if (node.props.id) {
             xpaths.push(`//*[@id='${node.props.id}']`);
           } else {
-            xpaths.push([...pathSegments, getXPathSegment(node)].join('/'));
+            xpaths.push('/' + [...pathSegments, getXPathSegment(node)].join('/'));
           }
         } else {
           node.children.forEach(child => traverse(child, [...pathSegments, getXPathSegment(node)]));

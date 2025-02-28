@@ -5,8 +5,8 @@ import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
+from lxml import etree
 
-import httpx
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -25,9 +25,10 @@ from backend.repo.attachment_repo import save_attachment, get_attachments, updat
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.session_repo import get_sessions, save_session, update_session
-from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites
+from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service.llm_helper import LLMHelper
-from backend.util.common import now_str
+from backend.service.proxy import common_proxy, get_proxy
+from backend.util.common import now_str, remove_blank_lines
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -81,24 +82,7 @@ async def proxy(request: Request):
     if not target_url:
         return {"error": "No target URL provided"}
 
-    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
-        method = body.get('method', 'GET').upper()
-        headers = body.get('headers', {})
-        params = body.get('params', {})
-        data = body.get('data', {})
-
-        if method == 'GET':
-            resp = await client.get(target_url, headers=headers, params=params)
-        elif method == 'POST':
-            resp = await client.post(target_url, headers=headers, params=params, json=data)
-        else:
-            return {"error": "Unsupported method"}
-
-        return {
-            "status_code": resp.status_code,
-            "content": resp.content.decode('utf-8', errors='ignore'),
-            "headers": dict(resp.headers),
-        }
+    return await common_proxy(body, target_url)
 
 
 @app.post("/messages")
@@ -154,6 +138,20 @@ async def get_websites_api(db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
     websites = get_websites(db, user_id=user_id)
     return [website_to_model(website) for website in websites]
+
+
+@app.get("/website")
+async def preview_website_api(website_id: str, db: Session = Depends(get_session)):
+    user_id = DEFAULT_USER
+    website = website_to_model(get_website(db, website_id, user_id=user_id))
+    resp = await get_proxy(website.uri)
+    html_tree = etree.HTML(resp.get('content'))
+    xpaths_ = website.xpaths[0]
+    selected_content = html_tree.xpath(xpaths_ + '//text()')
+    selected_html = [remove_blank_lines(elem) for elem in list(selected_content)]
+    print(xpaths_)
+    print(selected_html)
+    return website
 
 
 @app.post("/website")
