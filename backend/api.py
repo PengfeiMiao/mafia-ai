@@ -146,12 +146,13 @@ async def preview_website_api(website_id: str, db: Session = Depends(get_session
     website = website_to_model(get_website(db, website_id, user_id=user_id))
     resp = await get_proxy(website.uri)
     html_tree = etree.HTML(resp.get('content'))
-    xpaths_ = website.xpaths[0]
-    selected_content = html_tree.xpath(xpaths_ + '//text()')
-    selected_html = [remove_blank_lines(elem) for elem in list(selected_content)]
-    print(xpaths_)
-    print(selected_html)
-    return website
+    previews = []
+    for xpath_ in website.xpaths:
+        selected_html= html_tree.xpath(xpath_ + '//text()')
+        previews.append('\n'.join([remove_blank_lines(elem) for elem in list(selected_html)]))
+    website.preview = previews
+    website = update_website(db, website, ['preview'])
+    return website_to_model(website)
 
 
 @app.post("/website")

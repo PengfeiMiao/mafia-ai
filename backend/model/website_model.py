@@ -9,7 +9,7 @@ class WebsiteModel(BaseModel):
     xpaths: Union[List[str], None] = None
     scheduled: Union[bool, None] = None
     cron: Union[str, None] = None
-    preview: Union[str, None] = None
+    preview: Union[List[str], None] = None
     status: Union[str, None] = None
     created_at: Union[str, None] = None
     user_id: Union[str, None] = None
