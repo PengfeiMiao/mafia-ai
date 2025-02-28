@@ -20,7 +20,6 @@ const WebForm = ({data}) => {
   }, [data]);
 
   useEffect(() => {
-    console.log('form')
     const isScheduled = scheduled === "1";
     setFormData({
       ...formData,

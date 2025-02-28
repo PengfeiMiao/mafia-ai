@@ -28,7 +28,7 @@ def update_website(db: DBSession, website: WebsiteModel, fields: List[str]):
     mapping = new_entity.__dict__
     keys = list(mapping.keys())
     for field in keys:
-        if field not in fields or not mapping.get(field):
+        if field not in fields or mapping.get(field) is None:
             mapping.pop(field, 'None')
     entity.update(mapping)
     db.commit()
