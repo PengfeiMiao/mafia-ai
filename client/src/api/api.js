@@ -1,8 +1,13 @@
 import {getCookie} from "@/store/CacheStore";
 
-export const WS_URL = 'localhost:8000';
 // const BASE_URL = 'http://localhost:8000';
-const BASE_URL = '/api';
+const BASE_URL = `${window.location.origin}/api`;
+
+export const getWsURL = () => {
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const url = window.location.hostname === 'localhost' ? 'localhost:8000' : `${window.location.host}/api`;
+  return `${protocol}://${url}`;
+}
 
 export const getMessages = async (sessions) => {
   return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');

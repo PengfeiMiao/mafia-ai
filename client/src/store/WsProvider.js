@@ -1,5 +1,5 @@
 import React, {createContext, useEffect, useState} from 'react';
-import {WS_URL} from "@/api/api";
+import {getWsURL} from "@/api/api";
 
 const WsContext = createContext(null);
 
@@ -22,8 +22,7 @@ const WsProvider = ({ uri, children }) => {
   };
 
   const connectWebSocket = ()=> {
-    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const url = `${wsProtocol}://${WS_URL}${uri}`;
+    const url = `${getWsURL()}${uri}`;
     const newSocket = new WebSocket(url);
 
     newSocket.onopen = () => {
