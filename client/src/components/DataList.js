@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/pagination"
 
 
-const DataList = ({dateList, headers, functions, operations}) => {
+const DataList = ({dataList, headers, functions, operations}) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -25,7 +25,7 @@ const DataList = ({dateList, headers, functions, operations}) => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {dateList.slice((page - 1) * pageSize, page * pageSize).map((item) => (
+          {dataList.slice((page - 1) * pageSize, page * pageSize).map((item) => (
             <Table.Row key={item.id}>
               {headers.map((field, index) => (
                 <Table.Cell key={field}>
@@ -40,7 +40,7 @@ const DataList = ({dateList, headers, functions, operations}) => {
         </Table.Body>
       </Table.Root>
 
-      <PaginationRoot count={dateList.length} pageSize={pageSize} page={page} mt="auto">
+      <PaginationRoot count={dataList.length} pageSize={pageSize} page={page} mt="auto">
         <HStack wrap="wrap">
           <PaginationPrevTrigger onClick={() => setPage((prev) => prev - 1)}/>
           <PaginationItems onClick={(e) => setPage(Number(e.target.innerText))}/>

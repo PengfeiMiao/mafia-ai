@@ -39,7 +39,7 @@ const RagList = () => {
         <Button h="32px" marginY="8px">New</Button>
       </Flex>
       <DataList
-        dateList={ragList}
+        dataList={ragList}
         headers={["name", "created_by", "count"]}
         operations={(_) => (
           <Flex align={'flex-end'}>

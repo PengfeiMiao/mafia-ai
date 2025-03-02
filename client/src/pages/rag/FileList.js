@@ -105,7 +105,7 @@ const FileList = () => {
         </EmptyState.Root>)
         :
         (<DataList
-          dateList={fileList}
+          dataList={fileList}
           headers={["file_name", "created_at", "file_size"]}
           functions={[null, null, formatBytes]}
           operations={(item) => (

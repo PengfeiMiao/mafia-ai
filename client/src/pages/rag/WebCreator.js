@@ -70,8 +70,7 @@ const WebCreator = ({data, onChange, children}) => {
     <CommonDialog
       tips={<TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been created.'} hidden={toggle}/>}
       trigger={children}
-      h="100%"
-      size="full"
+      outerStyle={{height: "100%", size: "full"}}
       title="Web Preview"
       onOpen={handleDialogOpen}
       onClose={handleClose}

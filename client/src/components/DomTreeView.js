@@ -1,15 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Box} from "@chakra-ui/react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import {atelierCaveLight} from "react-syntax-highlighter/src/styles/hljs";
-
-const HtmlSyntaxHighlighter = ({html}) => {
-  return (
-    <SyntaxHighlighter language="xml" style={atelierCaveLight}>
-      {html}
-    </SyntaxHighlighter>
-  );
-};
+import CommonSyntaxHighlighter from "@/components/CommonSyntaxHighlighter";
 
 const TreeNode = ({node}) => {
   const [expanded, setExpanded] = useState(false);
@@ -22,14 +13,14 @@ const TreeNode = ({node}) => {
 
   if (!node?.children || !node.children.length) {
     return <div onClick={toggle}>
-      <HtmlSyntaxHighlighter html={node.props.outerHTML}/>
+      <CommonSyntaxHighlighter content={node.props.outerHTML}/>
     </div>;
   }
 
   return (
     <div>
       <div onClick={toggle}>
-        <HtmlSyntaxHighlighter html={
+        <CommonSyntaxHighlighter content={
           `${expanded ? '-' : '+'} `
           + `<`
           + `${node.tag}`

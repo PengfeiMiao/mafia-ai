@@ -12,18 +12,22 @@ import {
 import React from "react";
 import {Button} from "@chakra-ui/react";
 
-const CommonDialog = ({h, size, title, tips, trigger, onOpen, onClose, closeRef, onConfirm, onCancel, children}) => {
+const CommonDialog = ({outerStyle, title, tips, trigger, onOpen, onClose, closeRef, onConfirm, onCancel, children}) => {
+  const rootStyle = {
+    ...outerStyle
+  };
+
   return (
-    <DialogRoot size={size}>
-      {tips}
+    <DialogRoot size={rootStyle.size}>
+      {tips ? tips : <></>}
       <DialogTrigger onClick={onOpen} asChild>
-        {trigger}
+        {trigger ? trigger : <Button hidden/>}
       </DialogTrigger>
-      <DialogContent h={h}>
+      <DialogContent h={rootStyle.height}>
         <DialogHeader p="8px 16px">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <DialogBody h={h} pt="0px">
+        <DialogBody h="100%" pt="0px">
           {children}
         </DialogBody>
         <DialogFooter>

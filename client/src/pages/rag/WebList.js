@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
@@ -11,11 +11,14 @@ import _ from "lodash";
 import {useDelayToggle} from "@/store/Hook";
 import WebProvider from "@/store/WebProvider";
 import OverflowText from "@/components/OverflowText";
+import CommonDialog from "@/components/CommonDialog";
+import WebContent from "@/pages/rag/WebContent";
 
 
 const WebList = () => {
   const [webList, setWebList] = new useState([]);
   const {toggle, onToggle} = useDelayToggle();
+  const closeRef = useRef(null);
 
   const getWebsiteList = async () => {
     let websites = await getWebsites();
@@ -76,12 +79,20 @@ const WebList = () => {
           </WebCreator>
         </Flex>
         <DataList
-          dateList={webList}
+          dataList={webList}
           headers={["title", "uri", "xpaths", "scheduled", "cron"]}
           functions={[null, null, renderXpaths, null, null]}
           operations={(item) => (
-            <Flex align={'flex-end'}>
-              <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => handleRerun(item?.id)}/>
+            <Flex align={'flex-end'} w="100%">
+              <CommonDialog
+                outerStyle={{size: "xl"}}
+                title={"Content"}
+                trigger={
+                  <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => handleRerun(item?.id)}/>
+                }
+                closeRef={closeRef}>
+                <WebContent data={item?.preview ?? []}></WebContent>
+              </CommonDialog>
               <WebCreator onChange={handleCallback} data={item}>
                 <RiEdit2Line style={{marginLeft: '12px'}}/>
               </WebCreator>
