@@ -17,6 +17,7 @@ import WebContent from "@/pages/rag/WebContent";
 
 const WebList = () => {
   const [webList, setWebList] = new useState([]);
+  const [currContent, setCurrContent] = new useState([]);
   const {toggle, onToggle} = useDelayToggle();
   const closeRef = useRef(null);
 
@@ -45,23 +46,25 @@ const WebList = () => {
     }
   };
 
-  const handleRerun = async (websiteId) => {
-    let data = await previewWebsite(websiteId);
+  const handleRerun = async (website) => {
+    setCurrContent(website);
+    let data = await previewWebsite(website?.id);
     if (data) {
-      console.log(data);
+      setCurrContent(data);
     }
   };
 
+  const renderString = (str, maxW="16vw") => {
+    return (
+      <Flex key={str} align="center" maxW={maxW}>
+        <OverflowText content={str} outerStyle={{placement: "right-start"}}/>
+      </Flex>
+    );
+  }
+
   const renderXpaths = (values) => {
     return (<>
-      {values.map((item) => (
-        <Flex
-          key={item}
-          align="center"
-          maxW="30vw">
-          <OverflowText content={item} outerStyle={{placement: "right-start"}}/>
-        </Flex>
-      ))}
+      {values.map((item) => renderString(item, "24vw"))}
     </>);
   };
 
@@ -81,17 +84,17 @@ const WebList = () => {
         <DataList
           dataList={webList}
           headers={["title", "uri", "xpaths", "scheduled", "cron"]}
-          functions={[null, null, renderXpaths, null, null]}
+          functions={[renderString, renderString, renderXpaths, null, null]}
           operations={(item) => (
             <Flex align={'flex-end'} w="100%">
               <CommonDialog
                 outerStyle={{size: "xl"}}
                 title={"Content"}
                 trigger={
-                  <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => handleRerun(item?.id)}/>
+                  <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => handleRerun(item)}/>
                 }
                 closeRef={closeRef}>
-                <WebContent data={item?.preview ?? []}></WebContent>
+                <WebContent headers={currContent?.xpaths ?? []} data={currContent?.preview ?? []}/>
               </CommonDialog>
               <WebCreator onChange={handleCallback} data={item}>
                 <RiEdit2Line style={{marginLeft: '12px'}}/>
