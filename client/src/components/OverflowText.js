@@ -2,7 +2,7 @@ import React, {useRef, useState, useEffect} from "react";
 import {Text} from "@chakra-ui/react";
 import {Tooltip} from "@/components/ui/tooltip";
 
-function OverflowTooltip({content, outerStyle}) {
+const OverflowText = ({content, outerStyle}) => {
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
@@ -12,6 +12,7 @@ function OverflowTooltip({content, outerStyle}) {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: 'block',
+    placement: "left-start",
     ...outerStyle
   };
 
@@ -28,7 +29,7 @@ function OverflowTooltip({content, outerStyle}) {
       {isOverflowing ? (
         <Tooltip
           content={content}
-          positioning={{placement: "left-start"}}
+          positioning={{placement: rootStyle.placement}}
           showArrow
           interactive>
           <Text ref={textRef} style={rootStyle}>{content}</Text>
@@ -40,4 +41,4 @@ function OverflowTooltip({content, outerStyle}) {
   );
 }
 
-export default OverflowTooltip;
+export default OverflowText;

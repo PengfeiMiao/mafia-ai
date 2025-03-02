@@ -11,13 +11,13 @@ DEFAULT_USER = "unknown"
 INTERVAL = 3600
 
 
-def task():
+async def task():
     db = SessionLocal()
     websites = get_websites(db, user_id=DEFAULT_USER, scheduled=True)
     for website in websites:
         cron_expr = website.cron
         if cron_match(cron_expr):
-            website.preview = parse_get_proxy(website.url, website.xpaths)
+            website.preview = await parse_get_proxy(website.url, website.xpaths)
             update_website(db, website, ['preview'])
 
     db.close()
@@ -27,8 +27,8 @@ def task():
 def schedule():
     scheduler = sched.scheduler(time.time, time.sleep)
 
-    def check_and_run():
-        task()
+    async def check_and_run():
+        await task()
         scheduler.enter(INTERVAL, 1, check_and_run)
 
     scheduler.enter(0, 1, check_and_run)

@@ -146,7 +146,7 @@ async def get_websites_api(db: Session = Depends(get_session)):
 async def preview_website_api(website_id: str, db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
     website = website_to_model(get_website(db, website_id, user_id=user_id))
-    previews = parse_get_proxy(website.uri, website.xpaths)
+    previews = await parse_get_proxy(website.uri, website.xpaths)
     website.preview = previews
     website = update_website(db, website, ['preview'])
     return website_to_model(website)

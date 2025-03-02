@@ -33,6 +33,10 @@ export const getWebsites = async () => {
   return await commonApi(`${BASE_URL}/websites`, {}, 'GET');
 }
 
+export const previewWebsite = async (website_id) => {
+  return await commonApi(`${BASE_URL}/website?website_id=${website_id}`, {}, 'GET');
+}
+
 export const createWebsite = async (website) => {
   return await commonApi(`${BASE_URL}/website`, website, 'POST');
 }

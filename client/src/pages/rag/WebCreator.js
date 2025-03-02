@@ -1,13 +1,3 @@
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import React, {useContext, useRef, useState} from "react";
 import TipsHeader from "@/components/TipsHeader";
 import WebPreview from "@/pages/rag/WebPreview";
@@ -17,6 +7,7 @@ import WebForm from "@/pages/rag/WebForm";
 import {createWebsite, updateWebsite} from "@/api/api";
 import {useDelayToggle} from "@/store/Hook";
 import {WebContext} from "@/store/WebProvider";
+import CommonDialog from "@/components/CommonDialog";
 
 
 const WebCreator = ({data, onChange, children}) => {
@@ -76,39 +67,35 @@ const WebCreator = ({data, onChange, children}) => {
   };
 
   return (
-    <DialogRoot size="full">
-      <TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been created.'} hidden={toggle}/>
-      <DialogTrigger onClick={handleDialogOpen} asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent h="100%">
-        <DialogHeader p="8px 16px">
-          <DialogTitle>Web Preview</DialogTitle>
-        </DialogHeader>
-        <DialogBody h="100%" pt="0px">
-          <SlideBox open={previewOpen} align="left">
-            <WebPreview open={parseOpen} data={data}>
-              {!parseOpen ?
-                <Button ml="8px" w="60px" onClick={handleParse}>Parse</Button>
-                :
-                <>
-                  <Button ml="8px" w="60px" onClick={handleCancel}>Cancel</Button>
-                  <Button ml="8px" w="60px" onClick={handleNext}>Next</Button>
-                </>}
-            </WebPreview>
-          </SlideBox>
-          <SlideBox open={formOpen} align="right">
-            <Flex h="auto" w="100%" p="8px" justify="space-between">
-              <Button w="60px" onClick={handleBack}>Back</Button>
-              <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
-            </Flex>
-            {formOpen ? <WebForm data={data}/> : <></>}
-          </SlideBox>
-        </DialogBody>
-        <DialogFooter/>
-        <DialogCloseTrigger ref={closeRef} onClick={handleClose}/>
-      </DialogContent>
-    </DialogRoot>
+    <CommonDialog
+      tips={<TipsHeader outerStyle={{marginLeft: "32vw"}} title={'Website have been created.'} hidden={toggle}/>}
+      trigger={children}
+      h="100%"
+      size="full"
+      title="Web Preview"
+      onOpen={handleDialogOpen}
+      onClose={handleClose}
+      closeRef={closeRef}
+    >
+      <SlideBox open={previewOpen} align="left">
+        <WebPreview open={parseOpen} data={data}>
+          {!parseOpen ?
+            <Button ml="8px" w="60px" onClick={handleParse}>Parse</Button>
+            :
+            <>
+              <Button ml="8px" w="60px" onClick={handleCancel}>Cancel</Button>
+              <Button ml="8px" w="60px" onClick={handleNext}>Next</Button>
+            </>}
+        </WebPreview>
+      </SlideBox>
+      <SlideBox open={formOpen} align="right">
+        <Flex h="auto" w="100%" p="8px" justify="space-between">
+          <Button w="60px" onClick={handleBack}>Back</Button>
+          <Button ml="8px" w="60px" onClick={handleSubmit}>Submit</Button>
+        </Flex>
+        {formOpen ? <WebForm data={data}/> : <></>}
+      </SlideBox>
+    </CommonDialog>
   );
 };
 

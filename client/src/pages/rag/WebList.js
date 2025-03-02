@@ -3,14 +3,14 @@ import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import WebCreator from "@/pages/rag/WebCreator";
-import {GrView} from "react-icons/gr";
 import {VscDebugRerun} from "react-icons/vsc";
-import {deleteWebsite, getWebsites} from "@/api/api";
+import {deleteWebsite, getWebsites, previewWebsite} from "@/api/api";
 import TipsHeader from "@/components/TipsHeader";
 import ConfirmPopover from "@/components/ConfirmPopover";
 import _ from "lodash";
 import {useDelayToggle} from "@/store/Hook";
 import WebProvider from "@/store/WebProvider";
+import OverflowText from "@/components/OverflowText";
 
 
 const WebList = () => {
@@ -42,6 +42,26 @@ const WebList = () => {
     }
   };
 
+  const handleRerun = async (websiteId) => {
+    let data = await previewWebsite(websiteId);
+    if (data) {
+      console.log(data);
+    }
+  };
+
+  const renderXpaths = (values) => {
+    return (<>
+      {values.map((item) => (
+        <Flex
+          key={item}
+          align="center"
+          maxW="30vw">
+          <OverflowText content={item} outerStyle={{placement: "right-start"}}/>
+        </Flex>
+      ))}
+    </>);
+  };
+
   useEffect(() => {
     getWebsiteList().then();
   }, []);
@@ -58,10 +78,10 @@ const WebList = () => {
         <DataList
           dateList={webList}
           headers={["title", "uri", "xpaths", "scheduled", "cron"]}
+          functions={[null, null, renderXpaths, null, null]}
           operations={(item) => (
             <Flex align={'flex-end'}>
-              <VscDebugRerun style={{marginLeft: 'auto'}}/>
-              <GrView style={{marginLeft: '12px'}}/>
+              <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => handleRerun(item?.id)}/>
               <WebCreator onChange={handleCallback} data={item}>
                 <RiEdit2Line style={{marginLeft: '12px'}}/>
               </WebCreator>
