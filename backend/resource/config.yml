@@ -19,6 +19,8 @@ embedding:
 file_dir: "data/files"
 max_tokens: 2000
 max_histories: 20
+crawler:
+  interval: 60
 admin_pwd: "123456"
 tavily:
   enabled: true

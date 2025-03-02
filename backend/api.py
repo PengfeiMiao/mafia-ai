@@ -1,9 +1,11 @@
+import asyncio
 import logging
 import os
 import shutil
 import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import asynccontextmanager
 from typing import List
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File, Request
@@ -48,9 +50,14 @@ executor = ThreadPoolExecutor(max_workers=4)
 file_queue = defaultdict(list)
 lock = threading.Lock()
 
-app = FastAPI()
 
-executor.submit(scheduler.schedule)
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    asyncio.create_task(scheduler.execute())
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 unauthorized_res = JSONResponse(
     status_code=status.HTTP_401_UNAUTHORIZED,

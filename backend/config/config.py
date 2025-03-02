@@ -65,3 +65,6 @@ def embd_dir():
 
 def embd_model():
     return get_config("embedding.model")
+
+def crawler_interval():
+    return get_config("crawler.interval")
