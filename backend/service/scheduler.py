@@ -6,8 +6,8 @@ from backend.entity.connection import SessionLocal
 from backend.repo.website_repo import get_websites, update_website
 from backend.service.proxy import parse_get_proxy
 from backend.util.common import cron_match
-from config.config import crawler_interval
-from mapper.mapper import website_to_model
+from backend.config.config import crawler_interval
+from backend.mapper.mapper import website_to_model
 
 DEFAULT_USER = "unknown"
 INTERVAL = crawler_interval()
