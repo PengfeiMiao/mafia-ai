@@ -30,10 +30,18 @@ async def get_proxy(target_url):
 
 
 async def parse_get_proxy(url: str, xpaths: list):
-    resp = await common_proxy({}, url)
-    html_tree = etree.HTML(resp.get('content'))
     previews = []
-    for xpath_ in xpaths:
-        selected_html= html_tree.xpath(xpath_ + '//text()')
-        previews.append('\n'.join([remove_blank_lines(elem) for elem in list(selected_html)]))
-    return previews
+    resp = await common_proxy({}, url)
+    try:
+        content = resp.get('content')
+        if '<?xml' in content:
+            content = content[content.find('?>') + 2:]
+        html_tree = etree.HTML(content)
+        for xpath_ in xpaths:
+            selected_html = html_tree.xpath(xpath_ + '//text()')
+            previews.append('\n'.join([remove_blank_lines(elem) for elem in list(selected_html)]))
+    finally:
+        for (index, _) in enumerate(xpaths):
+            if index >= len(previews):
+                previews.append('empty')
+        return previews
