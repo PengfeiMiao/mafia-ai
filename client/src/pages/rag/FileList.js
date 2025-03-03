@@ -5,11 +5,12 @@ import {RiDeleteBin5Line} from "react-icons/ri";
 import {GrView} from "react-icons/gr";
 import FileCreator from "@/pages/rag/FileCreator";
 import {deleteFiles, getFiles} from "@/api/api";
-import FilePreview from "@/pages/rag/FilePreview";
 import {TbFileSad} from "react-icons/tb";
 import {useWebsocket} from "@/store/WsProvider";
 import _ from "lodash";
 import ConfirmPopover from "@/components/ConfirmPopover";
+import CommonDialog from "@/components/CommonDialog";
+import {MarkdownView} from "@/components/MarkdownView";
 
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 Bytes';
@@ -118,9 +119,15 @@ const FileList = () => {
                   </ProgressCircle.Circle>
                 </ProgressCircle.Root>
               ) : (
-                <FilePreview preview={item?.preview ?? 'No Content'}>
-                  <GrView style={{marginLeft: 'auto'}}/>
-                </FilePreview>
+                <CommonDialog
+                  title={"Content"}
+                  trigger={<GrView style={{marginLeft: 'auto'}}/>}
+                  outerStyle={{size: "xl"}}
+                >
+                  <VStack maxH="60vh" align="flex-start" overflowY="auto" bgColor="gray.100" p="8px">
+                    <MarkdownView markdown={item?.preview ?? 'No Content'}/>
+                  </VStack>
+                </CommonDialog>
               )}
               <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
                 <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
