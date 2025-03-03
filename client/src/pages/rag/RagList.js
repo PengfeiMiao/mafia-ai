@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
+import RagCreator from "@/pages/rag/RagCreator";
 
 
 const RagList = () => {
@@ -36,7 +37,9 @@ const RagList = () => {
   return (
     <Flex h="100%" paddingX="20px" align="center" jusify="flex-end" direction="column">
       <Flex h="auto" w="100%" align="flex-start" jusify="flex-end">
-        <Button h="32px" marginY="8px">New</Button>
+        <RagCreator>
+          <Button h="32px" marginY="8px">New</Button>
+        </RagCreator>
       </Flex>
       <DataList
         dataList={ragList}

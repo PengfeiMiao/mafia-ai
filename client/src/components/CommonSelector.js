@@ -88,11 +88,11 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
   return (
     <SelectRoot
       multiple={multiple ?? false}
+      size={rootStyle?.size}
       style={rootStyle}
       collection={optionCollection}
       defaultValue={selected}
       onClick={handleSelected}
-      size={rootStyle?.size}
       variant="outline">
       {custom && inEdit ?
         <InputGroup

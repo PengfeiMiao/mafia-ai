@@ -31,7 +31,10 @@ const SlideBox = ({open, align, outerStyle, children}) => {
           _closed: "slide-to-bottom",
         };
       default:
-        return {};
+        return {
+          _open: "fade-in",
+          _closed: "fade-out",
+        };
     }
   };
 
