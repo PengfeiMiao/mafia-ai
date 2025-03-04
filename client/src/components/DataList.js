@@ -33,7 +33,7 @@ const DataList = ({dataList, headers, functions, operations}) => {
                 </Table.Cell>
               ))}
               <Table.Cell>
-                {operations(item)}
+                {operations && operations(item)}
               </Table.Cell>
             </Table.Row>
           ))}

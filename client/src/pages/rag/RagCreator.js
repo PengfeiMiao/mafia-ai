@@ -8,13 +8,16 @@ import SlideBox from "@/components/SlideBox";
 import {getFiles, getWebsites} from "@/api/api";
 import _ from "lodash";
 import {CheckboxCard} from "@/components/ui/checkbox-card";
+import DataList from "@/components/DataList";
 
 const typeOptions = ["File", "Website"];
 
 const RagCreator = ({children}) => {
   const [selectedType, setSelectedType] = useState(typeOptions[0]);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [resource, setResources] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [selectedResources, setSelectedResources] = useState([]);
+  const [resourceList, setResourceList] = useState([]);
   const closeRef = useRef(null);
   const searchRef = useRef(null);
   const filterRef = useRef(null);
@@ -31,13 +34,12 @@ const RagCreator = ({children}) => {
 
   const handleResourceChange = async () => {
     let keyword_ = searchRef?.current?.value ?? "";
-    console.log(selectedType, keyword_);
     if (selectedType === typeOptions[0]) {
       let res = await getFileList(keyword_);
       setResources(res);
     } else if (selectedType === typeOptions[1]) {
       let res = await getWebsiteList(keyword_);
-      setResources(res)
+      setResources(res);
     }
   };
 
@@ -55,6 +57,30 @@ const RagCreator = ({children}) => {
 
   const handleFilterHidden = (event) => {
     if (filterRef.current && !filterRef.current.contains(event.target)) {
+      setFilterOpen(false);
+    }
+  };
+
+  const handleCheckboxChange = (event) => {
+    let elem = event.target;
+    if (elem?.checked !== undefined) {
+      let id = String(elem?.id).split(":")[1];
+      let checked = elem?.checked;
+      let title = _.find(resources, (item) => item.value === id)?.label;
+      let newResources = Array.from(selectedResources);
+      if (checked) {
+        newResources = [...newResources, {id, title, type: selectedType.toLowerCase()}];
+      } else {
+        newResources = _.reject(newResources, (item) => item?.id === id);
+      }
+      setSelectedResources(newResources);
+    }
+  };
+
+  const handleConfirm = () => {
+    if(selectedResources.length > 0) {
+      setResourceList(_.uniq([...resourceList, ...selectedResources]));
+      setSelectedResources([]);
       setFilterOpen(false);
     }
   };
@@ -108,13 +134,16 @@ const RagCreator = ({children}) => {
             }}
           >
             <Flex maxH="32vh" h="100%" w="100%" overflowY="auto">
-              <CheckboxGroup w="100%" defaultValue={[]}>
-                {resource.map((item) => (
+              <CheckboxGroup w="100%">
+                {resources.map((item) => (
                   <CheckboxCard
                     key={item.value}
+                    id={item.value}
                     size="sm"
                     variant="subtle"
                     label={item?.label}
+                    checked={!!_.find(selectedResources, (it) => it.id === item.value)}
+                    onClick={handleCheckboxChange}
                   />
                 ))}
               </CheckboxGroup>
@@ -122,9 +151,17 @@ const RagCreator = ({children}) => {
             <Flex w="100%" mt="8px" justify="space-between">
               <Button h="32px" w="32%">Unselect All</Button>
               <Button h="32px" w="32%">Select All</Button>
-              <Button h="32px" w="32%">Confirm</Button>
+              <Button h="32px" w="32%" onClick={handleConfirm}>Confirm</Button>
             </Flex>
           </SlideBox>
+        </Flex>
+        <Flex w="100%" mt="64px">
+          <DataList
+            dataList={resourceList}
+            headers={["id", "title", "type"]}
+            operations={() => {
+            }}
+          />
         </Flex>
       </Flex>
     </CommonDialog>
