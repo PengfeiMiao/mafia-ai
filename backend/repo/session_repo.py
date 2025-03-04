@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session as DBSession
 from backend.entity.models import Session
 from backend.model.session_model import SessionModel
 from backend.util.common import now_utc
+from backend.mapper.mapper import clear_mapping
 
 
 def save_session(db: DBSession, session: SessionModel):
@@ -19,10 +20,7 @@ def save_session(db: DBSession, session: SessionModel):
 
 def update_session(db: DBSession, session: SessionModel, fields: List[str]):
     entity = db.query(Session).filter_by(id=session.id)
-    mapping = session.__dict__
-    for field in Session.__dict__.keys():
-        if field not in fields or not mapping.get(field):
-            mapping.pop(field, 'None')
+    mapping = clear_mapping(session.__dict__, fields)
     entity.update(mapping)
     db.commit()
     return entity.one()

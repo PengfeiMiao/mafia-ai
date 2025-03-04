@@ -26,7 +26,7 @@ const DataList = ({dataList, headers, functions, operations}) => {
         </Table.Header>
         <Table.Body>
           {dataList.slice((page - 1) * pageSize, page * pageSize).map((item) => (
-            <Table.Row key={item.id}>
+            <Table.Row key={item?.id ?? JSON.stringify(item)}>
               {headers.map((field, index) => (
                 <Table.Cell key={field}>
                   {functions && functions[index] ? functions[index](item[field]) : String(item[field])}

@@ -1,12 +1,9 @@
 import uuid
-from datetime import datetime
-from typing import Any, Dict
 
 from sqlalchemy import Column, String, UUID, DateTime, Integer, Boolean
-from sqlalchemy.orm import DeclarativeMeta
 
 from backend.entity.connection import Base, engine
-from backend.util.common import now_utc, DEFAULT_FORMAT
+from backend.util.common import now_utc
 
 
 class Message(Base):
@@ -58,23 +55,16 @@ class Website(Base):
     user_id = Column(String)
 
 
-def serialize_model(model_instance: Any) -> Dict[str, Any]:
-    if isinstance(model_instance.__class__, DeclarativeMeta):
-        data = {}
-        for column in model_instance.__table__.columns:
-            value = getattr(model_instance, column.name)
-            if isinstance(value, datetime):
-                value = value.strftime(DEFAULT_FORMAT)
-            elif isinstance(value, (int, float, str, bool)) or value is None:
-                pass
-            else:
-                try:
-                    value = str(value)
-                except RuntimeError:
-                    value = None
-            data[column.name] = value
-        return data
-    raise ValueError("Not a valid SQLAlchemy ORM model instance.")
+class Ragmap(Base):
+    __tablename__ = "ragmap"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String)
+    resource_id = Column(String)
+    type = Column(String)
+    status = Column(String, default="active")
+    created_at = Column(DateTime, default=now_utc())
+    user_id = Column(String)
 
 
 Base.metadata.create_all(engine)

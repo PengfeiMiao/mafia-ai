@@ -1,4 +1,4 @@
-import {Button, CheckboxGroup, Flex, Input} from "@chakra-ui/react";
+import {Button, CheckboxGroup, Flex, Input, VStack} from "@chakra-ui/react";
 import CommonDialog from "@/components/CommonDialog";
 import React, {useEffect, useRef, useState} from "react";
 import CommonSelector from "@/components/CommonSelector";
@@ -9,6 +9,11 @@ import {getFiles, getWebsites} from "@/api/api";
 import _ from "lodash";
 import {CheckboxCard} from "@/components/ui/checkbox-card";
 import DataList from "@/components/DataList";
+import {GrView} from "react-icons/gr";
+import {MarkdownView} from "@/components/MarkdownView";
+import ConfirmPopover from "@/components/ConfirmPopover";
+import {RiDeleteBin5Line} from "react-icons/ri";
+import WebContent from "@/pages/rag/WebContent";
 
 const typeOptions = ["File", "Website"];
 
@@ -24,12 +29,12 @@ const RagCreator = ({children}) => {
 
   const getWebsiteList = async (keyword) => {
     let websites = await getWebsites(keyword) ?? [];
-    return _.uniq(websites.map(item => ({label: `${item.title}[${item.uri}]`, value: item.id})));
+    return _.uniq(websites.map(item => ({label: `${item.title}[${item.uri}]`, value: item.id, data: item})));
   };
 
   const getFileList = async (keyword) => {
     let files = await getFiles(keyword) ?? [];
-    return _.uniq(files.map(item => ({label: item['file_name'], value: item.id})));
+    return _.uniq(files.map(item => ({label: item['file_name'], value: item.id, data: item})));
   }
 
   const handleResourceChange = async () => {
@@ -66,19 +71,24 @@ const RagCreator = ({children}) => {
     if (elem?.checked !== undefined) {
       let id = String(elem?.id).split(":")[1];
       let checked = elem?.checked;
-      let title = _.find(resources, (item) => item.value === id)?.label;
+      let target = _.find(resources, (item) => item.value === id);
       let newResources = Array.from(selectedResources);
       if (checked) {
-        newResources = [...newResources, {id, title, type: selectedType.toLowerCase()}];
+        newResources = [...newResources, {
+          resource_id: id,
+          title: target?.label,
+          type: selectedType.toLowerCase(),
+          data: target?.data
+        }];
       } else {
-        newResources = _.reject(newResources, (item) => item?.id === id);
+        newResources = _.reject(newResources, (item) => item?.resource_id === id);
       }
       setSelectedResources(newResources);
     }
   };
 
   const handleConfirm = () => {
-    if(selectedResources.length > 0) {
+    if (selectedResources.length > 0) {
       setResourceList(_.uniq([...resourceList, ...selectedResources]));
       setSelectedResources([]);
       setFilterOpen(false);
@@ -96,7 +106,6 @@ const RagCreator = ({children}) => {
       trigger={children}
       closeRef={closeRef}
       onConfirm={() => {
-
       }}
     >
       <Flex h="60vh" w="100%" onClick={handleFilterHidden}>
@@ -142,7 +151,7 @@ const RagCreator = ({children}) => {
                     size="sm"
                     variant="subtle"
                     label={item?.label}
-                    checked={!!_.find(selectedResources, (it) => it.id === item.value)}
+                    checked={!!_.find(selectedResources, (it) => it.resource_id === item.value)}
                     onClick={handleCheckboxChange}
                   />
                 ))}
@@ -158,9 +167,26 @@ const RagCreator = ({children}) => {
         <Flex w="100%" mt="64px">
           <DataList
             dataList={resourceList}
-            headers={["id", "title", "type"]}
-            operations={() => {
-            }}
+            headers={["resource_id", "title", "type"]}
+            operations={(item) => (
+              <Flex align={'flex-end'}>
+                <CommonDialog
+                  title={"Content"}
+                  trigger={<GrView style={{marginLeft: 'auto'}}/>}
+                  outerStyle={{size: "xl"}}
+                >
+                  <VStack maxH="64vh" align="flex-start" overflowY="auto" bgColor="gray.100" p="8px">
+                    {item?.type === typeOptions[0].toLowerCase() ?
+                      <MarkdownView markdown={item?.data?.preview ?? 'No Content'}/>
+                      : <WebContent headers={item?.data?.xpaths ?? []} data={item?.data?.preview ?? []}/>}
+                  </VStack>
+                </CommonDialog>
+                <ConfirmPopover onConfirm={() => {
+                }}>
+                  <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+                </ConfirmPopover>
+              </Flex>
+            )}
           />
         </Flex>
       </Flex>

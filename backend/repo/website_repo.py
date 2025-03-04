@@ -5,7 +5,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session as DBSession
 
 from backend.entity.models import Website
-from backend.mapper.mapper import website_to_entity
+from backend.mapper.mapper import clear_mapping, website_to_entity
 from backend.model.website_model import WebsiteModel
 
 
@@ -26,11 +26,7 @@ def delete_websites(db: DBSession, ids: List[str]):
 def update_website(db: DBSession, website: WebsiteModel, fields: List[str]):
     entity = db.query(Website).filter_by(id=website.id)
     new_entity = website_to_entity(website)
-    mapping = new_entity.__dict__
-    keys = list(mapping.keys())
-    for field in keys:
-        if field not in fields or mapping.get(field) is None:
-            mapping.pop(field, 'None')
+    mapping = clear_mapping(new_entity.__dict__, fields)
     entity.update(mapping)
     db.commit()
     return entity.one()
