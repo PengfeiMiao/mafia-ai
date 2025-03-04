@@ -143,9 +143,9 @@ async def update_session_api(data: SessionModel, db: Session = Depends(get_sessi
 
 
 @app.get("/websites")
-async def get_websites_api(db: Session = Depends(get_session)):
+async def get_websites_api(keyword: str, db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
-    websites = get_websites(db, user_id=user_id)
+    websites = get_websites(db, user_id=user_id, keyword=keyword)
     return [website_to_model(website) for website in websites]
 
 
@@ -231,8 +231,8 @@ async def upload_files_api(session_id: str = "default",
 
 
 @app.get("/files")
-async def get_files_api(db: Session = Depends(get_session)):
-    files = get_attachments_by_session_id(db, "default")
+async def get_files_api(keyword: str, db: Session = Depends(get_session)):
+    files = get_attachments_by_session_id(db, "default", keyword=keyword)
     return [AttachmentModel(**serialize_model(file)) for file in files]
 
 
