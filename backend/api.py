@@ -15,24 +15,23 @@ from sqlalchemy.orm import Session
 
 from backend.config.config import api_key, file_dir
 from backend.entity.connection import get_session
-from backend.mapper.mapper import website_to_model, serialize_model
+from backend.mapper.mapper import website_to_model, serialize_model, rag_to_model
 from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
+from backend.model.rag_model import RagModel
 from backend.model.session_model import SessionModel
 from backend.model.user_model import UserModel
 from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.ragmap_repo import get_ragmaps
+from backend.repo.rag_repo import save_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
 from backend.service.llm_helper import LLMHelper
 from backend.service.proxy import common_proxy, parse_get_proxy
 from backend.util.common import now_str
-from model.ragmap_model import RagmapModel
-from repo.ragmap_repo import save_ragmap
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -181,19 +180,12 @@ async def delete_website_api(website_id: str, db: Session = Depends(get_session)
     return {'status': True}
 
 
-@app.get("/ragmaps")
-async def get_ragmaps_api(db: Session = Depends(get_session)):
-    user_id = DEFAULT_USER
-    ragmaps = get_ragmaps(db, user_id=user_id)
-    return [RagmapModel(**serialize_model(ragmap)) for ragmap in ragmaps]
-
-
-@app.post("/ragmap")
-async def create_ragmap_api(ragmap: RagmapModel, db: Session = Depends(get_session)):
-    if not ragmap.user_id:
-        ragmap.user_id = DEFAULT_USER
-    ragmap = save_ragmap(db, ragmap)
-    return RagmapModel(**serialize_model(ragmap))
+@app.post("/rag")
+async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
+    if not rag.user_id:
+        rag.user_id = DEFAULT_USER
+    rag, ragmaps = save_rag(db, rag)
+    return rag_to_model(rag, ragmaps)
 
 
 @app.post("/completions")

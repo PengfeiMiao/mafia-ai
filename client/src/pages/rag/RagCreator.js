@@ -5,7 +5,7 @@ import CommonSelector from "@/components/CommonSelector";
 import {InputGroup} from "@/components/ui/input-group";
 import {LuSearch} from "react-icons/lu";
 import SlideBox from "@/components/SlideBox";
-import {getFiles, getWebsites} from "@/api/api";
+import {createRag, getFiles, getWebsites} from "@/api/api";
 import _ from "lodash";
 import {CheckboxCard} from "@/components/ui/checkbox-card";
 import DataList from "@/components/DataList";
@@ -95,6 +95,13 @@ const RagCreator = ({children}) => {
     }
   };
 
+  const handleSave = () => {
+    createRag({
+      title: "test",
+      resources: resourceList
+    }).then();
+  };
+
   useEffect(() => {
     handleResourceChange().then();
   }, [selectedType]);
@@ -105,8 +112,7 @@ const RagCreator = ({children}) => {
       title="RAG Editor"
       trigger={children}
       closeRef={closeRef}
-      onConfirm={() => {
-      }}
+      onConfirm={handleSave}
     >
       <Flex h="60vh" w="100%" onClick={handleFilterHidden}>
         <Flex position="absolute" w="100%" ref={filterRef}>

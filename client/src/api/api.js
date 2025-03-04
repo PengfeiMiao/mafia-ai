@@ -49,6 +49,10 @@ export const deleteWebsite = async (website_id) => {
   return await commonApi(`${BASE_URL}/website?website_id=${website_id}`, {}, 'DELETE');
 }
 
+export const createRag = async (rag) => {
+  return await commonApi(`${BASE_URL}/rag`, rag, 'POST');
+}
+
 export const getFiles = async (keyword) => {
   return await commonApi(`${BASE_URL}/files?keyword=${keyword}`, {}, 'GET');
 }

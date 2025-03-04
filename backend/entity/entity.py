@@ -60,8 +60,16 @@ class Ragmap(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String)
+    rag_id = Column(String)
     resource_id = Column(String)
     type = Column(String)
+
+
+class Rag(Base):
+    __tablename__ = "rag"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String)
     status = Column(String, default="active")
     created_at = Column(DateTime, default=now_utc())
     user_id = Column(String)

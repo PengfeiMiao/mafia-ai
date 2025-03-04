@@ -1,9 +1,11 @@
+from datetime import datetime
 from typing import List, Any, Dict
 
 from sqlalchemy.orm import DeclarativeMeta
-from datetime import datetime
 
-from backend.entity.entity import Website
+from backend.entity.entity import Website, Rag, Ragmap
+from backend.model.rag_model import RagModel
+from backend.model.ragmap_model import RagmapModel
 from backend.model.website_model import WebsiteModel
 from backend.util.common import DEFAULT_FORMAT
 
@@ -26,6 +28,19 @@ def website_to_entity(website: WebsiteModel) -> Website:
     preview = mapping.get('preview', [])
     mapping['preview'] = SEPARATOR.join(preview) if preview and len(preview) > 0 else None
     return Website(**mapping)
+
+
+def rag_to_entity(rag: RagModel) -> (Rag, List[Ragmap]):
+    mapping = rag.__dict__
+    resources = mapping.get('resources', [])
+    return Rag(**mapping), [Ragmap(**ragmap) for ragmap in resources]
+
+
+def rag_to_model(rag: Rag, ragmaps: List[Ragmap]) -> RagModel:
+    mapping = serialize_model(rag)
+    model = RagModel(**mapping)
+    model.resources = [RagmapModel(**serialize_model(ragmap)) for ragmap in ragmaps]
+    return model
 
 
 def serialize_model(model_instance: Any) -> Dict[str, Any]:
