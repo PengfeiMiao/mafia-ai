@@ -3,7 +3,7 @@ from typing import List
 
 from sqlalchemy.orm import Session as DBSession
 
-from backend.entity.models import Ragmap
+from backend.entity.entity import Ragmap
 from backend.mapper.mapper import clear_mapping
 from backend.model.ragmap_model import RagmapModel
 

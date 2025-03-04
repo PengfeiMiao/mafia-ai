@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import or_
 from sqlalchemy.orm import Session as DBSession
 
-from backend.entity.models import Website
+from backend.entity.entity import Website
 from backend.mapper.mapper import clear_mapping, website_to_entity
 from backend.model.website_model import WebsiteModel
 

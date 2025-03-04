@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session as DBSession
 
-from backend.entity.models import Session
+from backend.entity.entity import Session
 from backend.model.session_model import SessionModel
 from backend.util.common import now_utc
 from backend.mapper.mapper import clear_mapping

@@ -3,7 +3,7 @@ from typing import List, Any, Dict
 from sqlalchemy.orm import DeclarativeMeta
 from datetime import datetime
 
-from backend.entity.models import Website
+from backend.entity.entity import Website
 from backend.model.website_model import WebsiteModel
 from backend.util.common import DEFAULT_FORMAT
 

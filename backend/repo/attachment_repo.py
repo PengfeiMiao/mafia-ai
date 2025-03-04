@@ -3,7 +3,7 @@ from typing import List
 
 from sqlalchemy.orm import Session as DBSession
 
-from backend.entity.models import Attachment
+from backend.entity.entity import Attachment
 from backend.model.attachment_model import AttachmentModel
 
 
