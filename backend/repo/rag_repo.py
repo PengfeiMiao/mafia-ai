@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy.orm import Session as DBSession
 
 from backend.entity.entity import Rag, Ragmap
-from backend.mapper.mapper import rag_to_entity
+from backend.mapper.mapper import rag_to_entity, clear_mapping
 from backend.model.rag_model import RagModel
 
 
@@ -18,6 +18,22 @@ def save_rag(db: DBSession, rag: RagModel):
     db.commit()
     db.refresh(entity)
     return copy.deepcopy(entity), maps
+
+
+def update_rag(db: DBSession, rag: RagModel):
+    entity = db.query(Rag).filter_by(id=rag.id)
+    new_entity, new_maps = rag_to_entity(rag)
+    mapping = clear_mapping(new_entity.__dict__, ['title'])
+    old_maps = db.query(Ragmap).filter_by(rag_id=rag.id).all()
+    for _map in old_maps:
+        db.delete(_map)
+    db.commit()
+    entity.update(mapping)
+    for _map in new_maps:
+        _map.rag_id = rag.id
+    db.add_all(new_maps)
+    db.commit()
+    return entity.one(), new_maps
 
 
 def get_rags(db: DBSession, user_id: str):

@@ -5,7 +5,7 @@ import CommonSelector from "@/components/CommonSelector";
 import {InputGroup} from "@/components/ui/input-group";
 import {LuSearch} from "react-icons/lu";
 import SlideBox from "@/components/SlideBox";
-import {createRag, getFiles, getWebsites} from "@/api/api";
+import {createRag, getFiles, getWebsites, updateRag} from "@/api/api";
 import _ from "lodash";
 import {CheckboxCard} from "@/components/ui/checkbox-card";
 import DataList from "@/components/DataList";
@@ -18,24 +18,25 @@ import moment from "moment/moment";
 
 const typeOptions = ["File", "Website"];
 
-const RagCreator = ({onChange, children}) => {
+const RagCreator = ({data, onChange, children}) => {
   const [selectedType, setSelectedType] = useState(typeOptions[0]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [resources, setResources] = useState([]);
   const [selectedResources, setSelectedResources] = useState([]);
   const [resourceList, setResourceList] = useState([]);
   const [ragTitle, setRagTitle] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
   const closeRef = useRef(null);
   const searchRef = useRef(null);
   const filterRef = useRef(null);
 
   const getWebsiteList = async (keyword) => {
-    let websites = await getWebsites(keyword) ?? [];
+    let websites = await getWebsites(keyword, "") ?? [];
     return _.uniq(websites.map(item => ({label: `${item.title}[${item.uri}]`, value: item.id, data: item})));
   };
 
   const getFileList = async (keyword) => {
-    let files = await getFiles(keyword) ?? [];
+    let files = await getFiles(keyword, "") ?? [];
     return _.uniq(files.map(item => ({label: item['file_name'], value: item.id, data: item})));
   }
 
@@ -102,7 +103,11 @@ const RagCreator = ({onChange, children}) => {
   };
 
   const handleSave = async () => {
-    let res = await createRag({
+    let res = !data ? await createRag({
+      title: ragTitle,
+      resources: resourceList
+    }) : await updateRag({
+      id: data?.id,
       title: ragTitle,
       resources: resourceList
     });
@@ -113,8 +118,17 @@ const RagCreator = ({onChange, children}) => {
   };
 
   useEffect(() => {
-    handleResourceChange().then();
-  }, [selectedType]);
+    if (data) {
+      setResourceList(data?.resources);
+      setRagTitle(data?.title)
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if(dialogOpen) {
+      handleResourceChange().then();
+    }
+  }, [dialogOpen, selectedType]);
 
   return (
     <CommonDialog
@@ -122,6 +136,8 @@ const RagCreator = ({onChange, children}) => {
       title="RAG Editor"
       trigger={children}
       closeRef={closeRef}
+      onOpen={() => setDialogOpen(true)}
+      onClose={() => setDialogOpen(false)}
       onConfirm={handleSave}
     >
       <Flex h="60vh" w="100%" onClick={handleFilterHidden}>

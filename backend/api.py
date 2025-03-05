@@ -26,7 +26,7 @@ from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.rag_repo import save_rag, get_rags
+from backend.repo.rag_repo import save_rag, get_rags, update_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
@@ -145,9 +145,11 @@ async def update_session_api(data: SessionModel, db: Session = Depends(get_sessi
 
 
 @app.get("/websites")
-async def get_websites_api(keyword: str, db: Session = Depends(get_session)):
+async def get_websites_api(keyword: str, website_ids: str, db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
-    websites = get_websites(db, user_id=user_id, keyword=keyword)
+    if website_ids:
+        website_ids = website_ids.split(',')
+    websites = get_websites(db, user_id=user_id, keyword=keyword, website_ids=website_ids)
     return [website_to_model(website) for website in websites]
 
 
@@ -188,6 +190,13 @@ async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
     rag, ragmaps = save_rag(db, rag)
     return rag_to_model(rag, ragmaps)
 
+
+@app.put("/rag")
+async def update_rag_api(rag: RagModel, db: Session = Depends(get_session)):
+    if not rag.user_id:
+        rag.user_id = DEFAULT_USER
+    rag, ragmaps = update_rag(db, rag)
+    return rag_to_model(rag, ragmaps)
 
 @app.get("/rags")
 async def get_rags_api(db: Session = Depends(get_session)):
@@ -248,8 +257,10 @@ async def upload_files_api(session_id: str = "default",
 
 
 @app.get("/files")
-async def get_files_api(keyword: str, db: Session = Depends(get_session)):
-    files = get_attachments_by_session_id(db, "default", keyword=keyword)
+async def get_files_api(keyword: str, file_ids: str, db: Session = Depends(get_session)):
+    if file_ids:
+        file_ids = file_ids.split(',')
+    files = get_attachments_by_session_id(db, "default", keyword=keyword, file_ids=file_ids)
     return [AttachmentModel(**serialize(file)) for file in files]
 
 

@@ -25,7 +25,7 @@ const DataList = ({dataList, headers, functions, operations}) => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {dataList.slice((page - 1) * pageSize, page * pageSize).map((item) => (
+          {dataList?.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
             <Table.Row key={item?.id ?? JSON.stringify(item)}>
               {headers.map((field, index) => (
                 <Table.Cell key={field}>
@@ -40,7 +40,7 @@ const DataList = ({dataList, headers, functions, operations}) => {
         </Table.Body>
       </Table.Root>
 
-      <PaginationRoot count={dataList.length} pageSize={pageSize} page={page} mt="auto">
+      <PaginationRoot count={dataList?.length} pageSize={pageSize} page={page} mt="auto">
         <HStack wrap="wrap">
           <PaginationPrevTrigger onClick={() => setPage((prev) => prev - 1)}/>
           <PaginationItems onClick={(e) => setPage(Number(e.target.innerText))}/>

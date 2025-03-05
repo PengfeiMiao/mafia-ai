@@ -14,13 +14,13 @@ const WebContent = ({headers, data}) => {
 
   return (
     <Flex h="60vh" w="100%" jusify="flex-end" direction="column">
-      {headers.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
+      {headers?.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
         <Flex key={item} direction="column">
           <Text mr="8px" fontWeight="bold">Xpath</Text>
           <Text p="8px" bgColor="gray.200">{item}</Text>
         </Flex>
       ))}
-      {data.slice((page - 1) * pageSize, page * pageSize).map((item) => (
+      {data?.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
         <CommonSyntaxHighlighter key={item} lang={"json"} content={item}/>
       ))}
       <PaginationRoot marginX="auto" mt="auto" pt="8px" count={data.length} pageSize={pageSize} page={page}>

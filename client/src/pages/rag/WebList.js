@@ -22,7 +22,7 @@ const WebList = () => {
   const closeRef = useRef(null);
 
   const getWebsiteList = async () => {
-    let websites = await getWebsites("");
+    let websites = await getWebsites("", "");
     setWebList(websites);
   };
 

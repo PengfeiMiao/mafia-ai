@@ -29,8 +29,8 @@ export const cleanSession = async (session_id) => {
   return await commonApi(`${BASE_URL}/session?session_id=${session_id}`, {}, 'GET');
 }
 
-export const getWebsites = async (keyword) => {
-  return await commonApi(`${BASE_URL}/websites?keyword=${keyword}`, {}, 'GET');
+export const getWebsites = async (keyword, website_ids) => {
+  return await commonApi(`${BASE_URL}/websites?keyword=${keyword}&website_ids=${website_ids}`, {}, 'GET');
 }
 
 export const previewWebsite = async (website_id) => {
@@ -53,12 +53,16 @@ export const createRag = async (rag) => {
   return await commonApi(`${BASE_URL}/rag`, rag, 'POST');
 }
 
+export const updateRag = async (rag) => {
+  return await commonApi(`${BASE_URL}/rag`, rag, 'PUT');
+}
+
 export const getRags = async () => {
   return await commonApi(`${BASE_URL}/rags`, {}, 'GET');
 }
 
-export const getFiles = async (keyword) => {
-  return await commonApi(`${BASE_URL}/files?keyword=${keyword}`, {}, 'GET');
+export const getFiles = async (keyword, file_ids) => {
+  return await commonApi(`${BASE_URL}/files?keyword=${keyword}&file_ids=${file_ids}`, {}, 'GET');
 }
 
 export const deleteFiles = async (file_id) => {

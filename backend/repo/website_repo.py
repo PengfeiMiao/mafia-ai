@@ -32,12 +32,14 @@ def update_website(db: DBSession, website: WebsiteModel, fields: List[str]):
     return entity.one()
 
 
-def get_websites(db: DBSession, user_id: str, keyword=None, scheduled=None):
+def get_websites(db: DBSession, user_id: str, keyword=None, scheduled=None, website_ids=None):
     query = db.query(Website).filter_by(user_id=user_id, status='active')
     if scheduled is not None:
         query = query.filter_by(scheduled=scheduled)
     if keyword:
         query = query.filter(or_(Website.title.like(f"%{keyword}%"), Website.uri.like(f"%{keyword}%")))
+    if website_ids:
+        query = query.filter(Website.id.in_(website_ids))
     return query.order_by(Website.created_at.desc()).all()
 
 

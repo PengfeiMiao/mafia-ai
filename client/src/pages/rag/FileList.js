@@ -28,7 +28,7 @@ const FileList = () => {
   const {message, sendMessage} = useWebsocket();
 
   const getAllFiles = async () => {
-    let files = await getFiles("") ?? [];
+    let files = await getFiles("", "") ?? [];
     setFileList(files);
   }
 
