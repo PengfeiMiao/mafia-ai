@@ -11,7 +11,6 @@ import {CheckboxCard} from "@/components/ui/checkbox-card";
 import DataList from "@/components/DataList";
 import {GrView} from "react-icons/gr";
 import {MarkdownView} from "@/components/MarkdownView";
-import ConfirmPopover from "@/components/ConfirmPopover";
 import {RiDeleteBin5Line} from "react-icons/ri";
 import WebContent from "@/pages/rag/WebContent";
 import moment from "moment/moment";
@@ -39,6 +38,20 @@ const RagCreator = ({data, onChange, children}) => {
     let files = await getFiles(keyword, "") ?? [];
     return _.uniq(files.map(item => ({label: item['file_name'], value: item.id, data: item})));
   }
+
+  const getDataList = async (resources) => {
+    let dict = _.groupBy(resources, 'type');
+    let fileIds = dict[typeOptions[0].toLowerCase()]?.map(item => item?.resource_id) ?? [];
+    let websiteIds = dict[typeOptions[1].toLowerCase()]?.map(item => item?.resource_id) ?? [];
+    let files = await getFiles("", fileIds.join(',')) ?? [];
+    let websites = await getWebsites("", websiteIds.join(',')) ?? [];
+    let combinedDict = _.assign(
+      {}, _.groupBy(files, 'id'), _.groupBy(websites, 'id'));
+    return resources.map(item => ({
+      ...item,
+      data: combinedDict[item.resource_id]?.[0]
+    }));
+  };
 
   const handleResourceChange = async () => {
     let keyword_ = searchRef?.current?.value ?? "";
@@ -72,7 +85,7 @@ const RagCreator = ({data, onChange, children}) => {
   const handleCheckboxChange = (event) => {
     let elem = event.target;
     if (elem?.checked !== undefined) {
-      let id = String(elem?.id).split(":")[1];
+      let id = String(elem?.id).split(":")?.[1];
       let checked = elem?.checked;
       let target = _.find(resources, (item) => item.value === id);
       let newResources = Array.from(selectedResources);
@@ -92,7 +105,7 @@ const RagCreator = ({data, onChange, children}) => {
 
   const handleConfirm = () => {
     if (selectedResources.length > 0) {
-      setResourceList(_.uniq([...resourceList, ...selectedResources]));
+      setResourceList(_.uniqBy([...resourceList, ...selectedResources], 'resource_id'));
       setSelectedResources([]);
       setFilterOpen(false);
       if (!ragTitle) {
@@ -117,15 +130,25 @@ const RagCreator = ({data, onChange, children}) => {
     }
   };
 
+  const handleRemove = (deprecated) => {
+    console.log(222)
+    let newList = Array.from(resourceList);
+    newList = _.reject(newList, (item) => item.resource_id === deprecated.resource_id);
+    setResourceList(newList);
+  };
+
   useEffect(() => {
     if (data) {
       setResourceList(data?.resources);
-      setRagTitle(data?.title)
+      setRagTitle(data?.title);
     }
   }, [data]);
 
   useEffect(() => {
-    if(dialogOpen) {
+    if (dialogOpen) {
+      if (resourceList.length > 0 && !resourceList[0]?.data) {
+        getDataList(data?.resources).then(res => setResourceList(res));
+      }
       handleResourceChange().then();
     }
   }, [dialogOpen, selectedType]);
@@ -218,10 +241,7 @@ const RagCreator = ({data, onChange, children}) => {
                       : <WebContent headers={item?.data?.xpaths ?? []} data={item?.data?.preview ?? []}/>}
                   </VStack>
                 </CommonDialog>
-                <ConfirmPopover onConfirm={() => {
-                }}>
-                  <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
-                </ConfirmPopover>
+                <RiDeleteBin5Line style={{marginLeft: '12px'}} onClick={() => handleRemove(item)}/>
               </Flex>
             )}
           />
