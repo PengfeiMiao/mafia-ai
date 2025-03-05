@@ -1,15 +1,20 @@
 import {Editable} from "@chakra-ui/react"
 
-export const EditableLabel = ({isEditable, onSelect, onSubmit, children}) => {
+export const EditableLabel = ({isEditable, onSelect, onSubmit, outerStyle, children}) => {
+  const rootStyle = {
+    height: "24px",
+    marginRight: "12px",
+    ...outerStyle
+  };
+
   return (
     <Editable.Root
-      h="24px"
-      mr="12px"
+      style={rootStyle}
       defaultValue={children}
       readOnly={!isEditable}
       defaultEdit={isEditable}
     >
-      <Editable.Preview w="100%" cursor="pointer" onClick={onSelect}/>
+      <Editable.Preview bgColor={rootStyle.bgColor} w="100%" cursor="pointer" onClick={onSelect}/>
       <Editable.Input onBlur={onSubmit}/>
     </Editable.Root>
   )

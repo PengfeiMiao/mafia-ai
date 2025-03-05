@@ -1,19 +1,16 @@
-from datetime import datetime
-from typing import List, Any, Dict
+from collections import defaultdict
+from typing import List
 
-from sqlalchemy.orm import DeclarativeMeta
-
-from backend.entity.entity import Website, Rag, Ragmap
+from backend.entity.entity import Website, Rag, Ragmap, serialize
 from backend.model.rag_model import RagModel
 from backend.model.ragmap_model import RagmapModel
 from backend.model.website_model import WebsiteModel
-from backend.util.common import DEFAULT_FORMAT
 
 SEPARATOR = ';;;'
 
 
 def website_to_model(website: Website) -> WebsiteModel:
-    mapping = serialize_model(website)
+    mapping = serialize(website)
     xpaths = mapping.get('xpaths')
     mapping['xpaths'] = str(xpaths).split(SEPARATOR) if xpaths else []
     preview = mapping.get('preview')
@@ -33,33 +30,25 @@ def website_to_entity(website: WebsiteModel) -> Website:
 def rag_to_entity(rag: RagModel) -> (Rag, List[Ragmap]):
     mapping = rag.__dict__
     resources = mapping.get('resources', [])
-    return Rag(**mapping), [Ragmap(**ragmap) for ragmap in resources]
+    mapping.pop('resources', 'None')
+    return Rag(**mapping), [Ragmap(**ragmap.__dict__) for ragmap in resources]
 
 
 def rag_to_model(rag: Rag, ragmaps: List[Ragmap]) -> RagModel:
-    mapping = serialize_model(rag)
-    model = RagModel(**mapping)
-    model.resources = [RagmapModel(**serialize_model(ragmap)) for ragmap in ragmaps]
+    model = RagModel(**serialize(rag))
+    model.resources = [RagmapModel(**serialize(ragmap)) for ragmap in ragmaps]
     return model
 
 
-def serialize_model(model_instance: Any) -> Dict[str, Any]:
-    if isinstance(model_instance.__class__, DeclarativeMeta):
-        data = {}
-        for column in model_instance.__table__.columns:
-            value = getattr(model_instance, column.name)
-            if isinstance(value, datetime):
-                value = value.strftime(DEFAULT_FORMAT)
-            elif isinstance(value, (int, float, str, bool)) or value is None:
-                pass
-            else:
-                try:
-                    value = str(value)
-                except RuntimeError:
-                    value = None
-            data[column.name] = value
-        return data
-    raise ValueError("Not a valid SQLAlchemy ORM model instance.")
+def rag_to_models(rags: List[Rag], ragmaps: List[Ragmap]) -> RagModel:
+    ragmaps_by_rag_id = defaultdict(list)
+    for ragmap in ragmaps:
+        ragmaps_by_rag_id[str(ragmap.rag_id)].append(ragmap)
+    models = []
+    for rag in rags:
+        model = rag_to_model(rag, ragmaps_by_rag_id[str(rag.id)])
+        models.append(model)
+    return models
 
 
 def clear_mapping(mapping: dict, fields: List[str]):

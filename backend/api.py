@@ -15,7 +15,8 @@ from sqlalchemy.orm import Session
 
 from backend.config.config import api_key, file_dir
 from backend.entity.connection import get_session
-from backend.mapper.mapper import website_to_model, serialize_model, rag_to_model
+from backend.entity.entity import serialize
+from backend.mapper.mapper import website_to_model, rag_to_model, rag_to_models
 from backend.model.attachment_model import AttachmentModel
 from backend.model.message_model import MessageModel
 from backend.model.rag_model import RagModel
@@ -25,7 +26,7 @@ from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.rag_repo import save_rag
+from backend.repo.rag_repo import save_rag, get_rags
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
@@ -98,11 +99,11 @@ async def proxy(request: Request):
 @app.post("/messages")
 async def get_messages_api(data: List[SessionModel], db: Session = Depends(get_session)):
     _messages = get_messages(db, session_ids=[item.id for item in data])
-    _messages = [MessageModel(**serialize_model(item)) for item in _messages]
+    _messages = [MessageModel(**serialize(item)) for item in _messages]
     attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
     attachments_by_message = defaultdict(list)
     for attachment in attachments:
-        attachments_by_message[str(attachment.message_id)].append(AttachmentModel(**serialize_model(attachment)))
+        attachments_by_message[str(attachment.message_id)].append(AttachmentModel(**serialize(attachment)))
     messages_by_session = defaultdict(list)
     for _message in _messages:
         _message.attachments = attachments_by_message.get(str(_message.id))
@@ -188,6 +189,13 @@ async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
     return rag_to_model(rag, ragmaps)
 
 
+@app.get("/rags")
+async def get_rags_api(db: Session = Depends(get_session)):
+    user_id = DEFAULT_USER
+    rags, ragmaps = get_rags(db, user_id)
+    return rag_to_models(rags, ragmaps)
+
+
 @app.post("/completions")
 async def completions(data: MessageModel, db: Session = Depends(get_session)):
     if not data.type:
@@ -242,7 +250,7 @@ async def upload_files_api(session_id: str = "default",
 @app.get("/files")
 async def get_files_api(keyword: str, db: Session = Depends(get_session)):
     files = get_attachments_by_session_id(db, "default", keyword=keyword)
-    return [AttachmentModel(**serialize_model(file)) for file in files]
+    return [AttachmentModel(**serialize(file)) for file in files]
 
 
 @app.delete("/file")
@@ -319,7 +327,7 @@ async def websocket_files(websocket: WebSocket, db: Session = Depends(get_sessio
             diff = list(set(pre_value) - set(new_value))
             if len(diff) > 0:
                 files = get_attachments(db, diff)
-                files = [serialize_model(file) for file in files]
+                files = [serialize(file) for file in files]
                 await websocket.send_json(files)
         except WebSocketDisconnect:
             print('[/ws/files] - receive msg disconnected')

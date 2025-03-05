@@ -1,4 +1,4 @@
-import {Button, CheckboxGroup, Flex, Input, VStack} from "@chakra-ui/react";
+import {Button, CheckboxGroup, Flex, Input, Text, VStack} from "@chakra-ui/react";
 import CommonDialog from "@/components/CommonDialog";
 import React, {useEffect, useRef, useState} from "react";
 import CommonSelector from "@/components/CommonSelector";
@@ -14,15 +14,17 @@ import {MarkdownView} from "@/components/MarkdownView";
 import ConfirmPopover from "@/components/ConfirmPopover";
 import {RiDeleteBin5Line} from "react-icons/ri";
 import WebContent from "@/pages/rag/WebContent";
+import moment from "moment/moment";
 
 const typeOptions = ["File", "Website"];
 
-const RagCreator = ({children}) => {
+const RagCreator = ({onChange, children}) => {
   const [selectedType, setSelectedType] = useState(typeOptions[0]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [resources, setResources] = useState([]);
   const [selectedResources, setSelectedResources] = useState([]);
   const [resourceList, setResourceList] = useState([]);
+  const [ragTitle, setRagTitle] = useState('');
   const closeRef = useRef(null);
   const searchRef = useRef(null);
   const filterRef = useRef(null);
@@ -92,14 +94,22 @@ const RagCreator = ({children}) => {
       setResourceList(_.uniq([...resourceList, ...selectedResources]));
       setSelectedResources([]);
       setFilterOpen(false);
+      if (!ragTitle) {
+        let subTitle = selectedResources[0].title.slice(0, 10);
+        setRagTitle(`#${subTitle}-${moment.utc().format('YYMMDDHHmmss')}`);
+      }
     }
   };
 
-  const handleSave = () => {
-    createRag({
-      title: "test",
+  const handleSave = async () => {
+    let res = await createRag({
+      title: ragTitle,
       resources: resourceList
-    }).then();
+    });
+    if (res && onChange) {
+      onChange(res);
+      closeRef?.current.click();
+    }
   };
 
   useEffect(() => {
@@ -145,7 +155,8 @@ const RagCreator = ({children}) => {
               padding: "8px",
               borderWidth: "1px",
               borderRadius: "4px",
-              boxShadow: "1px 1px 1px 1px rgba(0,0,0,0.1)"
+              boxShadow: "1px 1px 1px 1px rgba(0,0,0,0.1)",
+              zIndex: 999
             }}
           >
             <Flex maxH="32vh" h="100%" w="100%" overflowY="auto">
@@ -170,7 +181,11 @@ const RagCreator = ({children}) => {
             </Flex>
           </SlideBox>
         </Flex>
-        <Flex w="100%" mt="64px">
+        <Flex w="100%" mt="56px" direction="column">
+          <Flex w="416px" mb="16px" align="center">
+            <Text fontSize="md" fontWeight="bold" mr="8px">Title:</Text>
+            <Input value={ragTitle} onChange={e => setRagTitle(e.target.value)}/>
+          </Flex>
           <DataList
             dataList={resourceList}
             headers={["resource_id", "title", "type"]}
@@ -197,7 +212,8 @@ const RagCreator = ({children}) => {
         </Flex>
       </Flex>
     </CommonDialog>
-  );
+  )
+    ;
 };
 
 export default RagCreator;

@@ -53,6 +53,10 @@ export const createRag = async (rag) => {
   return await commonApi(`${BASE_URL}/rag`, rag, 'POST');
 }
 
+export const getRags = async () => {
+  return await commonApi(`${BASE_URL}/rags`, {}, 'GET');
+}
+
 export const getFiles = async (keyword) => {
   return await commonApi(`${BASE_URL}/files?keyword=${keyword}`, {}, 'GET');
 }
