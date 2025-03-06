@@ -7,6 +7,7 @@ import {getRags} from "@/api/api";
 import TipsHeader from "@/components/TipsHeader";
 import {useDelayToggle} from "@/store/Hook";
 import _ from "lodash";
+import ConfirmPopover from "@/components/ConfirmPopover";
 
 
 const tips = ['Rag have been created.', 'Rag have been updated.'];
@@ -38,6 +39,12 @@ const RagList = () => {
     }
   };
 
+  const handleRemove = (deprecated) => {
+    let newList = Array.from(ragList);
+    newList = _.reject(newList, (item) => item.id === deprecated.id);
+    setRagList(newList);
+  };
+
   useEffect(() => {
     getRagList().then();
   }, []);
@@ -59,7 +66,9 @@ const RagList = () => {
             <RagCreator data={item} onChange={handleUpdate}>
               <RiEdit2Line style={{marginLeft: 'auto'}}/>
             </RagCreator>
-            <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+            <ConfirmPopover onConfirm={() => handleRemove(item)}>
+              <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+            </ConfirmPopover>
           </Flex>
         )}
       />

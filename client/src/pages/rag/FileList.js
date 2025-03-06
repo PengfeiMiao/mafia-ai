@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {Button, EmptyState, Flex, ProgressCircle, VStack} from "@chakra-ui/react";
+import {Button, Flex, ProgressCircle, VStack} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line} from "react-icons/ri";
 import {GrView} from "react-icons/gr";
 import FileCreator from "@/pages/rag/FileCreator";
 import {deleteFiles, getFiles} from "@/api/api";
-import {TbFileSad} from "react-icons/tb";
 import {useWebsocket} from "@/store/WsProvider";
 import _ from "lodash";
 import ConfirmPopover from "@/components/ConfirmPopover";
@@ -90,51 +89,37 @@ const FileList = () => {
           <Button h="32px" marginY="8px">New</Button>
         </FileCreator>
       </Flex>
-      {fileList.length === 0 ?
-        (<EmptyState.Root size={"md"}>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <TbFileSad/>
-            </EmptyState.Indicator>
-            <VStack textAlign="center">
-              <EmptyState.Title>Your file is empty</EmptyState.Title>
-              <EmptyState.Description>
-                Upload new files to full you database.
-              </EmptyState.Description>
-            </VStack>
-          </EmptyState.Content>
-        </EmptyState.Root>)
-        :
-        (<DataList
-          dataList={fileList}
-          headers={["file_name", "created_at", "file_size"]}
-          functions={[null, null, formatBytes]}
-          operations={(item) => (
-            <Flex align={'flex-end'}>
-              {pendingMaps.has(item?.id) ? (
-                <ProgressCircle.Root value={pendingMaps.get(item?.id)['progress'] * 10} style={{marginLeft: 'auto'}}>
-                  <ProgressCircle.Circle css={{"--thickness": "2px", "--size": "16px"}}>
-                    <ProgressCircle.Track/>
-                    <ProgressCircle.Range/>
-                  </ProgressCircle.Circle>
-                </ProgressCircle.Root>
-              ) : (
-                <CommonDialog
-                  title={"Content"}
-                  trigger={<GrView style={{marginLeft: 'auto'}}/>}
-                  outerStyle={{size: "xl"}}
-                >
-                  <VStack maxH="60vh" align="flex-start" overflowY="auto" bgColor="gray.100" p="8px">
-                    <MarkdownView markdown={item?.preview ?? 'No Content'}/>
-                  </VStack>
-                </CommonDialog>
-              )}
-              <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
-                <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
-              </ConfirmPopover>
-            </Flex>
-          )}
-        />)}
+      <DataList
+        tips={'Upload new files to full you database.'}
+        dataList={fileList}
+        headers={["file_name", "created_at", "file_size"]}
+        functions={[null, null, formatBytes]}
+        operations={(item) => (
+          <Flex align={'flex-end'}>
+            {pendingMaps.has(item?.id) ? (
+              <ProgressCircle.Root value={pendingMaps.get(item?.id)['progress'] * 10} style={{marginLeft: 'auto'}}>
+                <ProgressCircle.Circle css={{"--thickness": "2px", "--size": "16px"}}>
+                  <ProgressCircle.Track/>
+                  <ProgressCircle.Range/>
+                </ProgressCircle.Circle>
+              </ProgressCircle.Root>
+            ) : (
+              <CommonDialog
+                title={"Content"}
+                trigger={<GrView style={{marginLeft: 'auto'}}/>}
+                outerStyle={{size: "xl"}}
+              >
+                <VStack maxH="60vh" align="flex-start" overflowY="auto" bgColor="gray.100" p="8px">
+                  <MarkdownView markdown={item?.preview ?? 'No Content'}/>
+                </VStack>
+              </CommonDialog>
+            )}
+            <ConfirmPopover onConfirm={() => handleDelete(item?.id)}>
+              <RiDeleteBin5Line style={{marginLeft: '12px'}}/>
+            </ConfirmPopover>
+          </Flex>
+        )}
+      />)
     </Flex>
   );
 };

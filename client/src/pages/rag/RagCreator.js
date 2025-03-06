@@ -110,6 +110,7 @@ const RagCreator = ({data, onChange, children}) => {
             <Input value={ragTitle} onChange={e => setRagTitle(e.target.value)}/>
           </Flex>
           <DataList
+            tips={'Please select resources to fill the RAG.'}
             dataList={resourceList}
             headers={["resource_id", "title", "type"]}
             operations={(item) => (
