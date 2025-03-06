@@ -52,3 +52,8 @@ def get_rags(db: DBSession, user_id: str):
     maps = db.query(Ragmap).filter(Ragmap.rag_id.in_(ids)).all()
     return entities, maps
 
+def get_rag(db: DBSession, rag_id: str):
+    entity = db.query(Rag).filter_by(id=rag_id, status='active').one()
+    maps = db.query(Ragmap).filter_by(rag_id=rag_id).all()
+    return entity, maps
+

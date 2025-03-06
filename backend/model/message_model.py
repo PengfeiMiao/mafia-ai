@@ -13,6 +13,8 @@ class MessageModel(BaseModel):
     type: Union[str, None] = None
     created_at: Union[str, None] = None
     attachments: Union[List[AttachmentModel], None] = None
+    model: Union[str, None] = None
+    rag_id: Union[str, None] = None
 
     def to_chat_messages(self):
         result = []

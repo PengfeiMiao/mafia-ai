@@ -35,7 +35,8 @@ const DialoguePage = ({outerStyle}) => {
       content: newMessage.replaceAll('\n', '\n\n'),
       type: 'user',
       created_at: createdAt,
-      attachments: attachments
+      attachments: attachments,
+      rag_id: 'ac732ef3-30e7-4287-ba39-268ceb0e1667'
     };
     setMessages([...messages, messageObj]);
     setPendingId(answerId);

@@ -60,11 +60,13 @@ def max_histories():
 def file_dir():
     return get_config("file_dir")
 
-def embd_dir():
-    return get_config("embedding.persist_dir")
-
-def embd_model():
-    return get_config("embedding.model")
+def embd_model_meta():
+    embd_map = get_config("embedding")
+    meta_model = get_config("embedding.meta")
+    meta_map = get_config_map("models","name", meta_model)
+    embd_map["base_url"] = meta_map["base_url"]
+    embd_map["api_key"] = meta_map["api_key"]
+    return embd_map
 
 def crawler_interval():
     return get_config("crawler.interval")

@@ -26,7 +26,7 @@ from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag
+from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag, get_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
@@ -188,6 +188,7 @@ async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
     if not rag.user_id:
         rag.user_id = DEFAULT_USER
     rag, ragmaps = save_rag(db, rag)
+    llm_helper.append_docs(rag.id, )
     return rag_to_model(rag, ragmaps)
 
 
@@ -210,6 +211,25 @@ async def get_rags_api(db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
     rags, ragmaps = get_rags(db, user_id)
     return rag_to_models(rags, ragmaps)
+
+
+@app.get("/rag")
+async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
+    rag, ragmaps = get_rag(db, rag_id)
+    ragmap_by_type = defaultdict(list)
+    for _map in ragmaps:
+        ragmap_by_type[_map.type].append(_map.resource_id)
+    rag_dict = defaultdict(str)
+    if ragmap_by_type['file']:
+        files = get_attachments_by_session_id(db, "default", file_ids=ragmap_by_type['file'])
+        for file in files:
+            rag_dict[file.file_name] = file.preview
+    if ragmap_by_type['website']:
+        websites = get_websites(db, DEFAULT_USER, website_ids=ragmap_by_type['website'])
+        for website in websites:
+            rag_dict[f"{website.title}[{website.uri}]"] = website.preview
+    llm_helper.append_texts(rag_id, rag_dict)
+    return rag_to_model(rag, ragmaps)
 
 
 @app.post("/completions")
@@ -246,7 +266,7 @@ async def upload_files_api(session_id: str = "default",
         results.append(result)
 
     def update_previews(_db, _session_id, _file_paths: List[str]):
-        _docs = llm_helper.append_docs(_file_paths)
+        _docs = llm_helper.append_docs(_session_id, _file_paths)
         for _doc in _docs:
             _updated = update_attachment(_db,
                                          preview=_doc.page_content[:4000],
@@ -297,7 +317,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         for item in _data.attachments:
             _files[item.file_name] = item.preview
         try:
-            async for chunk in llm_helper.streaming(_data.content, _data.session_id, files=_files):
+            async for chunk in llm_helper.streaming(_data.content, _data.session_id, rag_id=_data.rag_id, files=_files):
                 _response['content'] += chunk
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'

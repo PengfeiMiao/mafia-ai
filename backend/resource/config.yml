@@ -14,6 +14,7 @@ models:
 tool_model: "gpt-3.5-turbo"
 chat_model: "gpt-3.5-turbo"
 embedding:
+  meta: "gpt-3.5-turbo"
   model: "text-embedding-ada-002"
   persist_dir: "data/embd"
 file_dir: "data/files"

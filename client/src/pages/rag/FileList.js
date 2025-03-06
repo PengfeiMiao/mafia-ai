@@ -119,7 +119,7 @@ const FileList = () => {
             </ConfirmPopover>
           </Flex>
         )}
-      />)
+      />
     </Flex>
   );
 };

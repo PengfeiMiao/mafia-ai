@@ -8,6 +8,7 @@ import TipsHeader from "@/components/TipsHeader";
 import {useDelayToggle} from "@/store/Hook";
 import _ from "lodash";
 import ConfirmPopover from "@/components/ConfirmPopover";
+import {VscDebugRerun} from "react-icons/vsc";
 
 
 const tips = [
@@ -69,12 +70,13 @@ const RagList = () => {
       </Flex>
       <DataList
         dataList={ragList}
-        headers={["title", "user_id", "resources"]}
-        functions={[null, null, (it) => it?.length ?? 0]}
+        headers={["title", "created_at", "resources", "state"]}
+        functions={[null, null, (it) => it?.length ?? 0, null]}
         operations={(item) => (
           <Flex align={'flex-end'}>
+            <VscDebugRerun style={{marginLeft: 'auto'}} onClick={() => {}}/>
             <RagCreator data={item} onChange={handleUpdate}>
-              <RiEdit2Line style={{marginLeft: 'auto'}}/>
+              <RiEdit2Line style={{marginLeft: '12px'}}/>
             </RagCreator>
             <ConfirmPopover onConfirm={() => handleRemove(item)}>
               <RiDeleteBin5Line style={{marginLeft: '12px'}}/>

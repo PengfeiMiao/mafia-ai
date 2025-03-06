@@ -14,6 +14,7 @@ from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
 )
+from langchain_core.documents import Document
 from langchain_core.messages import trim_messages, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
@@ -22,7 +23,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
-from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_dir, embd_model, max_histories
+from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories
 from backend.service.router import Router
 
 
@@ -41,6 +42,10 @@ def get_session_config(session_id: str):
     return {"configurable": {"session_id": session_id}}
 
 
+def format_doc(source, content):
+    return f"source: {source} \n\n content: {content} \n\n"
+
+
 def format_docs(_docs):
     _docs_by_source = defaultdict(list)
 
@@ -50,10 +55,10 @@ def format_docs(_docs):
             _docs_by_source[source].append(_doc)
 
     merged_docs = []
-    for _, _docs in _docs_by_source.items():
+    for _source, _docs in _docs_by_source.items():
         first_doc = _docs[0]
         merged_page_content = '\n\n'.join([doc.page_content for doc in _docs])
-        first_doc.page_content = merged_page_content
+        first_doc.page_content = format_doc(_source, merged_page_content)
 
         for key, value in list(first_doc.metadata.items()):
             try:
@@ -87,6 +92,7 @@ def parse_html(urls: List[str]):
 class LLMHelper:
     def __init__(self):
         self.chat_model = chat_model_meta()
+        self.embd_model = embd_model_meta()
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (
@@ -137,11 +143,7 @@ class LLMHelper:
             ]
         )
         self.store = {}
-        self.vectorstore = Chroma(persist_directory=embd_dir(), embedding_function=OpenAIEmbeddings(
-            model=embd_model(),
-            base_url=self.chat_model["base_url"],
-            api_key=self.chat_model["api_key"],
-        ))
+        self.vectorstore = {}
 
     def init_session_history(self, session_history: dict):
         for session_id, history in session_history.items():
@@ -178,8 +180,21 @@ class LLMHelper:
             max_tokens=max_tokens
         )
 
-    def build_rag(self, streaming=False, callbacks=None):
-        retriever = self.vectorstore.as_retriever()
+    def build_vectorstore(self, collection) -> Chroma:
+        if collection not in self.vectorstore:
+            self.vectorstore[collection] = Chroma(
+                collection_name=collection,
+                persist_directory=self.embd_model["persist_dir"],
+                embedding_function=OpenAIEmbeddings(
+                    model=self.embd_model["model"],
+                    base_url=self.embd_model["base_url"],
+                    api_key=self.embd_model["api_key"],
+                )
+            )
+        return self.vectorstore[collection]
+
+    def build_rag(self, streaming=False, callbacks=None, rag_id=None):
+        retriever = self.build_vectorstore(rag_id if rag_id else "default").as_retriever()
         model = self.build_model(streaming, callbacks)
         history_aware_retriever = create_history_aware_retriever(
             model, retriever, self.contextualize_q_prompt
@@ -211,12 +226,17 @@ class LLMHelper:
             history_messages_key="chat_history",
         )
 
-    def append_docs(self, file_paths: List[str]):
+    def append_docs(self, collection: str, file_paths: List[str]):
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         documents = parse_docs(file_paths)
         splits = text_splitter.split_documents(documents)
-        self.vectorstore.add_documents(documents=splits)
+        self.build_vectorstore(collection).add_documents(documents=splits)
         return documents
+
+    def append_texts(self, collection: str, dicts: dict):
+        for key, value in dicts.items():
+            document = Document(page_content=format_doc(key, value), metadata={"title": key}, )
+            self.build_vectorstore(collection).add_documents([document])
 
     def route(self, message: str):
         model = self.build_model(temperature=0.1, max_tokens=50)
@@ -229,16 +249,17 @@ class LLMHelper:
         response = llm.invoke({"input": message, "preview": None}, config=config)
         return response.content
 
-    async def streaming(self, message: str, session_id: str, files=None) -> AsyncIterable[str]:
+    async def streaming(self, message: str, session_id: str, rag_id=None, files=None) -> AsyncIterable[str]:
         pre_input = None
         if files:
             previews = ""
             for key, value in files.items():
-                previews += f"\n\n filename: {key} \n\n content: {value}"
-            pre_input = f"These source files are attached to the context: {previews}. "
+                previews += format_doc(key, value)
+            pre_input = f"These source files are attached to the context: \n\n {previews}. "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_llm(streaming=True, callbacks=[callback])
+        llm = self.build_rag(streaming=True, callbacks=[callback]) \
+            if rag_id else self.build_llm(streaming=True, callbacks=[callback])
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 # print(chunk)
@@ -248,8 +269,3 @@ class LLMHelper:
                     yield chunk.content
         except Exception as e:
             yield f"LLM caught exception: {e}"
-
-
-if __name__ == '__main__':
-    res = parse_docs(["./Java_MPF.pdf"])
-    print(res)
