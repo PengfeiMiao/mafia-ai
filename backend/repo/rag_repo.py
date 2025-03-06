@@ -36,6 +36,15 @@ def update_rag(db: DBSession, rag: RagModel):
     return entity.one(), new_maps
 
 
+def delete_rag(db: DBSession, rag_id: str):
+    entity = db.query(Rag).filter_by(id=rag_id)
+    maps = db.query(Ragmap).filter_by(rag_id=rag_id).all()
+    for _map in maps:
+        db.delete(_map)
+    entity.update({Rag.status: 'inactive'})
+    db.commit()
+
+
 def get_rags(db: DBSession, user_id: str):
     entities = (db.query(Rag).filter_by(user_id=user_id, status='active')
              .order_by(Rag.created_at.desc()).all())

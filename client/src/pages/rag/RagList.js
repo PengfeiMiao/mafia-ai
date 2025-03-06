@@ -3,14 +3,18 @@ import {Button, Flex} from "@chakra-ui/react";
 import DataList from "@/components/DataList";
 import {RiDeleteBin5Line, RiEdit2Line} from "react-icons/ri";
 import RagCreator from "@/pages/rag/RagCreator";
-import {getRags} from "@/api/api";
+import {deleteRag, getRags} from "@/api/api";
 import TipsHeader from "@/components/TipsHeader";
 import {useDelayToggle} from "@/store/Hook";
 import _ from "lodash";
 import ConfirmPopover from "@/components/ConfirmPopover";
 
 
-const tips = ['Rag have been created.', 'Rag have been updated.'];
+const tips = [
+  'Rag have been created.',
+  'Rag have been updated.',
+  'Rag have been deleted.'
+];
 
 const RagList = () => {
   const [ragList, setRagList] = new useState([]);
@@ -40,9 +44,15 @@ const RagList = () => {
   };
 
   const handleRemove = (deprecated) => {
-    let newList = Array.from(ragList);
-    newList = _.reject(newList, (item) => item.id === deprecated.id);
-    setRagList(newList);
+    deleteRag(deprecated.id).then(res => {
+      if (res) {
+        let newList = Array.from(ragList);
+        newList = _.reject(newList, (item) => item.id === deprecated.id);
+        setRagList(newList);
+        setTipMsg(tips[2]);
+        onToggle();
+      }
+    });
   };
 
   useEffect(() => {

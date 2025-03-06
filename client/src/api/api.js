@@ -57,6 +57,10 @@ export const updateRag = async (rag) => {
   return await commonApi(`${BASE_URL}/rag`, rag, 'PUT');
 }
 
+export const deleteRag = async (rag_id) => {
+  return await commonApi(`${BASE_URL}/rag?rag_id=${rag_id}`, {}, 'DELETE');
+}
+
 export const getRags = async () => {
   return await commonApi(`${BASE_URL}/rags`, {}, 'GET');
 }

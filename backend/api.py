@@ -26,7 +26,7 @@ from backend.model.website_model import WebsiteModel
 from backend.repo.attachment_repo import save_attachment, get_attachments, update_attachment, delete_attachments, \
     get_attachments_by_message_ids, get_attachments_by_session_id
 from backend.repo.message_repo import get_messages, save_message
-from backend.repo.rag_repo import save_rag, get_rags, update_rag
+from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
@@ -197,6 +197,13 @@ async def update_rag_api(rag: RagModel, db: Session = Depends(get_session)):
         rag.user_id = DEFAULT_USER
     rag, ragmaps = update_rag(db, rag)
     return rag_to_model(rag, ragmaps)
+
+
+@app.delete("/rag")
+async def delete_rag_api(rag_id: str, db: Session = Depends(get_session)):
+    delete_rag(db, rag_id)
+    return {'status': True}
+
 
 @app.get("/rags")
 async def get_rags_api(db: Session = Depends(get_session)):
