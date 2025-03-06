@@ -19,7 +19,7 @@ const ConfirmPopover = ({onConfirm, children}) => {
       <PopoverTrigger asChild>
         {children}
       </PopoverTrigger>
-      <PopoverContent w="auto">
+      <PopoverContent w="auto" portalled={false}>
         <PopoverArrow/>
         <PopoverFooter pt={"12px"}>
           <Group>
