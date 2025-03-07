@@ -188,7 +188,6 @@ async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
     if not rag.user_id:
         rag.user_id = DEFAULT_USER
     rag, ragmaps = save_rag(db, rag)
-    llm_helper.append_docs(rag.id, )
     return rag_to_model(rag, ragmaps)
 
 
@@ -226,13 +225,16 @@ async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
         if ragmap_by_type['file']:
             files = get_attachments_by_session_id(db, "default", file_ids=ragmap_by_type['file'])
             for file in files:
-                rag_dict[file.file_name] = file.preview
+                rag_dict[f"{rag.title} > {file.file_name}"] = file.preview
         if ragmap_by_type['website']:
             websites = get_websites(db, DEFAULT_USER, website_ids=ragmap_by_type['website'])
             for website in websites:
-                rag_dict[f"{website.title}[{website.uri}]"] = website.preview
-        llm_helper.reset_rag_store(rag_id)
-        llm_helper.append_texts(rag_id, rag_dict)
+                rag_dict[f"{rag.title} > {website.title}[{website.uri}]"] = website.preview
+        loop = asyncio.get_event_loop()
+        def init_rag(_rag_id, _rag_dict):
+            llm_helper.reset_rag_store(_rag_id)
+            llm_helper.append_texts(_rag_id, _rag_dict)
+        await loop.run_in_executor(executor, init_rag, rag_id, rag_dict)
         rag.state = 'completed'
         update_rag(db, rag_to_model(rag), ['state'], cascade=False)
     return rag_to_model(rag, ragmaps)
@@ -319,7 +321,6 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
     async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
         _response = build_response(_data)
-        print(_data)
         _files = defaultdict(str)
         for item in _data.attachments:
             _files[item.file_name] = item.preview
