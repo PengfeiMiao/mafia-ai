@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List
+from typing import List, Union
 
 from backend.entity.entity import Website, Rag, Ragmap, serialize
 from backend.model.rag_model import RagModel
@@ -34,9 +34,9 @@ def rag_to_entity(rag: RagModel) -> (Rag, List[Ragmap]):
     return Rag(**mapping), [Ragmap(**ragmap.__dict__) for ragmap in resources]
 
 
-def rag_to_model(rag: Rag, ragmaps: List[Ragmap]) -> RagModel:
+def rag_to_model(rag: Rag, ragmaps: Union[List[Ragmap], None] = None) -> RagModel:
     model = RagModel(**serialize(rag))
-    model.resources = [RagmapModel(**serialize(ragmap)) for ragmap in ragmaps]
+    model.resources = [RagmapModel(**serialize(ragmap)) for ragmap in ragmaps] if ragmaps else []
     return model
 
 

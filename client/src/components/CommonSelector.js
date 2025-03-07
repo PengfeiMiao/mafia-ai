@@ -15,15 +15,15 @@ import {InputGroup} from "@/components/ui/input-group";
 import {LuCheck, LuX} from "react-icons/lu";
 import _ from "lodash";
 
-const getSelectOptions = (options) => createListCollection({
-  items: _.uniq(options).map(item => ({label: item, value: item}))
+const getSelectOptions = (options, simple) => createListCollection({
+  items: simple ? _.uniq(options).map(item => ({label: item, value: item})) : options
 });
 
-const CommonSelector = ({options, placeholder, selected, onSelected, multiple, custom = false, outerStyle}) => {
+const CommonSelector = ({options, placeholder, selected, onSelected, multiple, simple = true, custom = false, outerStyle}) => {
   const [inEdit, setInEdit] = useState(false);
   const [editValue, setEditValue] = useState('');
   const editRef = useRef(null);
-  const [optionCollection, setOptionCollection] = useState(getSelectOptions(options));
+  const [optionCollection, setOptionCollection] = useState(getSelectOptions(options, simple));
 
   const rootStyle = {
     position: "absolute",
@@ -31,20 +31,21 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
   };
 
   useEffect(() => {
-    setOptionCollection(getSelectOptions(options));
+    setOptionCollection(getSelectOptions(options, simple));
   }, [options]);
 
   const handleSelected = (e) => {
     let elem = e.target;
     if (elem?.role === "option" && onSelected) {
+      let value = elem?.dataset?.value;
       if (multiple) {
         let newSelected = new Set(selected);
         elem?.dataset?.state === "unchecked" ?
-          newSelected.add(elem?.innerText) :
-          newSelected.delete(elem?.innerText);
+          newSelected.add(value) :
+          newSelected.delete(value);
         onSelected(Array.from(newSelected));
       } else {
-        onSelected(elem?.innerText);
+        onSelected(value);
       }
     }
   };
@@ -55,8 +56,8 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
       return;
     }
     let items = optionCollection.items.map(item => item.value);
-    let newOptions = [editValue].concat(items);
-    setOptionCollection(getSelectOptions(newOptions));
+    let newOptions = [simple ? editValue : {label: editValue, value: editValue}].concat(items);
+    setOptionCollection(getSelectOptions(newOptions, simple));
     setInEdit(false);
     setEditValue('');
   };
@@ -71,7 +72,7 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
     let newOptions = optionCollection.items
       .map(item => item.value)
       .filter(item => item !== value);
-    setOptionCollection(getSelectOptions(newOptions));
+    setOptionCollection(getSelectOptions(newOptions, simple));
   };
 
   const isSelected = (_selected, value) => {
@@ -133,7 +134,7 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, c
           <SelectItem item={option} key={option.value}
                       bgColor={isSelected(selected, option.value) ? "gray.200" : ""}>
             {option.label}
-            {!options.includes(option.value) ?
+            {!options.includes(simple ? option.value : option) ?
               <LuX color="gray" onClick={() => handleDeleteOption(option.value)}/>
               : null}
           </SelectItem>

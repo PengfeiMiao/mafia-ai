@@ -58,6 +58,7 @@ const RagCreator = ({data, onChange, children}) => {
     }) : await updateRag({
       id: data?.id,
       title: ragTitle,
+      state: 'initial',
       resources: resourceList
     });
     if (res && onChange) {

@@ -14,6 +14,7 @@ import {useDelayToggle} from "@/store/Hook";
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingId, setPendingId] = useState('');
+  const [ragId, setRagId] = useState('');
   const {message, sendMessage, interruptMessage} = useWebsocket();
   const {currentSession} = useContext(GlobalContext);
   const {toggle, onToggle} = useDelayToggle();
@@ -36,7 +37,7 @@ const DialoguePage = ({outerStyle}) => {
       type: 'user',
       created_at: createdAt,
       attachments: attachments,
-      rag_id: 'ac732ef3-30e7-4287-ba39-268ceb0e1667'
+      rag_id: ragId
     };
     setMessages([...messages, messageObj]);
     setPendingId(answerId);
@@ -46,6 +47,10 @@ const DialoguePage = ({outerStyle}) => {
   const handleInterrupt = () => {
     interruptMessage();
     setPendingId('');
+  };
+
+  const handleSelectorChanged = (ragSelected) => {
+    setRagId(ragSelected);
   };
 
   useEffect(() => {
@@ -70,7 +75,7 @@ const DialoguePage = ({outerStyle}) => {
   return (
     <Flex h="100%" w="100%" justify="center" align="center" direction="column">
       <TipsHeader title={'Context has been cleaned.'} hidden={toggle}/>
-      <SessionHeader/>
+      <SessionHeader onChange={handleSelectorChanged}/>
       <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder
         onSend={handleSend}

@@ -233,6 +233,9 @@ class LLMHelper:
         self.build_vectorstore(collection).add_documents(documents=splits)
         return documents
 
+    def reset_rag_store(self, collection: str):
+        self.build_vectorstore(collection).reset_collection()
+
     def append_texts(self, collection: str, dicts: dict):
         for key, value in dicts.items():
             document = Document(page_content=format_doc(key, value), metadata={"title": key}, )
@@ -258,11 +261,10 @@ class LLMHelper:
             pre_input = f"These source files are attached to the context: \n\n {previews}. "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_rag(streaming=True, callbacks=[callback]) \
+        llm = self.build_rag(streaming=True, callbacks=[callback], rag_id=rag_id) \
             if rag_id else self.build_llm(streaming=True, callbacks=[callback])
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
-                # print(chunk)
                 if isinstance(chunk, dict) and chunk.get("answer"):
                     yield chunk["answer"]
                 elif isinstance(chunk, BaseMessage):

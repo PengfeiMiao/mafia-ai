@@ -1,5 +1,6 @@
 import copy
 import uuid
+from typing import List
 
 from sqlalchemy.orm import Session as DBSession
 
@@ -20,18 +21,20 @@ def save_rag(db: DBSession, rag: RagModel):
     return copy.deepcopy(entity), maps
 
 
-def update_rag(db: DBSession, rag: RagModel):
+def update_rag(db: DBSession, rag: RagModel, fields: List[str], cascade=True):
     entity = db.query(Rag).filter_by(id=rag.id)
     new_entity, new_maps = rag_to_entity(rag)
-    mapping = clear_mapping(new_entity.__dict__, ['title'])
-    old_maps = db.query(Ragmap).filter_by(rag_id=rag.id).all()
-    for _map in old_maps:
-        db.delete(_map)
-    db.commit()
+    mapping = clear_mapping(new_entity.__dict__, fields)
+    if cascade:
+        old_maps = db.query(Ragmap).filter_by(rag_id=rag.id).all()
+        for _map in old_maps:
+            db.delete(_map)
+        db.commit()
     entity.update(mapping)
-    for _map in new_maps:
-        _map.rag_id = rag.id
-    db.add_all(new_maps)
+    if cascade:
+        for _map in new_maps:
+            _map.rag_id = rag.id
+        db.add_all(new_maps)
     db.commit()
     return entity.one(), new_maps
 
@@ -45,9 +48,11 @@ def delete_rag(db: DBSession, rag_id: str):
     db.commit()
 
 
-def get_rags(db: DBSession, user_id: str):
-    entities = (db.query(Rag).filter_by(user_id=user_id, status='active')
-             .order_by(Rag.created_at.desc()).all())
+def get_rags(db: DBSession, state: str, user_id: str):
+    query = db.query(Rag).filter_by(user_id=user_id, status='active')
+    if state:
+        query = query.filter_by(state=state)
+    entities = query.order_by(Rag.created_at.desc()).all()
     ids = [str(entity.id) for entity in entities]
     maps = db.query(Ragmap).filter(Ragmap.rag_id.in_(ids)).all()
     return entities, maps

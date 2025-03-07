@@ -61,8 +61,12 @@ export const deleteRag = async (rag_id) => {
   return await commonApi(`${BASE_URL}/rag?rag_id=${rag_id}`, {}, 'DELETE');
 }
 
-export const getRags = async () => {
-  return await commonApi(`${BASE_URL}/rags`, {}, 'GET');
+export const getRags = async (state) => {
+  return await commonApi(`${BASE_URL}/rags?state=${state}`, {}, 'GET');
+}
+
+export const loadRag = async (rag_id) => {
+  return await commonApi(`${BASE_URL}/rag?rag_id=${rag_id}`, {}, 'GET');
 }
 
 export const getFiles = async (keyword, file_ids) => {

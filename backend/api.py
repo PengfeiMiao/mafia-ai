@@ -196,7 +196,7 @@ async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
 async def update_rag_api(rag: RagModel, db: Session = Depends(get_session)):
     if not rag.user_id:
         rag.user_id = DEFAULT_USER
-    rag, ragmaps = update_rag(db, rag)
+    rag, ragmaps = update_rag(db, rag, ['title', 'state'])
     return rag_to_model(rag, ragmaps)
 
 
@@ -207,28 +207,34 @@ async def delete_rag_api(rag_id: str, db: Session = Depends(get_session)):
 
 
 @app.get("/rags")
-async def get_rags_api(db: Session = Depends(get_session)):
+async def get_rags_api(state: str, db: Session = Depends(get_session)):
     user_id = DEFAULT_USER
-    rags, ragmaps = get_rags(db, user_id)
+    rags, ragmaps = get_rags(db, state, user_id)
     return rag_to_models(rags, ragmaps)
 
 
 @app.get("/rag")
 async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
     rag, ragmaps = get_rag(db, rag_id)
-    ragmap_by_type = defaultdict(list)
-    for _map in ragmaps:
-        ragmap_by_type[_map.type].append(_map.resource_id)
-    rag_dict = defaultdict(str)
-    if ragmap_by_type['file']:
-        files = get_attachments_by_session_id(db, "default", file_ids=ragmap_by_type['file'])
-        for file in files:
-            rag_dict[file.file_name] = file.preview
-    if ragmap_by_type['website']:
-        websites = get_websites(db, DEFAULT_USER, website_ids=ragmap_by_type['website'])
-        for website in websites:
-            rag_dict[f"{website.title}[{website.uri}]"] = website.preview
-    llm_helper.append_texts(rag_id, rag_dict)
+    if rag.state == 'initial':
+        rag.state = 'pending'
+        update_rag(db, rag_to_model(rag), ['state'], cascade=False)
+        ragmap_by_type = defaultdict(list)
+        for _map in ragmaps:
+            ragmap_by_type[_map.type].append(_map.resource_id)
+        rag_dict = defaultdict(str)
+        if ragmap_by_type['file']:
+            files = get_attachments_by_session_id(db, "default", file_ids=ragmap_by_type['file'])
+            for file in files:
+                rag_dict[file.file_name] = file.preview
+        if ragmap_by_type['website']:
+            websites = get_websites(db, DEFAULT_USER, website_ids=ragmap_by_type['website'])
+            for website in websites:
+                rag_dict[f"{website.title}[{website.uri}]"] = website.preview
+        llm_helper.reset_rag_store(rag_id)
+        llm_helper.append_texts(rag_id, rag_dict)
+        rag.state = 'completed'
+        update_rag(db, rag_to_model(rag), ['state'], cascade=False)
     return rag_to_model(rag, ragmaps)
 
 
@@ -313,6 +319,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
 
     async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
         _response = build_response(_data)
+        print(_data)
         _files = defaultdict(str)
         for item in _data.attachments:
             _files[item.file_name] = item.preview
