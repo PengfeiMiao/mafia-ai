@@ -11,17 +11,17 @@ const modelOptions = [
   "deepseek"
 ];
 
-const emptyOptions = [{label: 'empty', value: ''}];
+const emptyOption = {label: 'empty', value: '-'};
 
 const SessionHeader = ({onChange}) => {
   const [modelSelected, setModelSelected] = useState(modelOptions[0]);
-  const [ragOptions, setRagOptions] = useState(emptyOptions);
+  const [ragOptions, setRagOptions] = useState([]);
   const [ragSelected, setRagSelected] = useState('');
 
   const getRagList = async () => {
     let rags = await getRags("completed") ?? [];
     let options = rags.map(item => ({label: item.title, value: item.id}));
-    setRagOptions(emptyOptions.concat(options));
+    setRagOptions([emptyOption, ...options]);
   };
 
   useEffect(() => {

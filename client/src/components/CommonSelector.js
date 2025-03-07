@@ -19,7 +19,12 @@ const getSelectOptions = (options, simple) => createListCollection({
   items: simple ? _.uniq(options).map(item => ({label: item, value: item})) : options
 });
 
-const CommonSelector = ({options, placeholder, selected, onSelected, multiple, simple = true, custom = false, outerStyle}) => {
+const CommonSelector = (
+  {
+    options, placeholder, selected, onSelected, outerStyle,
+    multiple, simple = true, custom = false
+  }
+) => {
   const [inEdit, setInEdit] = useState(false);
   const [editValue, setEditValue] = useState('');
   const editRef = useRef(null);
@@ -45,6 +50,7 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, s
           newSelected.delete(value);
         onSelected(Array.from(newSelected));
       } else {
+        console.log('handleSelected', value)
         onSelected(value);
       }
     }
@@ -76,7 +82,7 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, s
   };
 
   const isSelected = (_selected, value) => {
-    return _selected.includes(value);
+    return multiple ? _selected.includes(value) : _selected === value;
   };
 
   useEffect(() => {
@@ -131,8 +137,10 @@ const CommonSelector = ({options, placeholder, selected, onSelected, multiple, s
       }
       <SelectContent maxH="40vh" bgColor="white">
         {optionCollection.items.map((option) => (
-          <SelectItem item={option} key={option.value}
-                      bgColor={isSelected(selected, option.value) ? "gray.200" : ""}>
+          <SelectItem
+            item={option} key={option.value}
+            bgColor={isSelected(selected, option.value) ? "gray.200" : ""}
+          >
             {option.label}
             {!options.includes(simple ? option.value : option) ?
               <LuX color="gray" onClick={() => handleDeleteOption(option.value)}/>
