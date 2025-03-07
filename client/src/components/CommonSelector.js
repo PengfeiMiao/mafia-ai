@@ -36,7 +36,6 @@ const CommonSelector = (
   };
 
   const handleSelected = (e) => {
-
     let elem = e.target;
     if (elem?.role === "option" && onSelected) {
       let value = elem?.dataset?.value;
@@ -51,8 +50,8 @@ const CommonSelector = (
       }
     }
   };
-  const handleEditConfirm = (e) => {
 
+  const handleEditConfirm = (e) => {
     e.preventDefault();
     if (!String(editValue)?.trim()) {
       return;
@@ -63,18 +62,24 @@ const CommonSelector = (
     setInEdit(false);
     setEditValue('');
   };
-  const handleEditKeyDown = (e) => {
 
+  const handleEditKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       handleEditConfirm(e);
     }
   };
-  const handleDeleteOption = (value) => {
 
+  const handleDeleteOption = (value) => {
     let newOptions = optionCollection.items
       .map(item => item.value)
       .filter(item => item !== value);
     setOptionCollection(getSelectOptions(newOptions, simple));
+  };
+
+  const getSelectedLabel = (_selected) => {
+    return _.filter(optionCollection.items,
+      (item) => multiple ? _selected.includes(item.value) : _selected === item.value)
+      ?.map(item => item.label)?.join(',');
   };
 
   const isSelected = (_selected, value) => {
@@ -123,7 +128,7 @@ const CommonSelector = (
           />
         </InputGroup> :
         <SelectTrigger>
-          <SelectValueText placeholder={placeholder}>{selected}</SelectValueText>
+          <SelectValueText placeholder={placeholder}>{getSelectedLabel(selected)}</SelectValueText>
           <Group>
             {custom ?
               <RiEdit2Line onClick={(e) => {
