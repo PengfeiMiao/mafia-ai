@@ -30,7 +30,7 @@ from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag, ge
 from backend.repo.session_repo import get_sessions, save_session, update_session
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
-from backend.service.llm_helper import LLMHelper
+from backend.service.llm_helper import LLMHelper, parse_docs
 from backend.service.proxy import common_proxy, parse_get_proxy
 from backend.util.common import now_str
 
@@ -274,7 +274,7 @@ async def upload_files_api(session_id: str = "default",
         results.append(result)
 
     def update_previews(_db, _session_id, _file_paths: List[str]):
-        _docs = llm_helper.append_docs(_session_id, _file_paths)
+        _docs = llm_helper.append_docs(_session_id, parse_docs(_file_paths))
         for _doc in _docs:
             _updated = update_attachment(_db,
                                          preview=_doc.page_content[:4000],

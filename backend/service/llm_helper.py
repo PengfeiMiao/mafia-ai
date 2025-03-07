@@ -1,4 +1,5 @@
 import json
+import time
 from collections import defaultdict
 from operator import itemgetter
 from typing import AsyncIterable, List
@@ -226,9 +227,8 @@ class LLMHelper:
             history_messages_key="chat_history",
         )
 
-    def append_docs(self, collection: str, file_paths: List[str]):
+    def append_docs(self, collection: str, documents: List[Document]):
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        documents = parse_docs(file_paths)
         splits = text_splitter.split_documents(documents)
         self.build_vectorstore(collection).add_documents(documents=splits)
         return documents
@@ -237,9 +237,11 @@ class LLMHelper:
         self.build_vectorstore(collection).reset_collection()
 
     def append_texts(self, collection: str, dicts: dict):
-        for key, value in dicts.items():
-            document = Document(page_content=format_doc(key, value), metadata={"title": key}, )
-            self.build_vectorstore(collection).add_documents([document])
+        documents = [
+            Document(page_content=format_doc(key, value), metadata={"source": key}, )
+            for key, value in dicts.items()
+        ]
+        self.append_docs(collection, documents=documents)
 
     def route(self, message: str):
         model = self.build_model(temperature=0.1, max_tokens=50)
@@ -271,3 +273,21 @@ class LLMHelper:
                     yield chunk.content
         except Exception as e:
             yield f"LLM caught exception: {e}"
+
+
+if __name__ == '__main__':
+    llm_helper = LLMHelper()
+    _rag_id = "default"
+    # t = time.time()
+    # llm_helper.reset_rag_store(_rag_id)
+    # llm_helper.append_texts(_rag_id, {"电影《哪吒2》": "请回答我：它是国产动漫之光！"})
+    # print('append_texts use: ', time.time() - t)
+    t = time.time()
+    _llm = llm_helper.build_rag(streaming=False, rag_id=_rag_id)
+    # _llm = llm_helper.build_llm(streaming=False)
+    print('build model use: ', time.time() - t)
+    t = time.time()
+    for chunk in _llm.stream({"input": "哪吒2 是什么", "preview": None}, config=get_session_config(_rag_id)):
+        print(chunk)
+        print('chunk use: ', time.time() - t)
+        t = time.time()
