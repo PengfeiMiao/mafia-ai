@@ -35,11 +35,8 @@ const CommonSelector = (
     ...outerStyle
   };
 
-  useEffect(() => {
-    setOptionCollection(getSelectOptions(options, simple));
-  }, [options]);
-
   const handleSelected = (e) => {
+
     let elem = e.target;
     if (elem?.role === "option" && onSelected) {
       let value = elem?.dataset?.value;
@@ -50,13 +47,12 @@ const CommonSelector = (
           newSelected.delete(value);
         onSelected(Array.from(newSelected));
       } else {
-        console.log('handleSelected', value)
         onSelected(value);
       }
     }
   };
-
   const handleEditConfirm = (e) => {
+
     e.preventDefault();
     if (!String(editValue)?.trim()) {
       return;
@@ -67,14 +63,14 @@ const CommonSelector = (
     setInEdit(false);
     setEditValue('');
   };
-
   const handleEditKeyDown = (e) => {
+
     if (e.key === 'Enter' && !e.shiftKey) {
       handleEditConfirm(e);
     }
   };
-
   const handleDeleteOption = (value) => {
+
     let newOptions = optionCollection.items
       .map(item => item.value)
       .filter(item => item !== value);
@@ -91,6 +87,10 @@ const CommonSelector = (
       setEditValue(selected instanceof Array && selected.length > 0 ? selected[0] : selected);
     }
   }, [inEdit]);
+
+  useEffect(() => {
+    setOptionCollection(getSelectOptions(options, simple));
+  }, [options]);
 
   return (
     <SelectRoot
@@ -123,7 +123,7 @@ const CommonSelector = (
           />
         </InputGroup> :
         <SelectTrigger>
-          <SelectValueText placeholder={placeholder}/>
+          <SelectValueText placeholder={placeholder}>{selected}</SelectValueText>
           <Group>
             {custom ?
               <RiEdit2Line onClick={(e) => {

@@ -21,10 +21,12 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_deepseek import ChatDeepSeek
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
-from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories
+from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories, \
+    get_config_map
 from backend.service.router import Router
 
 
@@ -168,18 +170,34 @@ class LLMHelper:
         if session_id in self.store:
             self.store[session_id] = InMemoryChatMessageHistory()
 
-    def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=None):
+    def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=None, model_name=None):
         if callbacks is None:
             callbacks = []
-        return ChatOpenAI(
-            streaming=streaming,
-            callbacks=callbacks,
-            model=self.chat_model["name"],
-            base_url=self.chat_model["base_url"],
-            api_key=self.chat_model["api_key"],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+        chat_model = get_config_map("models","name", model_name) if model_name else self.chat_model
+        model_type = chat_model["type"]
+        if model_type == "deepseek":
+            model = ChatDeepSeek(
+                streaming=streaming,
+                callbacks=callbacks,
+                model=chat_model["name"],
+                base_url=chat_model["base_url"],
+                api_key=chat_model["api_key"],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                max_retries=2
+            )
+        else:
+            model = ChatOpenAI(
+                streaming=streaming,
+                callbacks=callbacks,
+                model=chat_model["name"],
+                base_url=chat_model["base_url"],
+                api_key=chat_model["api_key"],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+
+        return model
 
     def build_vectorstore(self, collection) -> Chroma:
         if collection not in self.vectorstore:
@@ -194,9 +212,9 @@ class LLMHelper:
             )
         return self.vectorstore[collection]
 
-    def build_rag(self, streaming=False, callbacks=None, rag_id=None):
+    def build_rag(self, streaming=False, callbacks=None, rag_id=None, model_name=None):
         retriever = self.build_vectorstore(rag_id if rag_id else "default").as_retriever()
-        model = self.build_model(streaming, callbacks)
+        model = self.build_model(streaming, callbacks, model_name=model_name)
         history_aware_retriever = create_history_aware_retriever(
             model, retriever, self.contextualize_q_prompt
         )
@@ -210,12 +228,12 @@ class LLMHelper:
             output_messages_key="answer",
         )
 
-    def build_llm(self, streaming=False, callbacks=None):
-        model = self.build_model(streaming, callbacks)
-        trimmer = get_trimmer(model)
+    def build_llm(self, streaming=False, callbacks=None, model_name=None):
+        model = self.build_model(streaming, callbacks, model_name=model_name)
+        # trimmer = get_trimmer(model)
 
         chain = (
-                RunnablePassthrough.assign(messages=itemgetter("chat_history") | trimmer)
+                RunnablePassthrough.assign(messages=itemgetter("chat_history"))
                 | self.prompt
                 | model
         )
@@ -254,7 +272,7 @@ class LLMHelper:
         response = llm.invoke({"input": message, "preview": None}, config=config)
         return response.content
 
-    async def streaming(self, message: str, session_id: str, rag_id=None, files=None) -> AsyncIterable[str]:
+    async def streaming(self, message: str, session_id: str, model=None, rag_id=None, files=None) -> AsyncIterable[str]:
         pre_input = None
         if files:
             previews = ""
@@ -263,8 +281,8 @@ class LLMHelper:
             pre_input = f"These source files are attached to the context: \n\n {previews}. "
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
-        llm = self.build_rag(streaming=True, callbacks=[callback], rag_id=rag_id) \
-            if rag_id else self.build_llm(streaming=True, callbacks=[callback])
+        llm = self.build_rag(streaming=True, callbacks=[callback], rag_id=rag_id, model_name=model) \
+            if rag_id else self.build_llm(streaming=True, callbacks=[callback], model_name=model)
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 if isinstance(chunk, dict) and chunk.get("answer"):
@@ -283,11 +301,11 @@ if __name__ == '__main__':
     # llm_helper.append_texts(_rag_id, {"电影《哪吒2》": "请回答我：它是国产动漫之光！"})
     # print('append_texts use: ', time.time() - t)
     t = time.time()
-    _llm = llm_helper.build_rag(streaming=False, rag_id=_rag_id)
-    # _llm = llm_helper.build_llm(streaming=False)
+    # _llm = llm_helper.build_rag(streaming=False, rag_id=_rag_id, model_name="deepseek-chat")
+    _llm = llm_helper.build_llm(streaming=False, model_name="deepseek-chat")
     print('build model use: ', time.time() - t)
     t = time.time()
-    for chunk in _llm.stream({"input": "哪吒2 是什么", "preview": None}, config=get_session_config(_rag_id)):
-        print(chunk)
+    for _chunk in _llm.stream({"input": "哪吒2 是什么", "preview": None}, config=get_session_config(_rag_id)):
+        print(_chunk)
         print('chunk use: ', time.time() - t)
         t = time.time()

@@ -5,6 +5,7 @@ sqlalchemy
 pyyaml
 langchain
 langchain-openai
+langchain-deepseek
 langchain_community
 websockets
 python-multipart

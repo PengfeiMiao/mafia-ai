@@ -231,9 +231,11 @@ async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
             for website in websites:
                 rag_dict[f"{rag.title} > {website.title}[{website.uri}]"] = website.preview
         loop = asyncio.get_event_loop()
+
         def init_rag(_rag_id, _rag_dict):
             llm_helper.reset_rag_store(_rag_id)
             llm_helper.append_texts(_rag_id, _rag_dict)
+
         await loop.run_in_executor(executor, init_rag, rag_id, rag_dict)
         rag.state = 'completed'
         update_rag(db, rag_to_model(rag), ['state'], cascade=False)
@@ -325,7 +327,10 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         for item in _data.attachments:
             _files[item.file_name] = item.preview
         try:
-            async for chunk in llm_helper.streaming(_data.content, _data.session_id, rag_id=_data.rag_id, files=_files):
+            async for chunk in llm_helper.streaming(
+                    _data.content, _data.session_id,
+                    model=_data.model, rag_id=_data.rag_id, files=_files
+            ):
                 _response['content'] += chunk
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'

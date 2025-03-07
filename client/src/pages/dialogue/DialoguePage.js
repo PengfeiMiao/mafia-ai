@@ -11,10 +11,12 @@ import SessionHeader from "@/pages/dialogue/SessionHeader";
 import {useWebsocket} from "@/store/WsProvider";
 import {useDelayToggle} from "@/store/Hook";
 
+
 const DialoguePage = ({outerStyle}) => {
   const [messages, setMessages] = useState([]);
   const [pendingId, setPendingId] = useState('');
   const [ragId, setRagId] = useState('');
+  const [modelName, setModelName] = useState('');
   const {message, sendMessage, interruptMessage} = useWebsocket();
   const {currentSession} = useContext(GlobalContext);
   const {toggle, onToggle} = useDelayToggle();
@@ -37,7 +39,8 @@ const DialoguePage = ({outerStyle}) => {
       type: 'user',
       created_at: createdAt,
       attachments: attachments,
-      rag_id: ragId
+      rag_id: ragId,
+      model: modelName
     };
     setMessages([...messages, messageObj]);
     setPendingId(answerId);
@@ -49,7 +52,8 @@ const DialoguePage = ({outerStyle}) => {
     setPendingId('');
   };
 
-  const handleSelectorChanged = (ragSelected) => {
+  const handleSelectorChanged = (modelSelected, ragSelected) => {
+    setModelName(modelSelected);
     setRagId(ragSelected);
   };
 

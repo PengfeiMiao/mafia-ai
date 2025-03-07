@@ -1,14 +1,16 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {Flex, Icon} from "@chakra-ui/react";
 import {TbBoxModel2, TbDeviceDesktopSearch} from "react-icons/tb";
 import CommonSelector from "@/components/CommonSelector";
 import {getRags} from "@/api/api";
+import {getHash, setHash} from "@/store/CacheStore";
+import {GlobalContext} from "@/store/GlobalProvider";
 
 const modelOptions = [
   "gpt-3.5-turbo",
   "gpt-4o-mini",
-  "qwen",
-  "deepseek"
+  "qwen2.5:7b",
+  "deepseek-chat"
 ];
 
 const emptyOption = {label: 'empty', value: '-'};
@@ -17,6 +19,7 @@ const SessionHeader = ({onChange}) => {
   const [modelSelected, setModelSelected] = useState(modelOptions[0]);
   const [ragOptions, setRagOptions] = useState([]);
   const [ragSelected, setRagSelected] = useState('');
+  const {currentSession} = useContext(GlobalContext);
 
   const getRagList = async () => {
     let rags = await getRags("completed") ?? [];
@@ -25,16 +28,19 @@ const SessionHeader = ({onChange}) => {
   };
 
   useEffect(() => {
-    console.log(modelSelected);
-  }, [modelSelected]);
-
-  useEffect(() => {
-    if (onChange) onChange(ragSelected);
-  }, [ragSelected]);
+    if (onChange) onChange(modelSelected, ragSelected);
+  }, [modelSelected, ragSelected]);
 
   useEffect(() => {
     getRagList().then();
   }, []);
+
+  useEffect(() => {
+    if(currentSession) {
+      let model = getHash("mafia-ai-model", currentSession.id);
+      setModelSelected(model ?? '');
+    }
+  }, [currentSession]);
 
   return (
     <Flex
@@ -52,7 +58,10 @@ const SessionHeader = ({onChange}) => {
         </Icon>
         <CommonSelector
           options={modelOptions}
-          onSelected={(value) => setModelSelected(value)}
+          onSelected={(value) => {
+            setModelSelected(value);
+            setHash("mafia-ai-model", currentSession?.id, value);
+          }}
           selected={modelSelected}
           placeholder={modelOptions[0]}
           outerStyle={{
