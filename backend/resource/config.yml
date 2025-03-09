@@ -36,6 +36,9 @@ database:
   username: "mafiadev"
   password: "mafia123"
   schema: "mafia-ai"
+smtp:
+  email: ""
+  password: ""
 api:
   port: 8000
   key: "mafia123"

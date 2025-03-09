@@ -174,6 +174,7 @@ class LLMHelper:
         if callbacks is None:
             callbacks = []
         chat_model = get_config_map("models","name", model_name) if model_name else self.chat_model
+        # print('chat_model', chat_model)
         model_type = chat_model["type"]
         if model_type == "deepseek":
             model = ChatDeepSeek(

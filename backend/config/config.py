@@ -70,3 +70,9 @@ def embd_model_meta():
 
 def crawler_interval():
     return get_config("crawler.interval")
+
+def smtp_address():
+    return get_config("smtp.email")
+
+def smtp_pwd():
+    return get_config("smtp.password")
