@@ -98,7 +98,7 @@ async def proxy(request: Request):
 
 @app.post("/messages")
 async def get_messages_api(data: List[SessionModel], db: Session = Depends(get_session)):
-    _messages = get_messages(db, session_ids=[item.id for item in data])
+    _messages = get_messages(db, session_ids=[item.id for item in data], limit=100, offset=now_str())
     _messages = [MessageModel(**serialize(item)) for item in _messages]
     attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
     attachments_by_message = defaultdict(list)
