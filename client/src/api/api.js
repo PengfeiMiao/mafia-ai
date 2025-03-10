@@ -1,4 +1,4 @@
-import {getCookie} from "@/store/CacheStore";
+import {getCookie, setCookie} from "@/store/CacheStore";
 
 // const BASE_URL = 'http://localhost:8000';
 const BASE_URL = `${window.location.origin}/api`;
@@ -126,7 +126,10 @@ function fetchApi(url, options) {
     })
     .catch(error => {
       console.error('An error occurred:', error);
-      // alert('An error occurred:' + error);
+      if (String(error).includes('status 401') && window.location.pathname !== '/login') {
+        setCookie('token', '');
+        window.location.assign('/login');
+      }
     });
 }
 

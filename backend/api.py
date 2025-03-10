@@ -77,8 +77,11 @@ async def check_authorization(request: Request, call_next):
         auth_token = request.cookies.get("token")
         if not auth_token:
             return unauthorized_res
-        auth_info = base64.b64decode(auth_token).decode('utf-8').split("&", 1)
-        if len(auth_info) < 2 or not validate_user(db, auth_info[0], auth_info[1]):
+        try:
+            auth_info = base64.b64decode(auth_token).decode('utf-8').split("&", 1)
+            if len(auth_info) < 2 or not validate_user(db, auth_info[0], auth_info[1]):
+                return unauthorized_res
+        except UnicodeDecodeError:
             return unauthorized_res
 
     response = await call_next(request)

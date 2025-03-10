@@ -17,7 +17,7 @@ class User(Base):
     password = Column(String)
     email = Column(String)
     phone = Column(String)
-    status = Column(String)
+    status = Column(String, default="active")
     created_at = Column(DateTime, default=now_utc())
 
 
