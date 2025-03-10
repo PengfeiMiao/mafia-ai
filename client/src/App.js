@@ -8,6 +8,7 @@ import GlobalProvider from "@/store/GlobalProvider";
 import DialogPage from "@/pages/DialogPage";
 import RagPage from "@/pages/RagPage";
 import DemoPage from "@/pages/DemoPage";
+import BackgroundMask from "@/components/BackgroundMask";
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
               <Route exact path="/dialog" element={<DialogPage/>}/>
               <Route exact path="/rag" element={<RagPage/>}/>
               <Route exact path="/demo" element={<DemoPage/>}/>
-              <Route exact path='/login' element={<LoginPage/>}/>
+              <Route exact path='/login' element={<LoginPage background={<BackgroundMask/>}/>}/>
             </Routes>
           </Box>
         </Router>
