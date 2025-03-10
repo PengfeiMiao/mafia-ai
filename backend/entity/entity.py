@@ -9,6 +9,18 @@ from backend.entity.connection import Base, engine
 from backend.util.common import now_utc, DEFAULT_FORMAT
 
 
+class User(Base):
+    __tablename__ = "user"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    username = Column(String)
+    password = Column(String)
+    email = Column(String)
+    phone = Column(String)
+    status = Column(String)
+    created_at = Column(DateTime, default=now_utc())
+
+
 class Message(Base):
     __tablename__ = "message"
 

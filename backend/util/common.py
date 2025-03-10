@@ -31,3 +31,13 @@ def cron_match(cron_expr):
     cron = croniter(cron_expr, time)
     curr_execution_time = cron.get_next(datetime)
     return curr_execution_time.replace(second=0, microsecond=0) == time.replace(second=0, microsecond=0)
+
+
+def is_alphanumeric(string):
+    pattern = r'^[A-Za-z0-9]+$'
+    return bool(re.match(pattern, string))
+
+
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))

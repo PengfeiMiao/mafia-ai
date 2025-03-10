@@ -16,3 +16,4 @@ langchain_chroma
 langchain_text_splitters
 croniter
 aioschedule
+itsdangerous

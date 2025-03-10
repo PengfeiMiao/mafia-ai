@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 import os
 import shutil
@@ -9,12 +10,12 @@ from contextlib import asynccontextmanager
 from typing import List
 
 from fastapi import FastAPI, status, Depends, WebSocket, WebSocketDisconnect, UploadFile, File, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from starlette.middleware.sessions import SessionMiddleware
 
 from backend.config.config import api_key, file_dir
-from backend.entity.connection import get_session
+from backend.entity.connection import get_session, SessionLocal
 from backend.entity.entity import serialize
 from backend.mapper.mapper import website_to_model, rag_to_model, rag_to_models
 from backend.model.attachment_model import AttachmentModel
@@ -28,11 +29,12 @@ from backend.repo.attachment_repo import save_attachment, get_attachments, updat
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag, get_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
+from backend.repo.user_repo import save_user, validate_user
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
 from backend.service.llm_helper import LLMHelper, parse_docs
 from backend.service.proxy import common_proxy, parse_get_proxy
-from backend.util.common import now_str
+from backend.util.common import now_str, is_alphanumeric, is_valid_email
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -60,6 +62,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(SessionMiddleware, secret_key=API_KEY)
 
 unauthorized_res = JSONResponse(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -69,21 +72,42 @@ unauthorized_res = JSONResponse(
 
 @app.middleware("http")
 async def check_authorization(request: Request, call_next):
-    if request.url.path not in ["/login", "/proxy"]:
-        auth_header = request.headers.get("api-key")
-        if not auth_header or auth_header != API_KEY:
+    db = SessionLocal()
+    if request.url.path not in ["/login", "/register", "/proxy"]:
+        auth_token = request.cookies.get("token")
+        if not auth_token:
+            return unauthorized_res
+        auth_info = base64.b64decode(auth_token).decode('utf-8').split("&", 1)
+        if len(auth_info) < 2 or not validate_user(db, auth_info[0], auth_info[1]):
             return unauthorized_res
 
     response = await call_next(request)
+    db.close()
     return response
 
 
 @app.post("/login")
-async def login(data: UserModel):
-    data_dict = jsonable_encoder(data)
-    if data_dict['password'] != API_KEY:
+async def login(user: UserModel, db: Session = Depends(get_session)):
+    if not validate_user(db, user.username, user.password):
         return unauthorized_res
     return {'status': True}
+
+
+@app.post("/register")
+async def register(user: UserModel, db: Session = Depends(get_session)):
+    def build_bad_request(detail: str):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": detail}
+        )
+
+    if not is_alphanumeric(user.username):
+        return build_bad_request("Invalid username")
+
+    if not is_valid_email(user.email):
+        return build_bad_request("Invalid email")
+
+    return UserModel(**serialize(save_user(db, user)))
 
 
 @app.post("/proxy")

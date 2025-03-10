@@ -99,6 +99,16 @@ export const loginApi = async (payload) => {
   });
 };
 
+export const registerApi = async (payload) => {
+  return await fetch(`${BASE_URL}/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+};
+
 function fetchApi(url, options) {
   let token = preAuth();
   if (!token) {
@@ -107,8 +117,6 @@ function fetchApi(url, options) {
   if (!options) {
     options = {};
   }
-  let {headers = {}} = options;
-  options.headers = {...headers, 'api-key': token};
   return fetch(url, options)
     .then(response => {
       if (!response.ok) {
