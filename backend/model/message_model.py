@@ -1,6 +1,6 @@
 from typing import Union, List
 
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from pydantic import BaseModel
 
 from backend.model.attachment_model import AttachmentModel
@@ -28,5 +28,5 @@ class MessageModel(BaseModel):
         if self.type == 'user':
             result.append(HumanMessage(content=self.content))
         else:
-            result.append(SystemMessage(content=self.content))
+            result.append(AIMessage(content=self.content))
         return result
