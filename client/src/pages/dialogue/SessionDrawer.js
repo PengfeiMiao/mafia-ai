@@ -38,7 +38,7 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   };
 
   const getAllSessions = async () => {
-    let result = await getSessions('unknown');
+    let result = await getSessions();
     if (result) {
       setSessions(result);
       let curr = currentSessionId && currentSessionId !== 'undefined' ?
@@ -53,7 +53,7 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   }
 
   const handleCreate = async () => {
-    let session = await createSession({user_id: 'unknown'});
+    let session = await createSession({title: 'untitled'});
     if (session?.id) {
       setSessions((prev) => [session, ...prev]);
       setCurrentSession(session);

@@ -166,8 +166,7 @@ async def clean_session_api(session_id: str):
 async def create_session_api(data: SessionModel,
                              user: UserModel = Depends(get_user),
                              db: Session = Depends(get_session)):
-    if not data.user_id:
-        data.user_id = user.id
+    data.user_id = user.id
     if not data.title:
         data.title = DEFAULT_TITLE
     return save_session(db, data)

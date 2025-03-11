@@ -5,6 +5,8 @@ import {cleanSession, uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {MdCleaningServices} from "react-icons/md";
 import FileUploader from "@/components/FileUploader";
+import {BiBrain, BiSearchAlt} from "react-icons/bi";
+import ClickableTag from "@/components/ClickableTag";
 
 const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
@@ -73,6 +75,14 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
+      <Flex direction="row" mb="8px">
+        <ClickableTag startEl={<BiSearchAlt/>} onClick={()=>{}}>
+          Web Search
+        </ClickableTag>
+        <ClickableTag startEl={<BiBrain/>} onClick={()=>{}} outerStyle={{marginLeft: "8px"}}>
+          Deep Thinking
+        </ClickableTag>
+      </Flex>
       <Flex padding="12px" bgColor="white" boxShadow="sm" direction="row">
         <FileUploader
           onUpload={(newFiles) => uploadAttachment(currentSession?.id, newFiles)}

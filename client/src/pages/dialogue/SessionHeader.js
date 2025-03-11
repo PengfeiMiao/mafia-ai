@@ -38,7 +38,7 @@ const SessionHeader = ({onChange}) => {
   useEffect(() => {
     if(currentSession) {
       let model = getHash("mafia-ai-model", currentSession.id);
-      setModelSelected(model ?? '');
+      setModelSelected(model ?? modelOptions[0]);
     }
   }, [currentSession]);
 
