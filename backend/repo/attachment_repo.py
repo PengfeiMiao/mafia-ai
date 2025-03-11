@@ -52,10 +52,10 @@ def get_attachments_by_message_ids(db: DBSession, message_ids: List[str]):
             .all())
 
 
-def get_attachments_by_session_id(db: DBSession, session_id: str, keyword=None, file_ids=None):
+def get_attachments_by_session_id(db: DBSession, session_id: str, user_id: str, keyword=None, file_ids=None):
     if session_id is None:
         return []
-    query = db.query(Attachment).filter_by(session_id=session_id, status='active')
+    query = db.query(Attachment).filter_by(session_id=session_id, user_id=user_id, status='active')
     if keyword:
         query = query.filter(Attachment.file_name.like(f"%{keyword}%"))
     if file_ids:

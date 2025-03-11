@@ -13,8 +13,8 @@ export const getMessages = async (sessions) => {
   return await commonApi(`${BASE_URL}/messages`, sessions, 'POST');
 }
 
-export const getSessions = async (user_id) => {
-  return await commonApi(`${BASE_URL}/sessions?user_id=${user_id}`, {}, 'GET');
+export const getSessions = async () => {
+  return await commonApi(`${BASE_URL}/sessions`, {}, 'GET');
 }
 
 export const createSession = async (session) => {

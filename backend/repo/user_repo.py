@@ -29,6 +29,7 @@ def validate_user(db: DBSession, user: UserModel):
     flag = entity and user.password == entity.password
     if not flag:
         return None
+    token = b64encode(f"{entity.id}&{entity.username}&{entity.password}")
     sessions[token] = {**serialize(entity), 'login_at': now_utc()}
     return token
 
@@ -39,3 +40,10 @@ def parse_user(token):
         raise RuntimeError('Invalid token')
     auth_info = {'id': auth_values[0], 'username': auth_values[1], 'password': auth_values[2]}
     return UserModel(**auth_info)
+
+
+def get_online_users():
+    users = []
+    for _, value in sessions.items():
+        users.append(value['id'])
+    return list(set(users))

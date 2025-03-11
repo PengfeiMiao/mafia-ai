@@ -6,6 +6,7 @@ class AttachmentModel(BaseModel):
     id: Union[str, None] = None
     message_id: Union[str, None] = None
     session_id: Union[str, None] = None
+    user_id: Union[str, None] = None
     file_name: Union[str, None] = None
     file_size: Union[int, None] = None
     preview: Union[str, None] = None

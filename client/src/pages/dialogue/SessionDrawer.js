@@ -41,7 +41,8 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
     let result = await getSessions('unknown');
     if (result) {
       setSessions(result);
-      let curr = currentSessionId ? result.find(it => it.id === currentSessionId) : result[0];
+      let curr = currentSessionId && currentSessionId !== 'undefined' ?
+        result.find(it => it.id === currentSessionId) : result[0];
       handleSelect(curr);
     }
   };

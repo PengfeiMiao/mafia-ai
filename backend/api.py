@@ -39,7 +39,7 @@ from backend.util.common import now_str, is_alphanumeric, is_valid_email
 logging.basicConfig(level=logging.WARNING)
 
 DEFAULT_TITLE = 'untitled'
-DEFAULT_USER = 'unknown'
+DEFAULT_USER = UserModel(id='unknown', username='', password='')
 UPLOAD_DIR = os.path.expanduser(file_dir())
 
 if not os.path.exists(UPLOAD_DIR):
@@ -70,10 +70,14 @@ unauthorized_res = JSONResponse(
     headers={"WWW-Authenticate": "Bearer"})
 
 
+def get_user(request: Request) -> UserModel:
+    return request.state.user if hasattr(request.state, "user") else DEFAULT_USER
+
+
 @app.middleware("http")
 async def check_authorization(request: Request, call_next):
     db = SessionLocal()
-    if request.url.path not in ["/login", "/register", "/proxy"]:
+    if request.url.path not in ["/login", "/register"]:
         auth_token = request.cookies.get("token")
         if not auth_token:
             return unauthorized_res
@@ -81,6 +85,7 @@ async def check_authorization(request: Request, call_next):
             user = parse_user(auth_token)
             if not validate_user(db, user):
                 return unauthorized_res
+            request.state.user = user
         except UnicodeDecodeError:
             return unauthorized_res
         except binascii.Error:
@@ -143,11 +148,10 @@ async def get_messages_api(data: List[SessionModel], db: Session = Depends(get_s
 
 
 @app.get("/sessions")
-async def get_sessions_api(db: Session = Depends(get_session)):
-    user_id = DEFAULT_USER
-    session_list = get_sessions(db, user_id=user_id)
+async def get_sessions_api(user: UserModel = Depends(get_user), db: Session = Depends(get_session)):
+    session_list = get_sessions(db, user_id=user.id)
     if len(session_list) == 0:
-        session = save_session(db, SessionModel(title=DEFAULT_TITLE, user_id=user_id))
+        session = save_session(db, SessionModel(title=DEFAULT_TITLE, user_id=user.id))
         session_list = [session]
     return session_list
 
@@ -159,9 +163,11 @@ async def clean_session_api(session_id: str):
 
 
 @app.post("/session")
-async def create_session_api(data: SessionModel, db: Session = Depends(get_session)):
+async def create_session_api(data: SessionModel,
+                             user: UserModel = Depends(get_user),
+                             db: Session = Depends(get_session)):
     if not data.user_id:
-        data.user_id = DEFAULT_USER
+        data.user_id = user.id
     if not data.title:
         data.title = DEFAULT_TITLE
     return save_session(db, data)
@@ -175,18 +181,20 @@ async def update_session_api(data: SessionModel, db: Session = Depends(get_sessi
 
 
 @app.get("/websites")
-async def get_websites_api(keyword: str, website_ids: str, db: Session = Depends(get_session)):
-    user_id = DEFAULT_USER
+async def get_websites_api(keyword: str, website_ids: str,
+                           user: UserModel = Depends(get_user),
+                           db: Session = Depends(get_session)):
     if website_ids:
         website_ids = website_ids.split(',')
-    websites = get_websites(db, user_id=user_id, keyword=keyword, website_ids=website_ids)
+    websites = get_websites(db, user_id=user.id, keyword=keyword, website_ids=website_ids)
     return [website_to_model(website) for website in websites]
 
 
 @app.get("/website")
-async def preview_website_api(website_id: str, db: Session = Depends(get_session)):
-    user_id = DEFAULT_USER
-    website = website_to_model(get_website(db, website_id, user_id=user_id))
+async def preview_website_api(website_id: str,
+                              user: UserModel = Depends(get_user),
+                              db: Session = Depends(get_session)):
+    website = website_to_model(get_website(db, website_id, user_id=user.id))
     previews = await parse_get_proxy(website.uri, website.xpaths)
     website.preview = previews
     website = update_website(db, website, ['preview'])
@@ -194,9 +202,11 @@ async def preview_website_api(website_id: str, db: Session = Depends(get_session
 
 
 @app.post("/website")
-async def create_website_api(website: WebsiteModel, db: Session = Depends(get_session)):
+async def create_website_api(website: WebsiteModel,
+                             user: UserModel = Depends(get_user),
+                             db: Session = Depends(get_session)):
     if not website.user_id:
-        website.user_id = DEFAULT_USER
+        website.user_id = user.id
     website = save_website(db, website)
     return website_to_model(website)
 
@@ -214,17 +224,17 @@ async def delete_website_api(website_id: str, db: Session = Depends(get_session)
 
 
 @app.post("/rag")
-async def create_rag_api(rag: RagModel, db: Session = Depends(get_session)):
+async def create_rag_api(rag: RagModel,
+                         user: UserModel = Depends(get_user),
+                         db: Session = Depends(get_session)):
     if not rag.user_id:
-        rag.user_id = DEFAULT_USER
+        rag.user_id = user.id
     rag, ragmaps = save_rag(db, rag)
     return rag_to_model(rag, ragmaps)
 
 
 @app.put("/rag")
 async def update_rag_api(rag: RagModel, db: Session = Depends(get_session)):
-    if not rag.user_id:
-        rag.user_id = DEFAULT_USER
     rag, ragmaps = update_rag(db, rag, ['title', 'state'])
     return rag_to_model(rag, ragmaps)
 
@@ -236,14 +246,17 @@ async def delete_rag_api(rag_id: str, db: Session = Depends(get_session)):
 
 
 @app.get("/rags")
-async def get_rags_api(state: str, db: Session = Depends(get_session)):
-    user_id = DEFAULT_USER
-    rags, ragmaps = get_rags(db, state, user_id)
+async def get_rags_api(state: str,
+                       user: UserModel = Depends(get_user),
+                       db: Session = Depends(get_session)):
+    rags, ragmaps = get_rags(db, state, user.id)
     return rag_to_models(rags, ragmaps)
 
 
 @app.get("/rag")
-async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
+async def load_rag_api(rag_id: str,
+                       user: UserModel = Depends(get_user),
+                       db: Session = Depends(get_session)):
     rag, ragmaps = get_rag(db, rag_id)
     if rag.state == 'initial':
         rag.state = 'pending'
@@ -253,11 +266,12 @@ async def load_rag_api(rag_id: str, db: Session = Depends(get_session)):
             ragmap_by_type[_map.type].append(_map.resource_id)
         rag_dict = defaultdict(str)
         if ragmap_by_type['file']:
-            files = get_attachments_by_session_id(db, "default", file_ids=ragmap_by_type['file'])
+            files = get_attachments_by_session_id(db, "default",
+                                                  user_id=user.id, file_ids=ragmap_by_type['file'])
             for file in files:
                 rag_dict[f"{rag.title} > {file.file_name}"] = file.preview
         if ragmap_by_type['website']:
-            websites = get_websites(db, DEFAULT_USER, website_ids=ragmap_by_type['website'])
+            websites = get_websites(db, user.id, website_ids=ragmap_by_type['website'])
             for website in websites:
                 rag_dict[f"{rag.title} > {website.title}[{website.uri}]"] = website.preview
         loop = asyncio.get_event_loop()
@@ -285,6 +299,7 @@ async def completions(data: MessageModel, db: Session = Depends(get_session)):
 @app.post("/upload")
 async def upload_files_api(session_id: str = "default",
                            files: List[UploadFile] = File(...),
+                           user: UserModel = Depends(get_user),
                            db: Session = Depends(get_session)):
     results = []
     file_paths = []
@@ -299,8 +314,13 @@ async def upload_files_api(session_id: str = "default",
             # noinspection PyTypeChecker
             shutil.copyfileobj(file.file, buffer)
 
-        attachment = AttachmentModel(file_name=file.filename, file_size=file.size,
-                                     session_id=session_id, created_at=now_str())
+        attachment = AttachmentModel(
+            file_name=file.filename,
+            file_size=file.size,
+            session_id=session_id,
+            created_at=now_str(),
+            user_id=user.id
+        )
         delete_attachments(db, session_id, file.filename)
         result = save_attachment(db, attachment)
         results.append(result)
@@ -324,10 +344,13 @@ async def upload_files_api(session_id: str = "default",
 
 
 @app.get("/files")
-async def get_files_api(keyword: str, file_ids: str, db: Session = Depends(get_session)):
+async def get_files_api(keyword: str, file_ids: str,
+                        user: UserModel = Depends(get_user),
+                        db: Session = Depends(get_session)):
     if file_ids:
         file_ids = file_ids.split(',')
-    files = get_attachments_by_session_id(db, "default", keyword=keyword, file_ids=file_ids)
+    files = get_attachments_by_session_id(db, "default",
+                                          user_id=user.id, keyword=keyword, file_ids=file_ids)
     return [AttachmentModel(**serialize(file)) for file in files]
 
 
