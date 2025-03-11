@@ -1,5 +1,5 @@
 import asyncio
-import base64
+import binascii
 import logging
 import os
 import shutil
@@ -29,7 +29,7 @@ from backend.repo.attachment_repo import save_attachment, get_attachments, updat
 from backend.repo.message_repo import get_messages, save_message
 from backend.repo.rag_repo import save_rag, get_rags, update_rag, delete_rag, get_rag
 from backend.repo.session_repo import get_sessions, save_session, update_session
-from backend.repo.user_repo import save_user, validate_user
+from backend.repo.user_repo import save_user, validate_user, parse_user
 from backend.repo.website_repo import get_websites, save_website, update_website, delete_websites, get_website
 from backend.service import scheduler
 from backend.service.llm_helper import LLMHelper, parse_docs
@@ -78,10 +78,14 @@ async def check_authorization(request: Request, call_next):
         if not auth_token:
             return unauthorized_res
         try:
-            auth_info = base64.b64decode(auth_token).decode('utf-8').split("&", 1)
-            if len(auth_info) < 2 or not validate_user(db, auth_info[0], auth_info[1]):
+            user = parse_user(auth_token)
+            if not validate_user(db, user):
                 return unauthorized_res
         except UnicodeDecodeError:
+            return unauthorized_res
+        except binascii.Error:
+            return unauthorized_res
+        except RuntimeError:
             return unauthorized_res
 
     response = await call_next(request)
@@ -91,9 +95,8 @@ async def check_authorization(request: Request, call_next):
 
 @app.post("/login")
 async def login(user: UserModel, db: Session = Depends(get_session)):
-    if not validate_user(db, user.username, user.password):
-        return unauthorized_res
-    return {'status': True}
+    user_token = validate_user(db, user)
+    return {'token': user_token} if user_token else unauthorized_res
 
 
 @app.post("/register")
@@ -125,7 +128,7 @@ async def proxy(request: Request):
 
 @app.post("/messages")
 async def get_messages_api(data: List[SessionModel], db: Session = Depends(get_session)):
-    _messages = get_messages(db, session_ids=[item.id for item in data], limit=100, offset=now_str())
+    _messages = get_messages(db, session_ids=[item.id for item in data], limit=20, offset=now_str())
     _messages = [MessageModel(**serialize(item)) for item in _messages]
     attachments = get_attachments_by_message_ids(db, [str(item.id) for item in _messages])
     attachments_by_message = defaultdict(list)

@@ -26,10 +26,14 @@ def save_message(db: Session, message: MessageModel):
     return entity
 
 
-def get_messages(db: Session, session_ids: List[str], limit=None, offset=None):
+def get_messages(db: Session, session_ids: List[str], limit=None, offset=None, order='desc'):
     if not session_ids:
         return []
     query = db.query(Message).filter(Message.session_id.in_(session_ids))
+
     if offset:
-        query = query.filter(Message.created_at < offset)
-    return query.order_by(Message.created_at.desc()).limit(limit).all()[::-1]
+        query = query.filter(Message.created_at < offset) \
+            if order == 'desc' else query.filter(Message.created_at > offset)
+
+    return query.order_by(Message.created_at.desc()).limit(limit).all()[::-1] \
+        if order == 'desc' else query.order_by(Message.created_at.asc()).limit(limit).all()

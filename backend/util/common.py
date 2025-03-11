@@ -1,3 +1,4 @@
+import base64
 import re
 from datetime import datetime, timezone
 
@@ -41,3 +42,11 @@ def is_alphanumeric(string):
 def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email))
+
+
+def b64decode(string: str):
+    return base64.b64decode(string).decode('utf-8')
+
+
+def b64encode(string: str):
+    return base64.b64encode(string.encode('utf-8'))

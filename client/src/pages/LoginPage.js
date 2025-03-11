@@ -12,7 +12,8 @@ const LoginPage = ({background}) => {
   const handleLogin = async () => {
     let body = await loginApi({username, password});
     if (body?.status === 200) {
-      setCookie('token', btoa(`${username}&${password}`));
+      let data = await body.json();
+      setCookie('token', data?.token);
       window.location.assign('/');
     } else {
       setCookie('token', '');
