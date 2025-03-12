@@ -1,9 +1,10 @@
 import {Flex, Icon, Image, Text} from "@chakra-ui/react";
 import {HiOutlineChatAlt} from "react-icons/hi";
-import {TbInputSearch, TbTestPipe} from "react-icons/tb";
+import {TbInputSearch, TbLogout2, TbTestPipe} from "react-icons/tb";
 import {useContext, useEffect} from "react";
 import {GlobalContext} from "@/store/GlobalProvider";
 import {useNavigate} from "react-router-dom";
+import {setCookie} from "@/store/CacheStore";
 
 const MenuBar = ({outerStyle}) => {
   const {currentMenu, setCurrentMenu} = useContext(GlobalContext);
@@ -20,6 +21,11 @@ const MenuBar = ({outerStyle}) => {
     let menu = text.toLowerCase();
     setCurrentMenu(menu);
     navigate(`/${menu}`, {replace: true});
+  };
+
+  const handleLogout = () => {
+    setCookie('token', '');
+    navigate(`/login`, {replace: true});
   };
 
   const rootStyle = {
@@ -39,11 +45,11 @@ const MenuBar = ({outerStyle}) => {
           p="6px"
           boxSize="40px"
           borderRadius="full"
-          bgColor={selected === text.toLowerCase() ? 'purple.muted' : ''}
+          bgColor={selected === text?.toLowerCase() ? 'purple.muted' : ''}
           color={'white'}>
           {icon}
         </Icon>
-        <Text fontSize="xs" fontWeight="bold" color="white">{text}</Text>
+        {text && <Text fontSize="xs" fontWeight="bold" color="white">{text}</Text>}
       </Flex>
     );
   };
@@ -62,7 +68,6 @@ const MenuBar = ({outerStyle}) => {
         borderRadius="full"
         bgColor={'purple.muted'}
         src="https://bit.ly/naruto-sage"/>
-
       <Flex
         mt="24px"
         justify="flex-start"
@@ -71,6 +76,9 @@ const MenuBar = ({outerStyle}) => {
         {renderMenu("Dialog", <HiOutlineChatAlt/>, handleSelect, currentMenu)}
         {renderMenu("RAG", <TbInputSearch/>, handleSelect, currentMenu)}
         {renderMenu("DEMO", <TbTestPipe/>, handleSelect, currentMenu)}
+      </Flex>
+      <Flex mt="auto" mb="16px">
+        {renderMenu(null, <TbLogout2/>, handleLogout, currentMenu)}
       </Flex>
     </Flex>
   );
