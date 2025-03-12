@@ -15,8 +15,8 @@ const RagPage = () => {
   return (
     <Flex h="100vh" w="100vw" direction="row">
       <MenuBar outerStyle={{width: '64px', minWidth: '64px'}}/>
-      <Center h="100%" w="100%" padding="20px" bgColor={'gray.100'}>
-        <Flex h="100%" w="100%" bgColor={'white'}>
+      <Center h="100%" w={`calc(100vw - 64px)`} padding="20px" bgColor={'gray.100'}>
+        <Flex h="100%" w={`calc(100vw - 104px)`} bgColor={'white'}>
           <Tabs.Root w="100%" defaultValue="rags">
             <Tabs.List>
               <Tabs.Trigger value="rags">

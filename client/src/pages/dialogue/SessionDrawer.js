@@ -34,6 +34,8 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   const rootStyle = {
     height: '100%',
     width: '20vw',
+    drawerPosition: 'relative',
+    drawerMarginLeft: '0px',
     ...outerStyle
   };
 
@@ -101,7 +103,11 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
   }
 
   return (
-    <Flex h="100%" direction="row" justify="flex-end" position="relative" zIndex={888}>
+    <Flex
+      h="100%" direction="row" justify="flex-end"
+      position={rootStyle.drawerPosition}
+      ml={rootStyle.drawerMarginLeft}
+      zIndex={888}>
       <Presence
         style={rootStyle}
         bgColor={'bg.panel'}
@@ -130,6 +136,7 @@ const SessionDrawer = ({open, onToggle, outerStyle}) => {
                   onSubmit={(e) => handleSubmit(item.id, e.target.value)}
                   isEditable={item.id === editedId}
                   onSelect={() => handleSelect(item)}
+                  outerStyle={{sessionMaxWidth: outerStyle.sessionMaxWidth}}
                 >
                   {item.title}
                 </EditableLabel>

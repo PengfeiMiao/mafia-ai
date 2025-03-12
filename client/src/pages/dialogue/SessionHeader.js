@@ -15,11 +15,19 @@ const modelOptions = [
 
 const emptyOption = {label: 'empty', value: ''};
 
-const SessionHeader = ({onChange}) => {
+const SessionHeader = ({onChange, outerStyle}) => {
   const [modelSelected, setModelSelected] = useState(modelOptions[0]);
   const [ragOptions, setRagOptions] = useState([]);
   const [ragSelected, setRagSelected] = useState('');
   const {currentSession} = useContext(GlobalContext);
+  let rootStyle = {
+    selectorWidth: '160px',
+    ...outerStyle
+  };
+  rootStyle = {
+    ...rootStyle,
+    width: `${Number(rootStyle.selectorWidth.replace('px', '')) + 64}px`
+  }
 
   const getRagList = async () => {
     let rags = await getRags("completed") ?? [];
@@ -66,13 +74,13 @@ const SessionHeader = ({onChange}) => {
           placeholder={modelOptions[0]}
           outerStyle={{
             size: "sm",
-            width: "160px",
+            width: rootStyle.selectorWidth,
             marginLeft: "48px",
             top: "14px"
           }}
         />
       </Flex>
-      <Flex w="224px">
+      <Flex w={rootStyle.width} h="64px" position="absolute" align="center" direction="row" right={0}>
         <Icon boxSize="28px">
           <TbDeviceDesktopSearch/>
         </Icon>
@@ -83,8 +91,8 @@ const SessionHeader = ({onChange}) => {
           selected={ragSelected}
           outerStyle={{
             size: "sm",
-            width: "160px",
-            right: "20px",
+            width: rootStyle.selectorWidth,
+            marginLeft: "40px",
             top: "14px"
           }}
         />

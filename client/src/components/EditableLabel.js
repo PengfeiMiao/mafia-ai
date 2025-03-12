@@ -4,6 +4,7 @@ export const EditableLabel = ({isEditable, onSelect, onSubmit, outerStyle, child
   const rootStyle = {
     height: "24px",
     marginRight: "12px",
+    sessionMaxWidth: "160px",
     ...outerStyle
   };
 
@@ -14,7 +15,8 @@ export const EditableLabel = ({isEditable, onSelect, onSubmit, outerStyle, child
       readOnly={!isEditable}
       defaultEdit={isEditable}
     >
-      <Editable.Preview bgColor={rootStyle.bgColor} w="100%" cursor="pointer" onClick={onSelect}/>
+      <Editable.Preview
+        w="100%" bgColor={rootStyle.bgColor} maxW={rootStyle.sessionMaxWidth} cursor="pointer" onClick={onSelect}/>
       <Editable.Input onBlur={onSubmit}/>
     </Editable.Root>
   )

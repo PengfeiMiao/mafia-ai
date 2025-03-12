@@ -77,9 +77,9 @@ const DialoguePage = ({outerStyle}) => {
   }, [message]);
 
   return (
-    <Flex h="100%" w="100%" justify="center" align="center" direction="column">
+    <Flex h="100%" w={`calc(100vw - 64px)`} justify="center" align="center" direction="column">
       <TipsHeader title={'Context has been cleaned.'} hidden={toggle}/>
-      <SessionHeader onChange={handleSelectorChanged}/>
+      <SessionHeader onChange={handleSelectorChanged} outerStyle={outerStyle}/>
       <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder
         onSend={handleSend}

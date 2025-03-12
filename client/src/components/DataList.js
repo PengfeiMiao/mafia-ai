@@ -28,30 +28,32 @@ const DataList = ({dataList, tips, headers, functions, operations}) => {
       </EmptyState.Root>
       :
       <Flex h="100%" w="100%" align="center" jusify="flex-end" direction="column">
-        <Table.Root size="sm" variant="outline">
-          <Table.Header>
-            <Table.Row>
-              {headers.map(item => (
-                <Table.ColumnHeader key={item}>{item}</Table.ColumnHeader>
-              ))}
-              <Table.ColumnHeader textAlign="end">Operations</Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {dataList?.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
-              <Table.Row key={item?.id ?? JSON.stringify(item)}>
-                {headers.map((field, index) => (
-                  <Table.Cell key={field}>
-                    {functions && functions[index] ? functions[index](item[field]) : String(item[field])}
-                  </Table.Cell>
+        <Table.ScrollArea w="100%">
+          <Table.Root size="sm" variant="outline">
+            <Table.Header>
+              <Table.Row>
+                {headers.map(item => (
+                  <Table.ColumnHeader key={item}>{item}</Table.ColumnHeader>
                 ))}
-                <Table.Cell>
-                  {operations && operations(item)}
-                </Table.Cell>
+                <Table.ColumnHeader textAlign="end">Operations</Table.ColumnHeader>
               </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+            </Table.Header>
+            <Table.Body>
+              {dataList?.slice((page - 1) * pageSize, page * pageSize)?.map((item) => (
+                <Table.Row key={item?.id ?? JSON.stringify(item)}>
+                  {headers.map((field, index) => (
+                    <Table.Cell key={field}>
+                      {functions && functions[index] ? functions[index](item[field]) : String(item[field])}
+                    </Table.Cell>
+                  ))}
+                  <Table.Cell>
+                    {operations && operations(item)}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Table.ScrollArea>
 
         <PaginationRoot count={dataList?.length} pageSize={pageSize} page={page} mt="auto">
           <HStack wrap="wrap">
