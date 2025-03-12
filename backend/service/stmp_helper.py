@@ -2,7 +2,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from config.config import smtp_address, smtp_pwd
+from backend.config.config import smtp_address, smtp_pwd
 
 
 class STMPHelper:
