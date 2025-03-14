@@ -28,12 +28,12 @@ services:
   searxng:
     image: searxng/searxng
     environment:
-      BASE_URL: http://0.0.0.0:8001/
+      BASE_URL: http://0.0.0.0:8080/
       INSTANCE_NAME: searxng
     ports:
-      - "8001:8001"
+      - "8001:8080"
     volumes:
-      - "${PWD}/searxng:/etc/searxng"
+      - ./infra/searxng:/etc/searxng:rw
 
 volumes:
   postgres_data:
