@@ -11,6 +11,7 @@ from langchain.chains.history_aware_retriever import create_history_aware_retrie
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.utilities import SearxSearchWrapper
 from langchain_core.chat_history import (
     BaseChatMessageHistory,
     InMemoryChatMessageHistory,
@@ -20,13 +21,13 @@ from langchain_core.messages import trim_messages, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_deepseek import ChatDeepSeek
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories, \
-    get_config_map
+    get_config_map, searx_engines
 from backend.service.router import Router
 
 
@@ -147,6 +148,14 @@ class LLMHelper:
         )
         self.store = {}
         self.vectorstore = {}
+        self.searx_search = SearxSearchWrapper(searx_host="http://localhost:8001")
+        self.searx_engines = searx_engines()
+
+    def searx_query(self, query):
+        for engine in self.searx_engines:
+            print(engine)
+            results = self.searx_search.results(query, num_results=3, engines=[engine])
+            print(results)
 
     def init_session_history(self, session_history: dict):
         for session_id, history in session_history.items():
