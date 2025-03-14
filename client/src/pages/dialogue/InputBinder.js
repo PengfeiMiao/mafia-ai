@@ -1,5 +1,5 @@
 import React, {useContext, useRef, useState} from 'react';
-import {Box, Button, Flex, Icon, Separator, Textarea} from "@chakra-ui/react";
+import {Box, Button, Flex, Icon, Separator, Textarea, useDisclosure} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {cleanSession, uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
@@ -7,12 +7,14 @@ import {MdCleaningServices} from "react-icons/md";
 import FileUploader from "@/components/FileUploader";
 import {BiBrain, BiSearchAlt} from "react-icons/bi";
 import ClickableTag from "@/components/ClickableTag";
+import SearchProgress from "@/pages/dialogue/SearchProgress";
 
 const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const [attachments, setAttachments] = useState(new Map());
   const clearRef = useRef(null);
   const textRef = useRef(null);
+  const {open, onToggle} = useDisclosure();
   const {currentSession} = useContext(GlobalContext);
 
   const rootStyle = {
@@ -75,11 +77,15 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
+      <SearchProgress open={open}/>
       <Flex direction="row" mb="8px">
-        <ClickableTag startEl={<BiSearchAlt/>} onClick={()=>{}}>
+        <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
+          onToggle();
+        }}>
           Web Search
         </ClickableTag>
-        <ClickableTag startEl={<BiBrain/>} onClick={()=>{}} outerStyle={{marginLeft: "8px"}}>
+        <ClickableTag startEl={<BiBrain/>} onClick={() => {
+        }} outerStyle={{marginLeft: "8px"}}>
           Deep Thinking
         </ClickableTag>
       </Flex>
