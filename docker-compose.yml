@@ -25,6 +25,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  searxng:
+    image: searxng/searxng
+    environment:
+      BASE_URL: http://0.0.0.0:8001/
+      INSTANCE_NAME: searxng
+    ports:
+      - "8001:8001"
+    volumes:
+      - "${PWD}/searxng:/etc/searxng"
 
 volumes:
   postgres_data:
