@@ -5,6 +5,7 @@ export const GlobalContext = React.createContext({});
 const GlobalProvider = ({ children }) => {
 	const [currentSession, setCurrentSession] = useState(null);
 	const [currentMenu, setCurrentMenu] = useState('dialog');
+	const [currentMode, setCurrentMode] = useState('');
 
 	useEffect(() => {
 	}, []);
@@ -15,7 +16,9 @@ const GlobalProvider = ({ children }) => {
 				currentSession,
 				setCurrentSession,
 				currentMenu,
-				setCurrentMenu
+				setCurrentMenu,
+				currentMode,
+				setCurrentMode
 			}}
 		>
 			{children}

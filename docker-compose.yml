@@ -27,6 +27,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
   searxng:
     image: searxng/searxng
+    restart: always
     environment:
       BASE_URL: http://0.0.0.0:8080/
       INSTANCE_NAME: searxng

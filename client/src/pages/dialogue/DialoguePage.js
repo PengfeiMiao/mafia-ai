@@ -18,7 +18,7 @@ const DialoguePage = ({outerStyle}) => {
   const [ragId, setRagId] = useState('');
   const [modelName, setModelName] = useState('');
   const {message, sendMessage, interruptMessage} = useWebsocket();
-  const {currentSession} = useContext(GlobalContext);
+  const {currentSession, currentMode} = useContext(GlobalContext);
   const {toggle, onToggle} = useDelayToggle();
 
   const getChatHistory = async () => {
@@ -40,7 +40,8 @@ const DialoguePage = ({outerStyle}) => {
       created_at: createdAt,
       attachments: attachments,
       rag_id: ragId,
-      model: modelName
+      model: modelName,
+      mode: currentMode
     };
     setMessages([...messages, messageObj]);
     setPendingId(answerId);

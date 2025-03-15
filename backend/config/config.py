@@ -79,3 +79,6 @@ def smtp_pwd():
 
 def searx_engines():
     return get_config("searx.engines")
+
+def searx_limit():
+    return int(get_config("searx.limit") / len(searx_engines()))

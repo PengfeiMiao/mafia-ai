@@ -39,6 +39,15 @@ database:
 smtp:
   email: ""
   password: ""
+searx:
+  limit: 10
+  engines:
+    - "baidu"
+    - "360search"
+    - "sogou"
+#    - "google"
+#    - "bing"
+#    - "yahoo"
 api:
   port: 8000
   key: "mafia123"

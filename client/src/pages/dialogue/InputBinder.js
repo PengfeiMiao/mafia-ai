@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Box, Button, Flex, Icon, Separator, Textarea, useDisclosure} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {cleanSession, uploadAttachment} from "@/api/api";
@@ -14,8 +14,8 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
   const [attachments, setAttachments] = useState(new Map());
   const clearRef = useRef(null);
   const textRef = useRef(null);
-  const {open, onToggle} = useDisclosure();
-  const {currentSession} = useContext(GlobalContext);
+  const {open, onOpen, onToggle} = useDisclosure();
+  const {currentSession, currentMode, setCurrentMode} = useContext(GlobalContext);
 
   const rootStyle = {
     width: '60%',
@@ -73,11 +73,21 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
     return `${lineHeight * totalLines}px`;
   };
 
+  useEffect(() => {
+    if(currentMode.includes('web')) {
+      onOpen();
+    }
+  }, []);
+
+  useEffect(() => {
+    setCurrentMode('web');
+  }, [open]);
+
   return (
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
-      <SearchProgress open={open}/>
+      <SearchProgress open={false}/>
       <Flex direction="row" mb="8px">
         <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
           onToggle();

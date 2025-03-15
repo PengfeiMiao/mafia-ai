@@ -15,6 +15,7 @@ class MessageModel(BaseModel):
     attachments: Union[List[AttachmentModel], None] = None
     model: Union[str, None] = None
     rag_id: Union[str, None] = None
+    mode: Union[str, None] = None
 
     def to_chat_messages(self):
         result = []

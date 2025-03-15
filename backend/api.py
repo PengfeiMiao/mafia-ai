@@ -381,7 +381,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         try:
             async for chunk in llm_helper.streaming(
                     _data.content, _data.session_id,
-                    model=_data.model, rag_id=_data.rag_id, files=_files
+                    model=_data.model, rag_id=_data.rag_id, files=_files, mode=_data.mode
             ):
                 _response['content'] += chunk
                 await _websocket.send_json(_response)

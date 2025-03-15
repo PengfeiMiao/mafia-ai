@@ -2,7 +2,7 @@ import json
 import time
 from collections import defaultdict
 from operator import itemgetter
-from typing import AsyncIterable, List
+from typing import AsyncIterable, List, Union
 
 import bs4
 from langchain.callbacks import AsyncIteratorCallbackHandler
@@ -27,7 +27,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories, \
-    get_config_map, searx_engines
+    get_config_map, searx_engines, searx_limit
 from backend.service.router import Router
 
 
@@ -150,12 +150,18 @@ class LLMHelper:
         self.vectorstore = {}
         self.searx_search = SearxSearchWrapper(searx_host="http://localhost:8001")
         self.searx_engines = searx_engines()
+        self.searx_limit = searx_limit()
 
-    def searx_query(self, query):
-        for engine in self.searx_engines:
-            print(engine)
-            results = self.searx_search.results(query, num_results=3, engines=[engine])
-            print(results)
+    def searx_query(self, query, engines: Union[List[str], None] = None, limit = None):
+        results = []
+        if not engines:
+            engines = self.searx_engines
+        if not limit:
+            limit = self.searx_limit
+        for engine in engines:
+            result = self.searx_search.results(query, num_results=limit, engines=[engine])
+            results.extend([item for item in result if item.get('snippet')])
+        return results
 
     def init_session_history(self, session_history: dict):
         for session_id, history in session_history.items():
@@ -182,7 +188,7 @@ class LLMHelper:
     def build_model(self, streaming=False, callbacks=None, temperature=0.8, max_tokens=None, model_name=None):
         if callbacks is None:
             callbacks = []
-        chat_model = get_config_map("models","name", model_name) if model_name else self.chat_model
+        chat_model = get_config_map("models", "name", model_name) if model_name else self.chat_model
         # print('chat_model', chat_model)
         model_type = chat_model["type"]
         if model_type == "deepseek":
@@ -282,17 +288,26 @@ class LLMHelper:
         response = llm.invoke({"input": message, "preview": None}, config=config)
         return response.content
 
-    async def streaming(self, message: str, session_id: str, model=None, rag_id=None, files=None) -> AsyncIterable[str]:
+    async def streaming(self, message: str, session_id: str,
+                        model=None, rag_id=None, files=None, mode=None) -> AsyncIterable[str]:
         pre_input = None
         if files:
             previews = ""
             for key, value in files.items():
                 previews += format_doc(key, value)
-            pre_input = f"These source files are attached to the context: \n\n {previews}. "
+            pre_input = f"These source files are attached to the context: \n\n {previews}. \n\n"
         config = get_session_config(session_id)
         callback = AsyncIteratorCallbackHandler()
         llm = self.build_rag(streaming=True, callbacks=[callback], rag_id=rag_id, model_name=model) \
             if rag_id else self.build_llm(streaming=True, callbacks=[callback], model_name=model)
+        if mode and 'web' in mode:
+            results = self.searx_query(message)
+            urls = list(set([result.get('link') for result in results]))
+            snippets = list(set([result.get('snippet') for result in results]))
+            webs = parse_html(urls=urls)
+            preview = '\n\n'.join(snippets + [web.page_content[:2000] for web in webs])
+            pre_input = "" if not pre_input else pre_input
+            pre_input += f"These source webs are attached to the context: \n\n {preview}. \n\n"
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 if isinstance(chunk, dict) and chunk.get("answer"):
