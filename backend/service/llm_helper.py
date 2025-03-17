@@ -29,6 +29,7 @@ from langchain_unstructured import UnstructuredLoader
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories, \
     get_config_map, searx_engines, searx_limit
 from backend.service.router import Router
+from backend.util.common import remove_blank_lines
 
 
 def get_trimmer(model):
@@ -305,9 +306,10 @@ class LLMHelper:
             urls = list(set([result.get('link') for result in results]))
             snippets = list(set([result.get('snippet') for result in results]))
             webs = parse_html(urls=urls)
-            preview = '\n\n'.join(snippets + [web.page_content[:2000] for web in webs])
+            preview = '\n\n'.join(snippets + [remove_blank_lines(web.page_content[:2000]) for web in webs])
             pre_input = "" if not pre_input else pre_input
             pre_input += f"These source webs are attached to the context: \n\n {preview}. \n\n"
+            print('pre_input: ', pre_input)
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 if isinstance(chunk, dict) and chunk.get("answer"):

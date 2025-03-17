@@ -379,6 +379,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
         for item in _data.attachments:
             _files[item.file_name] = item.preview
         try:
+            print('ws_send_message', _data)
             async for chunk in llm_helper.streaming(
                     _data.content, _data.session_id,
                     model=_data.model, rag_id=_data.rag_id, files=_files, mode=_data.mode

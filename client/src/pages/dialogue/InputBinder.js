@@ -80,7 +80,7 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
   }, []);
 
   useEffect(() => {
-    setCurrentMode('web');
+    if(open) setCurrentMode('web');
   }, [open]);
 
   return (
