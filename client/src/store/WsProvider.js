@@ -1,5 +1,6 @@
 import React, {createContext, useEffect, useState} from 'react';
 import {getWsURL} from "@/api/api";
+import {orElse} from "@/store/Hook";
 
 const WsContext = createContext(null);
 
@@ -8,9 +9,9 @@ const WsProvider = ({ uri, children }) => {
   const [socket, setSocket] = useState(null);
   const [reconnectInterval, setReconnectInterval] = useState(1000);
 
-  const sendMessage = (message) => {
+  const sendMessage = (msg) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(message));
+      socket.send(JSON.stringify(msg));
     }
   };
 
@@ -33,7 +34,11 @@ const WsProvider = ({ uri, children }) => {
 
     newSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setMessage(data);
+      if (uri?.includes('/ws/stream')) {
+        setMessage((prev) => ({...data, websites: orElse(data?.websites, prev?.websites)}));
+      } else {
+        setMessage(data);
+      }
     };
 
     newSocket.onclose = (event) => {

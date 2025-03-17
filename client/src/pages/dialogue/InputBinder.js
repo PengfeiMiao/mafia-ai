@@ -9,7 +9,7 @@ import {BiBrain, BiSearchAlt} from "react-icons/bi";
 import ClickableTag from "@/components/ClickableTag";
 import SearchProgress from "@/pages/dialogue/SearchProgress";
 
-const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
+const InputBinder = ({onSend, webOpen, websites, onInterrupt, onClean, isPending, defaultValue, outerStyle}) => {
   const [message, setMessage] = useState(defaultValue ?? '');
   const [attachments, setAttachments] = useState(new Map());
   const clearRef = useRef(null);
@@ -87,7 +87,7 @@ const InputBinder = ({onSend, onInterrupt, onClean, isPending, defaultValue, out
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
-      <SearchProgress open={false}/>
+      <SearchProgress open={webOpen}/>
       <Flex direction="row" mb="8px">
         <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
           onToggle();

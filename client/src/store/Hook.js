@@ -1,4 +1,5 @@
 import {useState} from "react";
+import _ from "lodash";
 
 export const useDelayToggle = () => {
   const [toggle, setToggle] = useState(true);
@@ -12,3 +13,7 @@ export const useDelayToggle = () => {
 
   return {toggle, onToggle};
 };
+
+export const isEmptyOrNull = (arr) => _.isEmpty(arr) || arr == null;
+
+export const orElse = (value, defaultVal) => isEmptyOrNull(value) ? defaultVal : value;

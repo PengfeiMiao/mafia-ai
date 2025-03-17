@@ -84,6 +84,8 @@ const DialoguePage = ({outerStyle}) => {
       <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder
         onSend={handleSend}
+        webOpen={currentMode === 'web' && pendingId}
+        websites={message?.websites}
         onInterrupt={handleInterrupt}
         isPending={!!pendingId}
         outerStyle={outerStyle}

@@ -388,6 +388,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 if chunk.get('type') == 'web':
                     _response['websites'] += chunk.get('content')
                 else:
+                    _response['websites'] = []
                     _response['content'] += chunk.get('content')
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'
