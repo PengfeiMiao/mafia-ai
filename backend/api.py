@@ -370,7 +370,8 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
             'content': '',
             'type': 'system',
             'created_at': now_str(),
-            'status': 'pending'
+            'status': 'pending',
+            'websites': []
         }
 
     async def ws_send_message(_websocket: WebSocket, _data: MessageModel):
@@ -384,7 +385,10 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                     _data.content, _data.session_id,
                     model=_data.model, rag_id=_data.rag_id, files=_files, mode=_data.mode
             ):
-                _response['content'] += chunk
+                if chunk.get('type') == 'web':
+                    _response['websites'] += chunk.get('content')
+                else:
+                    _response['content'] += chunk.get('content')
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'
             _response['created_at'] = now_str()

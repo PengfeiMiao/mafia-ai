@@ -290,7 +290,7 @@ class LLMHelper:
         return response.content
 
     async def streaming(self, message: str, session_id: str,
-                        model=None, rag_id=None, files=None, mode=None) -> AsyncIterable[str]:
+                        model=None, rag_id=None, files=None, mode=None) -> AsyncIterable[dict]:
         pre_input = None
         if files:
             previews = ""
@@ -303,6 +303,7 @@ class LLMHelper:
             if rag_id else self.build_llm(streaming=True, callbacks=[callback], model_name=model)
         if mode and 'web' in mode:
             results = self.searx_query(message)
+            yield {'content': results, 'type': 'web'}
             urls = list(set([result.get('link') for result in results]))
             snippets = list(set([result.get('snippet') for result in results]))
             webs = parse_html(urls=urls)
@@ -313,9 +314,9 @@ class LLMHelper:
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 if isinstance(chunk, dict) and chunk.get("answer"):
-                    yield chunk["answer"]
+                    yield {'content': chunk["answer"], 'type': 'msg'}
                 elif isinstance(chunk, BaseMessage):
-                    yield chunk.content
+                    yield {'content': chunk.content, 'type': 'msg'}
         except Exception as e:
             yield f"LLM caught exception: {e}"
 
