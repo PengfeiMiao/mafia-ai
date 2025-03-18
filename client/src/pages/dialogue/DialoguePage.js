@@ -63,7 +63,7 @@ const DialoguePage = ({outerStyle}) => {
   }, [currentSession]);
 
   useEffect(() => {
-    if (!message || message?.id !== pendingId) return;
+    if (!message?.content?.trim() || message?.id !== pendingId) return;
     let msgIndex = messages.findIndex(it => it.id === pendingId);
     if (msgIndex > -1) {
       let newMsgList = [...messages];
@@ -84,7 +84,7 @@ const DialoguePage = ({outerStyle}) => {
       <MessageList data={messages} outerStyle={outerStyle}/>
       <InputBinder
         onSend={handleSend}
-        webOpen={currentMode === 'web' && pendingId}
+        webOpen={!!(currentMode === 'web' && pendingId)}
         websites={message?.websites}
         onInterrupt={handleInterrupt}
         isPending={!!pendingId}

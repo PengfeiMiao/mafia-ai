@@ -5,7 +5,7 @@ const CommonProgress = ({title, percent, outerStyle}) => {
   return (
     <Flex w="100%" style={outerStyle} direction="column">
       <Text fontSize="sm">{title}</Text>
-      <Progress.Root marginTop="4px" size="xs" w="100%" defaultValue={percent}>
+      <Progress.Root marginTop="4px" size="xs" w="100%" value={percent}>
         <Progress.Track>
           <Progress.Range/>
         </Progress.Track>

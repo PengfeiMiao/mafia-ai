@@ -87,7 +87,7 @@ const InputBinder = ({onSend, webOpen, websites, onInterrupt, onClean, isPending
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
-      <SearchProgress open={webOpen}/>
+      <SearchProgress open={webOpen} count={websites?.length ?? 0}/>
       <Flex direction="row" mb="8px">
         <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
           onToggle();

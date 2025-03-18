@@ -370,7 +370,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
             'content': '',
             'type': 'system',
             'created_at': now_str(),
-            'status': 'pending',
+            'status': 'initial',
             'websites': []
         }
 
@@ -390,6 +390,7 @@ async def websocket_stream(websocket: WebSocket, db: Session = Depends(get_sessi
                 else:
                     _response['websites'] = []
                     _response['content'] += chunk.get('content')
+                    _response['status'] = 'pending'
                 await _websocket.send_json(_response)
             _response['status'] = 'completed'
             _response['created_at'] = now_str()

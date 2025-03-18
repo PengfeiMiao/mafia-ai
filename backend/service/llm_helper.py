@@ -302,8 +302,10 @@ class LLMHelper:
         llm = self.build_rag(streaming=True, callbacks=[callback], rag_id=rag_id, model_name=model) \
             if rag_id else self.build_llm(streaming=True, callbacks=[callback], model_name=model)
         if mode and 'web' in mode:
-            results = self.searx_query(message)
-            yield {'content': results, 'type': 'web'}
+            results = []
+            for engine in self.searx_engines:
+                results.extend(self.searx_query(message, engines=[engine]))
+                yield {'content': results, 'type': 'web'}
             urls = list(set([result.get('link') for result in results]))
             snippets = list(set([result.get('snippet') for result in results]))
             webs = parse_html(urls=urls)
