@@ -22,6 +22,10 @@ const WsProvider = ({ uri, children }) => {
     }
   };
 
+  const resetMessage = () => {
+    setMessage(null);
+  };
+
   const connectWebSocket = ()=> {
     const url = `${getWsURL()}${uri}`;
     const newSocket = new WebSocket(url);
@@ -76,7 +80,7 @@ const WsProvider = ({ uri, children }) => {
   }, []);
 
   return (
-    <WsContext.Provider value={{ message, sendMessage, interruptMessage }}>
+    <WsContext.Provider value={{ message, sendMessage, interruptMessage, resetMessage }}>
       {children}
     </WsContext.Provider>
   );

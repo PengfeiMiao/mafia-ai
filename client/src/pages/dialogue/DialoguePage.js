@@ -17,7 +17,7 @@ const DialoguePage = ({outerStyle}) => {
   const [pendingId, setPendingId] = useState('');
   const [ragId, setRagId] = useState('');
   const [modelName, setModelName] = useState('');
-  const {message, sendMessage, interruptMessage} = useWebsocket();
+  const {message, sendMessage, interruptMessage, resetMessage} = useWebsocket();
   const {currentSession, currentMode} = useContext(GlobalContext);
   const {toggle, onToggle} = useDelayToggle();
 
@@ -74,6 +74,7 @@ const DialoguePage = ({outerStyle}) => {
     }
     if (message?.status === 'completed') {
       setPendingId('');
+      resetMessage();
     }
   }, [message]);
 

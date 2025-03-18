@@ -2,69 +2,81 @@ import CommonProgress from "@/components/CommonProgress";
 import React, {useEffect, useState} from "react";
 import {Flex} from "@chakra-ui/react";
 import SlideBox from "@/components/SlideBox";
+import moment from "moment";
 
-let state = {progress: 0, stride: 10};
+let progress = 0;
 
 const SearchProgress = ({open, count}) => {
-  const [p1, setP1] = useState(0);
-  const [p2, setP2] = useState(0);
-  const [p3, setP3] = useState(0);
+  const initState = [
+    {progress: 0, stride: 10},
+    {progress: 0, stride: 2},
+    {progress: 0, stride: 10}
+  ];
+  const [progressArr, setProgressArr] = useState(initState);
+  const [lastUpd, setLastUpd] = useState(0);
+  const [isOpen, setIsOpen] = useState(open);
 
   const rootStyle = {
     marginLeft: "4px",
     marginRight: "4px"
   };
 
-  const handleProgress = () => {
-    if (state.progress <= 100) {
-      setP1(state.progress);
-    } else if (state.progress <= 200) {
-      setP1(100);
-      setP2(state.progress - 100);
-    } else {
-      setP1(100);
-      setP2(100);
-      setP3(Math.min(state.progress - 200, 100));
-    }
+  const handleProgress = (_progress, _lastUpd) => {
+    setProgressArr((prev) => {
+       let curr = Array.from(prev);
+       curr[0] = {progress: Math.min(_progress, 100), stride: initState[0].stride};
+       curr[1] = {progress: Math.min(_progress - 100, 100), stride: initState[1].stride};
+       curr[2] = {progress: Math.min(_progress - 200, 100), stride: initState[2].stride};
+       return curr;
+    });
   };
 
   useEffect(() => {
-    console.log(open);
+    setIsOpen(open);
     let interval;
     if (!open) {
-      state = {progress: 0, stride: 10};
-      setP1(0);
-      setP2(0);
-      setP3(0);
+      progress = 0;
+      setProgressArr(initState);
     } else {
       interval = setInterval(() => {
-        if (state.progress < 300) {
-          state.progress += state.stride;
-          handleProgress();
+        if (progress < 300) {
+          let index = Math.floor(progress / 100);
+          let stride =
+            index === 1 && count > 0 && moment().valueOf() - lastUpd > 2000 ? 10 : initState[index].stride;
+          progress += stride;
+        } else {
+          progress = 300;
         }
-      }, 200);
+        handleProgress(progress, lastUpd);
+      }, 100);
     }
     return () => {
       interval && clearInterval(interval);
     };
-  }, [open]);
+  }, [open, lastUpd]);
 
   useEffect(() => {
-    if (count > 0) {
-      state.stride *= 2;
-    }
+    setLastUpd(moment().valueOf());
   }, [count]);
 
+  useEffect(() => {
+    if (progressArr[2].progress === 100) {
+      setTimeout(() => setIsOpen(false), 300);
+    }
+  }, [progressArr]);
+
   return (
-    <SlideBox open={open} outerStyle={{height: "auto", borderRadius: "8px", marginBottom: "8px"}}>
+    <SlideBox
+      open={isOpen}
+      outerStyle={{height: "auto", borderRadius: "8px", marginBottom: "8px"}}>
       <Flex
         w="100%"
         padding="8px"
         align="center"
         justify="space-between">
-        <CommonProgress title={"Understand"} percent={p1} outerStyle={rootStyle}/>
-        <CommonProgress title={"Search"} percent={p2} outerStyle={rootStyle}/>
-        <CommonProgress title={"Analysis"} percent={p3} outerStyle={rootStyle}/>
+        <CommonProgress title={"Understand"} percent={progressArr[0].progress} outerStyle={rootStyle}/>
+        <CommonProgress title={"Search"} percent={progressArr[1].progress} outerStyle={rootStyle}/>
+        <CommonProgress title={"Analysis"} percent={progressArr[2].progress} outerStyle={rootStyle}/>
       </Flex>
     </SlideBox>
   );
