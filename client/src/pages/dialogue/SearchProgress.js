@@ -6,7 +6,7 @@ import moment from "moment";
 
 let progress = 0;
 
-const SearchProgress = ({open, count}) => {
+const SearchProgress = ({open, status, count}) => {
   const initState = [
     {progress: 0, stride: 10},
     {progress: 0, stride: 2},
@@ -23,16 +23,16 @@ const SearchProgress = ({open, count}) => {
 
   const handleProgress = (_progress, _lastUpd) => {
     setProgressArr((prev) => {
-       let curr = Array.from(prev);
-       curr[0] = {progress: Math.min(_progress, 100), stride: initState[0].stride};
-       curr[1] = {progress: Math.min(_progress - 100, 100), stride: initState[1].stride};
-       curr[2] = {progress: Math.min(_progress - 200, 100), stride: initState[2].stride};
-       return curr;
+      let curr = Array.from(prev);
+      curr[0] = {progress: Math.min(_progress, 100), stride: initState[0].stride};
+      curr[1] = {progress: Math.min(_progress - 100, 100), stride: initState[1].stride};
+      curr[2] = {progress: Math.min(_progress - 200, 100), stride: initState[2].stride};
+      return curr;
     });
   };
 
   useEffect(() => {
-    setIsOpen(open);
+    setIsOpen(open || (progress  > 0 && progress < 300));
     let interval;
     if (!open) {
       progress = 0;
@@ -41,8 +41,9 @@ const SearchProgress = ({open, count}) => {
       interval = setInterval(() => {
         if (progress < 300) {
           let index = Math.floor(progress / 100);
-          let stride =
-            index === 1 && count > 0 && moment().valueOf() - lastUpd > 2000 ? 10 : initState[index].stride;
+          let stride = status === 'pending' ? 50 : (
+            index === 1 && count > 0 && moment().valueOf() - lastUpd > 2000 ? 10 : initState[index].stride
+          );
           progress += stride;
         } else {
           progress = 300;
@@ -53,7 +54,7 @@ const SearchProgress = ({open, count}) => {
     return () => {
       interval && clearInterval(interval);
     };
-  }, [open, lastUpd]);
+  }, [open, lastUpd, status]);
 
   useEffect(() => {
     setLastUpd(moment().valueOf());

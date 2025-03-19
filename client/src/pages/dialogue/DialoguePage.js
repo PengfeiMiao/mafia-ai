@@ -86,6 +86,7 @@ const DialoguePage = ({outerStyle}) => {
       <InputBinder
         onSend={handleSend}
         webOpen={!!(currentMode === 'web' && pendingId)}
+        status={message?.status}
         websites={message?.websites}
         onInterrupt={handleInterrupt}
         isPending={!!pendingId}
