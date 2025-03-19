@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session as DBSession
 
 from backend.entity.entity import User, serialize
@@ -5,6 +6,24 @@ from backend.model.user_model import UserModel
 from backend.util.common import now_utc, b64encode, b64decode, is_valid_email
 
 sessions = {}
+
+
+def get_user(db: DBSession, user: UserModel, fields=None):
+    if not fields:
+        fields = []
+    query = db.query(User).filter_by(status='active')
+    if 'username' in fields and 'email' in fields:
+        query = query.filter(or_(
+            User.username.__eq__(user.username),
+            User.email.__eq__(user.email)
+        ))
+    elif 'username' in fields:
+        query = query.filter_by(username=user.username)
+    elif 'email' in fields:
+        query = query.filter_by(email=user.email)
+    else:
+        return None
+    return query.one_or_none()
 
 
 def save_user(db: DBSession, user: UserModel):
@@ -19,17 +38,15 @@ def validate_user(db: DBSession, user: UserModel):
     token = b64encode(f"{user.id}&{user.username}&{user.password}")
     if token in sessions:
         return token
-
-    query = db.query(User).filter_by(status='active')
+    fields = ['username']
     if is_valid_email(user.username):
-        query = query.filter_by(email=user.username)
-    else:
-        query = query.filter_by(username=user.username)
-    entity = query.one_or_none()
+        fields = ['email']
+        user.email = user.username
+    entity = get_user(db, user, fields)
     flag = entity and user.password == entity.password
     if not flag:
         return None
-    token = b64encode(f"{entity.id}&{entity.username}&{entity.password}")
+    token = b64encode(f"{entity.id}&{entity.username if 'username' in fields else entity.email}&{entity.password}")
     sessions[token] = {**serialize(entity), 'login_at': now_utc()}
     return token
 
