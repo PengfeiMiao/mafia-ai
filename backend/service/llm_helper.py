@@ -27,7 +27,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_unstructured import UnstructuredLoader
 
 from backend.config.config import chat_model_meta, max_tokens as max_token_config, embd_model_meta, max_histories, \
-    get_config_map, searx_engines, searx_limit
+    get_config_map, searx_engines, searx_limit, searx_host, searx_port
 from backend.service.router import Router
 from backend.util.common import remove_blank_lines
 
@@ -149,9 +149,11 @@ class LLMHelper:
         )
         self.store = {}
         self.vectorstore = {}
-        self.searx_search = SearxSearchWrapper(searx_host="http://localhost:8001")
         self.searx_engines = searx_engines()
+        self.searx_host = searx_host()
+        self.searx_port = searx_port()
         self.searx_limit = searx_limit()
+        self.searx_search = SearxSearchWrapper(searx_host=f"http://{self.searx_host}:{self.searx_port}")
 
     def searx_query(self, query, engines: Union[List[str], None] = None, limit = None):
         results = []
@@ -312,7 +314,7 @@ class LLMHelper:
             preview = '\n\n'.join(snippets + [remove_blank_lines(web.page_content[:2000]) for web in webs])
             pre_input = "" if not pre_input else pre_input
             pre_input += f"These source webs are attached to the context: \n\n {preview}. \n\n"
-            print('pre_input: ', pre_input)
+            # print('pre_input: ', pre_input)
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
                 if isinstance(chunk, dict) and chunk.get("answer"):

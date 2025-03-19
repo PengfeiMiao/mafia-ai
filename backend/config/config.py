@@ -77,6 +77,12 @@ def smtp_address():
 def smtp_pwd():
     return get_config("smtp.password")
 
+def searx_host():
+    return get_config("searx.host")
+
+def searx_port():
+    return get_config("searx.port")
+
 def searx_engines():
     return get_config("searx.engines")
 

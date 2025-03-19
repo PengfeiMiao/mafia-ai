@@ -40,6 +40,8 @@ smtp:
   email: ""
   password: ""
 searx:
+  host: "searxng"
+  port: "8080"
   limit: 10
   engines:
     - "baidu"

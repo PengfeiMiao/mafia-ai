@@ -33,7 +33,7 @@ services:
       BASE_URL: http://0.0.0.0:8080/
       INSTANCE_NAME: searxng
     ports:
-      - "8001:8080"
+      - "8080:8080"
     volumes:
       - ./infra/searxng:/etc/searxng:rw
 
