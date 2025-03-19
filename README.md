@@ -29,10 +29,9 @@
 1. 基本问答 - completed
 2. 会话管理 - completed
 3. 文档解析 - completed [todo: 考虑接入 elasticsearch]
-4. RAG 知识库 - WIP
-5. Web 深度搜索 - WIP
-6. Web 热搜
-7. 用户管理
-8. 接入微调模型
-9. 自定义小应用
-10. 盈利模式 - 接入 QQ，Mail，短信，微信小程序
+4. RAG 知识库 - completed
+5. Web 深度搜索 - completed
+6. 用户管理 - WIP
+7. 接入微调模型
+8. 自定义小应用
+9. 盈利模式 - 接入 QQ，Mail，短信，微信小程序
