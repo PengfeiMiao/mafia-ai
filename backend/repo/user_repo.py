@@ -23,11 +23,13 @@ def get_user(db: DBSession, user: UserModel, fields=None):
         query = query.filter_by(email=user.email)
     else:
         return None
-    return query.one_or_none()
+    return query.all()
 
 
 def save_user(db: DBSession, user: UserModel):
-    entity = User(**user.__dict__)
+    mapping = user.__dict__
+    mapping.pop('code', 'None')
+    entity = User(**mapping)
     db.add(entity)
     db.commit()
     db.refresh(entity)
@@ -42,7 +44,8 @@ def validate_user(db: DBSession, user: UserModel):
     if is_valid_email(user.username):
         fields = ['email']
         user.email = user.username
-    entity = get_user(db, user, fields)
+    data = get_user(db, user, fields)
+    entity = data[0] if data and len(data) > 0 else None
     flag = entity and user.password == entity.password
     if not flag:
         return None

@@ -9,7 +9,7 @@ from backend.util.common import now_utc
 
 
 def generate_code(length=6):
-    return ''.join(secrets.choice(string.digits, k=length))
+    return ''.join(secrets.choice(string.digits) for _ in range(length))
 
 
 class STMPHelper:
@@ -49,4 +49,4 @@ class STMPHelper:
         }
 
     def validate_code(self, receiver: str, code: str):
-        return self.store.get(receiver, {'code': ''})['code'] == code
+        return self.store.get(receiver, {'code': '-'})['code'] == code

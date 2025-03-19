@@ -34,6 +34,7 @@ from backend.repo.website_repo import get_websites, save_website, update_website
 from backend.service import scheduler
 from backend.service.llm_helper import LLMHelper, parse_docs
 from backend.service.proxy import common_proxy, parse_get_proxy
+from backend.service.stmp_helper import STMPHelper
 from backend.util.common import now_str, is_alphanumeric, is_valid_email
 
 logging.basicConfig(level=logging.WARNING)
@@ -48,6 +49,8 @@ if not os.path.exists(UPLOAD_DIR):
 API_KEY = api_key()
 
 llm_helper = LLMHelper()
+
+stmp_helper = STMPHelper()
 
 executor = ThreadPoolExecutor(max_workers=4)
 
@@ -70,6 +73,13 @@ unauthorized_res = JSONResponse(
     headers={"WWW-Authenticate": "Bearer"})
 
 
+def build_bad_request(detail: str):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": detail}
+    )
+
+
 def current_user(request: Request) -> UserModel:
     return request.state.user if hasattr(request.state, "user") else DEFAULT_USER
 
@@ -77,7 +87,7 @@ def current_user(request: Request) -> UserModel:
 @app.middleware("http")
 async def check_authorization(request: Request, call_next):
     db = SessionLocal()
-    if request.url.path not in ["/login", "/register"]:
+    if request.url.path not in ["/login", "/register", "/send_code"]:
         auth_token = request.cookies.get("token")
         if not auth_token:
             return unauthorized_res
@@ -104,14 +114,17 @@ async def login(user: UserModel, db: Session = Depends(get_session)):
     return {'token': user_token} if user_token else unauthorized_res
 
 
+@app.post("/send_code")
+async def send_code(user: UserModel):
+    if not is_valid_email(user.email):
+        return build_bad_request("Invalid email")
+
+    stmp_helper.send_code(user.email)
+    return {'status': True}
+
+
 @app.post("/register")
 async def register(user: UserModel, db: Session = Depends(get_session)):
-    def build_bad_request(detail: str):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": detail}
-        )
-
     if not is_alphanumeric(user.username):
         return build_bad_request("Invalid username")
 
@@ -121,6 +134,9 @@ async def register(user: UserModel, db: Session = Depends(get_session)):
     flag = get_user(db, user, fields=['username', 'email'])
     if flag:
         return build_bad_request("Existed user")
+
+    if not stmp_helper.validate_code(user.email, user.code):
+        return build_bad_request("Validation code mismatch")
 
     return UserModel(**serialize(save_user(db, user)))
 

@@ -109,6 +109,16 @@ export const registerApi = async (payload) => {
   });
 };
 
+export const sendCodeApi = async (payload) => {
+  return await fetch(`${BASE_URL}/send_code`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+};
+
 function fetchApi(url, options) {
   let token = preAuth();
   if (!token) {
