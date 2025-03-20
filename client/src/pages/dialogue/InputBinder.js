@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import {Box, Button, Flex, Icon, Separator, Textarea, useDisclosure} from "@chakra-ui/react";
+import {Box, Button, Center, Flex, Icon, Separator, Textarea, useDisclosure} from "@chakra-ui/react";
 import {RiAttachmentLine, RiPauseCircleFill, RiSendPlaneFill, RiSendPlaneLine} from "react-icons/ri";
 import {cleanSession, uploadAttachment} from "@/api/api";
 import {GlobalContext} from "@/store/GlobalProvider";
@@ -25,7 +25,7 @@ const InputBinder = (
   const [attachments, setAttachments] = useState(new Map());
   const clearRef = useRef(null);
   const textRef = useRef(null);
-  const {open, onOpen, onToggle} = useDisclosure();
+  const {open: webMode, onOpen: onWebMode, onToggle: toggleWebMode} = useDisclosure();
   const {currentSession, currentMode, setCurrentMode} = useContext(GlobalContext);
 
   const rootStyle = {
@@ -36,7 +36,7 @@ const InputBinder = (
 
   const isEmpty = () => {
     return message === null || message.trim().length === 0;
-  }
+  };
 
   const handleClean = async () => {
     let result = await cleanSession(currentSession?.id);
@@ -86,22 +86,22 @@ const InputBinder = (
 
   useEffect(() => {
     if (currentMode.includes('web')) {
-      onOpen();
+      onWebMode();
     }
   }, []);
 
   useEffect(() => {
-    if (open) setCurrentMode('web');
-  }, [open]);
+    setCurrentMode(webMode ? 'web' : '');
+  }, [webMode]);
 
   return (
     <Box
       style={rootStyle}
       bgColor={'gray.100'}>
-      <SearchProgress open={webOpen} status={status} count={websites?.length ?? 0}/>
+      {webMode && <SearchProgress open={webOpen} status={status} count={websites?.length ?? 0}/>}
       <Flex direction="row" mb="8px">
         <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
-          onToggle();
+          toggleWebMode();
         }}>
           Web Search
         </ClickableTag>
@@ -153,16 +153,19 @@ const InputBinder = (
             </Button>
           }
         >
-          <Icon
-            w="20px"
+          <Center
+            w="32px"
             h="100%"
             maxH="40px"
-            mr="12px"
+            mr="8px"
             borderRadius="sm"
-            bgColor={'purple.muted'}
-            color={'white'}>
-            <RiAttachmentLine/>
-          </Icon>
+            bgColor={'purple.muted'}>
+            <Icon
+              boxSize="20px"
+              color={'white'}>
+              <RiAttachmentLine/>
+            </Icon>
+          </Center>
         </FileUploader>
       </Flex>
     </Box>

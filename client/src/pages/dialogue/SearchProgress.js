@@ -32,7 +32,7 @@ const SearchProgress = ({open, status, count}) => {
   };
 
   useEffect(() => {
-    setIsOpen(open || (progress  > 0 && progress < 300));
+    setIsOpen(open || (progress > 0 && progress < 300));
     let interval;
     if (!open) {
       progress = 0;
@@ -76,7 +76,11 @@ const SearchProgress = ({open, status, count}) => {
         align="center"
         justify="space-between">
         <CommonProgress title={"Understand"} percent={progressArr[0].progress} outerStyle={rootStyle}/>
-        <CommonProgress title={"Search"} percent={progressArr[1].progress} outerStyle={rootStyle}/>
+        <CommonProgress
+          title={"Search"}
+          content={count > 0 ? `Collected ${count} resources` : ''}
+          percent={progressArr[1].progress}
+          outerStyle={rootStyle}/>
         <CommonProgress title={"Analysis"} percent={progressArr[2].progress} outerStyle={rootStyle}/>
       </Flex>
     </SlideBox>

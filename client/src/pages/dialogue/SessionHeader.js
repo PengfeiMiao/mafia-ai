@@ -13,7 +13,7 @@ const modelOptions = [
   "deepseek-chat"
 ];
 
-const emptyOption = {label: 'empty', value: ''};
+const emptyOption = {label: '-', value: ''};
 
 const SessionHeader = ({onChange, outerStyle}) => {
   const [modelSelected, setModelSelected] = useState(modelOptions[0]);
