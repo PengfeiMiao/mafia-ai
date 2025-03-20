@@ -100,9 +100,13 @@ const InputBinder = (
       bgColor={'gray.100'}>
       {webMode && <SearchProgress open={webOpen} status={status} count={websites?.length ?? 0}/>}
       <Flex direction="row" mb="8px">
-        <ClickableTag startEl={<BiSearchAlt/>} onClick={() => {
-          toggleWebMode();
-        }}>
+        <ClickableTag
+          startEl={<BiSearchAlt/>}
+          selected={webMode}
+          disabled={status}
+          onClick={() => {
+            if (!status) toggleWebMode();
+          }}>
           Web Search
         </ClickableTag>
         <ClickableTag startEl={<BiBrain/>} onClick={() => {

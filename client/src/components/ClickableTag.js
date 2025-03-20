@@ -1,7 +1,7 @@
 import {Tag} from "@chakra-ui/react";
 import React, {useState} from "react";
 
-const ClickableTag = ({startEl, onClick, children, outerStyle}) => {
+const ClickableTag = ({startEl, onClick, children, outerStyle, disabled=false}) => {
   const [isSelected, setIsSelected] = useState(false);
 
   const rootStyle = {
@@ -20,7 +20,7 @@ const ClickableTag = ({startEl, onClick, children, outerStyle}) => {
 
   const handleClick = () => {
     setIsSelected(!isSelected);
-    if (onClick) onClick();
+    onClick();
   };
 
   return (
@@ -30,7 +30,7 @@ const ClickableTag = ({startEl, onClick, children, outerStyle}) => {
       bgColor={getStyle(isSelected).bgColor}
       _hover={{ bgColor: "purple.muted" }}
       transition="all 0.3s"
-      onClick={handleClick}
+      onClick={!disabled && onClick ? handleClick : () => {}}
     >
       {startEl && <Tag.StartElement>
         {startEl}

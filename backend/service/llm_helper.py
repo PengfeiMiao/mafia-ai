@@ -317,6 +317,7 @@ class LLMHelper:
             # print('pre_input: ', pre_input)
         try:
             async for chunk in llm.astream({"input": message, "preview": pre_input}, config=config):
+                # print(chunk)
                 if isinstance(chunk, dict) and chunk.get("answer"):
                     yield {'content': chunk["answer"], 'type': 'msg'}
                 elif isinstance(chunk, BaseMessage):
@@ -328,16 +329,16 @@ class LLMHelper:
 if __name__ == '__main__':
     llm_helper = LLMHelper()
     _rag_id = "default"
-    # t = time.time()
-    # llm_helper.reset_rag_store(_rag_id)
-    # llm_helper.append_texts(_rag_id, {"电影《哪吒2》": "请回答我：它是国产动漫之光！"})
-    # print('append_texts use: ', time.time() - t)
     t = time.time()
-    # _llm = llm_helper.build_rag(streaming=False, rag_id=_rag_id, model_name="deepseek-chat")
-    _llm = llm_helper.build_llm(streaming=False, model_name="deepseek-chat")
+    llm_helper.reset_rag_store(_rag_id)
+    llm_helper.append_texts(_rag_id, {"你是谁": "请回答：我是最牛的Mafia AI!"})
+    print('append_texts use: ', time.time() - t)
+    t = time.time()
+    _llm = llm_helper.build_rag(streaming=False, rag_id=_rag_id, model_name="gpt-3.5-turbo")
+    # _llm = llm_helper.build_llm(streaming=False, model_name="deepseek-chat")
     print('build model use: ', time.time() - t)
     t = time.time()
-    for _chunk in _llm.stream({"input": "哪吒2 是什么", "preview": None}, config=get_session_config(_rag_id)):
+    for _chunk in _llm.stream({"input": "你是谁", "preview": None}, config=get_session_config(_rag_id)):
         print(_chunk)
         print('chunk use: ', time.time() - t)
         t = time.time()
