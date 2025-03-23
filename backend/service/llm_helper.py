@@ -84,11 +84,14 @@ def parse_docs(file_paths: List[str]):
 
 
 def parse_html(urls: List[str]):
+    if len(urls) == 0:
+        return []
     loader = WebBaseLoader(
         web_paths=urls,
         bs_kwargs=dict(
             parse_only=bs4.SoupStrainer(['div', 'p'])
         ),
+        requests_kwargs={'timeout': 6}
     )
     docs = loader.load()
     return format_docs(docs)
@@ -155,15 +158,18 @@ class LLMHelper:
         self.searx_limit = searx_limit()
         self.searx_search = SearxSearchWrapper(searx_host=f"http://{self.searx_host}:{self.searx_port}")
 
-    def searx_query(self, query, engines: Union[List[str], None] = None, limit = None):
+    def searx_query(self, query, engines: Union[List[str], None] = None, limit=None):
         results = []
         if not engines:
             engines = self.searx_engines
         if not limit:
             limit = self.searx_limit
-        for engine in engines:
-            result = self.searx_search.results(query, num_results=limit, engines=[engine])
-            results.extend([item for item in result if item.get('snippet')])
+        try:
+            for engine in engines:
+                result = self.searx_search.results(query, num_results=limit, engines=[engine])
+                results.extend([item for item in result if item.get('snippet')])
+        except ValueError:
+            print("failed to query searx")
         return results
 
     def init_session_history(self, session_history: dict):
@@ -310,6 +316,7 @@ class LLMHelper:
                 yield {'content': results, 'type': 'web'}
             urls = list(set([result.get('link') for result in results]))
             snippets = list(set([result.get('snippet') for result in results]))
+            # print('urls', urls)
             webs = parse_html(urls=urls)
             preview = '\n\n'.join(snippets + [remove_blank_lines(web.page_content[:2000]) for web in webs])
             pre_input = "" if not pre_input else pre_input
