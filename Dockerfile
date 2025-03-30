@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY backend/requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY client/package.json ./client/
 COPY client/package-lock.json ./client/
